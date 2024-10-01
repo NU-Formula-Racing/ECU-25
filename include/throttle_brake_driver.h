@@ -61,6 +61,6 @@ class ThrottleBrake {
         CANSignal<bool, 48, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> brake_pressed{};
         CANSignal<bool, 56, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> implausibility_present{};
         CANTXMessage<5> throttle_brake_data{
-            drive_bus, kTransmissionID, 8, 100, timers, 
+            can_interface, kTransmissionID, 8, 100, 
             throttle_percent, front_brake_pressure, rear_brake_pressure, brake_pressed, implausibility_present};
 };
