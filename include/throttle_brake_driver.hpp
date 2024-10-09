@@ -1,10 +1,8 @@
 #pragma once
 
-#include <Arduino.h>
 #include "esp_can.h"
 #include "can_interface.h"
 #include "virtualTimer.h"
-#include "pins.hpp"
 
 // #define MAX_THROTTLE 32767
 
@@ -37,9 +35,9 @@ class ThrottleBrake {
         CANSignal<int16_t, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> throttle_percent{};
         CANSignal<int16_t, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> front_brake_pressure{};
         CANSignal<int16_t, 32, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> rear_brake_pressure{};
-        CANSignal<bool, 48, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> brake_pressed{};
-        CANSignal<bool, 56, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> implausibility_present{};
+        CANSignal<bool, 48, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> brake_pressed_signal{};
+        CANSignal<bool, 56, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> implausibility_present_signal{};
         CANTXMessage<5> throttle_brake_data{
-            can_interface, kTransmissionID, 8, 100, 
-            throttle_percent, front_brake_pressure, rear_brake_pressure, brake_pressed, implausibility_present};
+            can_interface, kTransmissionID, 8, 100,
+            throttle_percent, front_brake_pressure, rear_brake_pressure, brake_pressed_signal, implausibility_present_signal};
 };

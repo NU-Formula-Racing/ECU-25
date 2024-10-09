@@ -1,10 +1,11 @@
 #include <Arduino.h>
 
-#include "LUT.h"
-#include "inverter_driver.h"
+#include "LUT.hpp"
+#include "inverter_driver.hpp"
 #include "esp_can.h"
-#include "throttle_brake_driver.h"
+#include "throttle_brake_driver.hpp"
 #include "virtualTimer.h"
+#include "pins.hpp"
 
 // instantiate CAN bus
 ESPCAN drive_bus{};
@@ -44,7 +45,7 @@ enum state
 // CAN signals -- get new addresses from DBC
 // add rx: wheel speed
 // add tx: 
-// APPS1, APPS2, front brake, rear brake, torque request will be handled in their respective .h files
+// APPS1, APPS2, front brake, rear brake, torque request will be handled in their respective .hpp files
 CANSignal<BMSState, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_State{};
 CANSignal<BMSCommand, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_Command{};
 CANSignal<float, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40), false> batt_temp{};
@@ -52,6 +53,9 @@ CANSignal<uint8_t, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0),
 CANRXMessage<2> BMS_message{drive_bus, 0x241, BMS_State, batt_temp};
 CANTXMessage<1> BMS_command_message{drive_bus, 0x242, 8, 100, timers, BMS_Command};
 CANTXMessage<1> Drive_status{drive_bus, 0x000, 8, 100, timers, current_state};
+
+void change_state();
+void process_state();
 
 void setup() {
   // Serial.begin(115200);
@@ -86,6 +90,7 @@ void change_state() {
     case N:
 
     case DRIVE:
+    int x = 1;
   }
 }
 
@@ -96,5 +101,6 @@ void process_state() {
     case N:
 
     case DRIVE:
+    int x = 1;
   }
 }

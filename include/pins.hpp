@@ -1,3 +1,8 @@
+#pragma once
+
+// ** to get bound/pin number as an int: **
+// constexpr int pin = static_cast<int>(Pins::PIN_NAME);
+
 // change specific bounds after testing with sensors in pedalbox
 enum class Bounds {
     APPS1_MIN = 0,
