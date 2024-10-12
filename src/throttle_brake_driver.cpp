@@ -15,7 +15,7 @@ void ThrottleBrake::initialize() {
 /**
  * @brief Reads data from ADCs and stores RAW sensor data (in ADC counts) in class variables  
  */
-void read_ADCs() {
+void ThrottleBrake::read_ADCs() {
 
 };
         
@@ -24,7 +24,7 @@ void read_ADCs() {
  *
  * @return int16_t
  */   
-int16_t get_APPS1() {
+int16_t ThrottleBrake::get_APPS1() {
 
 }; 
         
@@ -33,7 +33,7 @@ int16_t get_APPS1() {
  *
  * @return int16_t
  */
-int16_t get_APPS2() {
+int16_t ThrottleBrake::get_APPS2() {
 
 };
         
@@ -42,7 +42,7 @@ int16_t get_APPS2() {
  *
  * @return int16_t
  */
-int16_t get_front_brake() {
+int16_t ThrottleBrake::get_front_brake() {
 
 };
         
@@ -51,7 +51,7 @@ int16_t get_front_brake() {
  *
  * @return int16_t
  */ 
-int16_t get_rear_brake() {
+int16_t ThrottleBrake::get_rear_brake() {
 
 };
         
@@ -60,7 +60,7 @@ int16_t get_rear_brake() {
  *
  * @return bool
  */
-bool is_brake_pressed() {
+bool ThrottleBrake::is_brake_pressed() {
     // check if the front brake value is over a certain threshold (actual threshold is TBD, need to test with brake sensors)
     // if yes: return true
     // if no: return false
@@ -71,7 +71,7 @@ bool is_brake_pressed() {
  *
  * @return bool
  */
-bool is_implausibility_present() {
+bool ThrottleBrake::is_implausibility_present() {
     // if front brake or APPS fail any implausibility checks, return true
 
 };
@@ -83,7 +83,7 @@ bool is_implausibility_present() {
  *
  * @return bool
  */     
-bool is_brake_implausible() {
+bool ThrottleBrake::is_brake_implausible() {
 
 };
 
@@ -94,7 +94,7 @@ bool is_brake_implausible() {
  *
  * @return void
  */
-bool is_10_percent_rule_implausible() {
+bool ThrottleBrake::is_10_percent_rule_implausible() {
 
 };
 
@@ -105,7 +105,7 @@ bool is_10_percent_rule_implausible() {
  *
  * @return 
  */
-bool is_BPPC_implausible() {
+bool ThrottleBrake::is_BPPC_implausible() {
 
 };
 
@@ -114,6 +114,6 @@ bool is_BPPC_implausible() {
  *
  * @return void
  */
-void send_throttle_brake_CAN() {
+void ThrottleBrake::send_throttle_brake_CAN() {
 
 };
