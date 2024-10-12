@@ -19,7 +19,7 @@ ThrottleBrake throttle_brake{drive_bus};
 // instantiate inverter
 // Inverter inverter{drive_bus};
 
-enum BMSState
+enum BMSState 
 {
   kShutdown = 0,
   kPrecharge = 1,
