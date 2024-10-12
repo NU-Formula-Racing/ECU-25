@@ -17,15 +17,16 @@ class ThrottleBrake {
         int16_t get_rear_brake();
         bool is_brake_pressed();
         bool is_implausibility_present();
-        bool is_brake_valid();
-        void check_ten_percent_rule();
-        void check_BPPC_rule();
+        bool is_brake_implausible();
+        bool is_10_percent_rule_implausible();
+        bool is_BPPC_implausible();
+        void send_throttle_brake_CAN();
     private:
         ICAN &can_interface;
-        int16_t APPS1_value; // raw value from APPS1 sensor in ADC counts
-        int16_t APPS2_value; 
-        int16_t front_brake_value;
-        int16_t rear_brake_value;
+        int16_t APPS1_raw; // raw value from APPS1 sensor in ADC counts
+        int16_t APPS2_raw; 
+        int16_t front_brake_raw;
+        int16_t rear_brake_raw;
         bool brake_pressed;
         bool implausibility_present;
         bool brake_valid;

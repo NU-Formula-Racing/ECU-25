@@ -4,12 +4,12 @@
 #include "pins.hpp"
 
 /**
- * @brief Initializes 
+ * @brief Initializes pins
  *
  * @return 
  */
 void ThrottleBrake::initialize() {
-
+    // use pinMode() to set up pins
 };
 
 /**
@@ -38,64 +38,82 @@ int16_t get_APPS2() {
 };
         
 /**
- * @brief 
+ * @brief Gets Front Brake value SCALED from 0-32767
  *
- * @return 
+ * @return int16_t
  */
 int16_t get_front_brake() {
 
 };
         
 /**
- * @brief 
+ * @brief Gets Rear Brake value SCALED from 0-32767
  *
- * @return 
+ * @return int16_t
  */ 
 int16_t get_rear_brake() {
 
 };
         
 /**
- * @brief 
+ * @brief Returns true if brake is pressed, false otherwise
  *
- * @return 
+ * @return bool
  */
 bool is_brake_pressed() {
-
+    // check if the front brake value is over a certain threshold (actual threshold is TBD, need to test with brake sensors)
+    // if yes: return true
+    // if no: return false
 };
         
 /**
- * @brief 
+ * @brief Returns true if any implausibility is present, false otherwise
  *
- * @return 
+ * @return bool
  */
 bool is_implausibility_present() {
+    // if front brake or APPS fail any implausibility checks, return true
 
 };
         
 /**
- * @brief 
+ * @brief Returns true if brake is implausible (open or shorted for >100ms), 
+ *        Returns false otherwise
+ *        (T.4.3.3)
  *
- * @return 
+ * @return bool
  */     
-bool is_brake_valid() {
+bool is_brake_implausible() {
 
 };
 
 /**
- * @brief 
+ * @brief Returns true if APPS1 and APPS2 disagree by >10% for >100ms, 
+ *        Returns False otherwise
+ *        (T.4.2.4 - T.4.2.5)
  *
- * @return 
+ * @return void
  */
-void check_ten_percent_rule() {
+bool is_10_percent_rule_implausible() {
 
 };
 
 /**
- * @brief 
+ * @brief Returns true if both brake is pressed and throttle is >25%, 
+ *        Returns false after throttle returns to >=5% (regardless of brake) or otherwise 
+ *        (EV.4.7)
  *
  * @return 
  */
-void check_BPPC_rule() {
+bool is_BPPC_implausible() {
+
+};
+
+/**
+ * @brief Check for implausibility and set throttle/brake CAN signals accordingly
+ *
+ * @return void
+ */
+void send_throttle_brake_CAN() {
 
 };
