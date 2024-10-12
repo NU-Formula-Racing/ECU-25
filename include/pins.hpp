@@ -5,10 +5,12 @@
 
 // change specific bounds after testing with sensors in pedalbox
 enum class Bounds : uint16_t {
-    APPS1_MIN = 0,
-    APPS1_MAX = 32767,
-    APPS2_MIN = 0,
-    APPS2_MAX = 32767,
+    APPS1_MIN = 1456,
+    APPS1_MAX = 4095,
+    APPS1_RANGE = 2639,
+    APPS2_MIN = 1456,
+    APPS2_MAX = 4095,
+    APPS2_RANGE = 2639,
     FRONT_BRAKE_MIN = 0,
     FRONT_BRAKE_MAX = 32767,
     REAR_BRAKE_MIN = 0,

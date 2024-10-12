@@ -22,22 +22,24 @@ void read_ADCs() {
  /**
  * @brief Gets APPS1 value SCALED from 0-32767
  *
- * @return int16_t
+ * @return uint16_t
  */   
-int16_t get_APPS1() {
-
-    int16_t APPS1 = max(analogRead((int)Pins::APPS1_CS_PIN);
-    float APPS1_throttl
-
-}; 
+int16_t ThrottleBrake::get_APPS1() {
+    uint16_t APPS1_raw = analogRead((uint8_t)Pins::APPS1_CS_PIN);
+    ThrottleBrake:APPS1_value = APPS1_raw;
+    if (APPS1_raw > (uint16_t)Bounds::APPS1_MAX || APPS1_raw < (uint16_t)Bounds::APPS1_MIN) return 0;
+    return (APPS1_raw - (uint16_t)Bounds::APPS1_MIN) * 32767 / (uint16_t)Bounds::APPS1_RANGE;
+};
         
 /**
  * @brief Gets APPS2 value SCALED from 0-32767
  *
- * @return int16_t
+ * @return uint16_t
  */
-int16_t get_APPS2() {
-
+uint16_t get_APPS2() {
+    uint16_t APPS2_raw = analogRead((uint8_t)Pins::APPS2_CS_PIN);
+    if (APPS2_raw > (uint16_t)Bounds::APPS2_MAX || APPS2_raw < (uint16_t)Bounds::APPS2_MIN) return 0;
+    return ((uint16_t)Bounds::APPS2_MAX - APPS2_raw) * 32767 / (uint16_t)Bounds::APPS2_RANGE;
 };
         
 /**
