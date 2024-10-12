@@ -26,6 +26,9 @@ void read_ADCs() {
  */   
 int16_t get_APPS1() {
 
+    int16_t APPS1 = max(analogRead((int)Pins::APPS1_CS_PIN);
+    float APPS1_throttl
+
 }; 
         
 /**
@@ -88,7 +91,7 @@ bool is_brake_valid() {
  * @return 
  */
 void check_ten_percent_rule() {
-
+    if (get_APPS1() / get_APPS2() > 1.1)
 };
 
 /**
