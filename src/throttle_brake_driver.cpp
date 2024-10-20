@@ -103,10 +103,10 @@ bool ThrottleBrake::is_brake_implausible() {
  */
 bool ThrottleBrake::is_10_percent_rule_implausible() {
     // Convert APPS values from uint16_t (0-32767) to float (0-100)
-    float APPS1_percentage = (ThrottleBrake::APPS1_raw - (uint16_t)Bounds::APPS1_MIN) / (uint16_t)Bounds::APPS1_RANGE * 100;
-    float APPS2_percentage = ((uint16_t)Bounds::APPS2_MAX - ThrottleBrake::APPS2_raw) / (uint16_t)Bounds::APPS2_RANGE * 100;
+    float APPS1_percentage = (ThrottleBrake::APPS1_raw - (uint16_t)Bounds::APPS1_MIN) / (uint16_t)Bounds::APPS1_RANGE * 100.0;
+    float APPS2_percentage = ((uint16_t)Bounds::APPS2_MAX - ThrottleBrake::APPS2_raw) / (uint16_t)Bounds::APPS2_RANGE * 100.0;
     int16_t APPS_diff = APPS1_percentage - APPS2_percentage; // Get percentage point difference between APPS values
-    if (APPS_diff > 10 || APPS_diff < -10) { // If values differ by more than 10 percentage points
+    if (APPS_diff > 10.0 || APPS_diff < -10.0) { // If values differ by more than 10 percentage points
         long current_time = millis();
         if (ThrottleBrake::time_of_start_of_ten_percent_implasibility != 0) { // If this isn't the start of an implausibility
             if (current_time - ThrottleBrake::time_of_start_of_ten_percent_implasibility < 100) { // If it's been more than 100 milliseconds since the implausibility started
@@ -119,7 +119,7 @@ bool ThrottleBrake::is_10_percent_rule_implausible() {
         ThrottleBrake::time_of_start_of_ten_percent_implasibility = 0; // No implausibility detected, set start time to zero
     }
     return false;
-}; 
+};
 
 /**
  * @brief Returns true if both brake is pressed and throttle is >25%, 
