@@ -103,9 +103,9 @@ bool ThrottleBrake::is_brake_implausible() {
  */
 bool ThrottleBrake::is_10_percent_rule_implausible() {
     // Convert APPS values from uint16_t (0-32767) to float (0-100)
-    ThrottleBrake::APPS1_percentage = ThrottleBrake::APPS1 / 327.67;
-    ThrottleBrake::APPS2_percentage = ThrottleBrake::APPS2 / 327.67;
-    int16_t APPS_diff = ThrottleBrake::APPS1_percentage - ThrottleBrake::APPS2_percentage; // Get percentage point difference between APPS values
+    float APPS1_percentage = (ThrottleBrake::APPS1_raw - (uint16_t)Bounds::APPS1_MIN) / (uint16_t)Bounds::APPS1_RANGE * 100;
+    float APPS2_percentage = ((uint16_t)Bounds::APPS2_MAX - ThrottleBrake::APPS2_raw) / (uint16_t)Bounds::APPS2_RANGE * 100;
+    int16_t APPS_diff = APPS1_percentage - APPS2_percentage; // Get percentage point difference between APPS values
     if (APPS_diff > 10 || APPS_diff < -10) { // If values differ by more than 10 percentage points
         long current_time = millis();
         if (ThrottleBrake::time_of_start_of_ten_percent_implasibility != 0) { // If this isn't the start of an implausibility
