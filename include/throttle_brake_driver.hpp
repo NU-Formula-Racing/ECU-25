@@ -28,7 +28,9 @@ class ThrottleBrake {
         uint16_t front_brake_raw;
         uint16_t rear_brake_raw;
         uint16_t APPS1; // APPS1 value SCALED from 0-32767
+        float APPS1_percentage;
         uint16_t APPS2; // APPS2 value SCALED from 0-32767
+        float APPS2_percentage;
         uint16_t front_brake;
         uint16_t rear_brake;
         bool brake_pressed;

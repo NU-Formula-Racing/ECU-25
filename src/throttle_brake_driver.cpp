@@ -102,18 +102,21 @@ bool ThrottleBrake::is_brake_implausible() {
  * @return void
  */
 bool ThrottleBrake::is_10_percent_rule_implausible() {
-    int16_t APPS_diff = ThrottleBrake::APPS1 - ThrottleBrake::APPS2;
-    if (APPS_diff > 327 || APPS_diff < -327) {
+    // Convert APPS values from uint16_t (0-32767) to float (0-100)
+    ThrottleBrake::APPS1_percentage = ThrottleBrake::APPS1 / 0.0030519;
+    ThrottleBrake::APPS2_percentage = ThrottleBrake::APPS2 / 0.0030519;
+    int16_t APPS_diff = ThrottleBrake::APPS1_percentage - ThrottleBrake::APPS2_percentage; // Get percentage point difference between APPS values
+    if (APPS_diff > 10 || APPS_diff < -10) { // If values differ by more than 10 percentage points
         long current_time = millis();
-        if (ThrottleBrake::time_of_start_of_ten_percent_implasibility != 0) {
-            if (current_time - ThrottleBrake::time_of_start_of_ten_percent_implasibility < 100) {
+        if (ThrottleBrake::time_of_start_of_ten_percent_implasibility != 0) { // If this isn't the start of an implausibility
+            if (current_time - ThrottleBrake::time_of_start_of_ten_percent_implasibility < 100) { // If it's been more than 100 milliseconds since the implausibility started
                 return true;
             }
-        } else {
-            ThrottleBrake::time_of_start_of_ten_percent_implasibility = current_time;
+        } else { // This is the start of an implausibility
+            ThrottleBrake::time_of_start_of_ten_percent_implasibility = current_time; // Record the start time
         }
     } else {
-        ThrottleBrake::time_of_start_of_ten_percent_implasibility = 0;
+        ThrottleBrake::time_of_start_of_ten_percent_implasibility = 0; // No implausibility detected, set start time to zero
     }
     return false;
 }; 
