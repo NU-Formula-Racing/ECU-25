@@ -15,6 +15,7 @@ void ThrottleBrake::initialize() {
     pinMode((uint8_t)Pins::REAR_BRAKE_CS_PIN, INPUT);
     pinMode((uint8_t)Pins::BRAKE_VALID_PIN, INPUT);
     pinMode((uint8_t)Pins::DRIVE_LEVER_PIN, INPUT);
+    pinMode((uint8_t)Pins::TS_ACTIVE_PIN, INPUT);
 };
 
 /**
