@@ -13,8 +13,8 @@ class ThrottleBrake {
         void read_ADCs();
         uint16_t get_APPS1();
         uint16_t get_APPS2();
-        int16_t get_front_brake();
-        int16_t get_rear_brake();
+        uint16_t get_front_brake();
+        uint16_t get_rear_brake();
         bool is_brake_pressed();
         bool is_implausibility_present();
         bool is_brake_implausible();

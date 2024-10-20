@@ -31,7 +31,7 @@ void ThrottleBrake::read_ADCs() {
  * @return uint16_t
  */   
 uint16_t ThrottleBrake::get_APPS1() {
-
+    return (ThrottleBrake::APPS1_raw - (uint16_t)Bounds::APPS1_MIN) * 32767 / (uint16_t)Bounds::APPS1_RANGE;
 };
         
 /**
@@ -40,25 +40,25 @@ uint16_t ThrottleBrake::get_APPS1() {
  * @return uint16_t
  */
 uint16_t ThrottleBrake::get_APPS2() {
-
+    return ((uint16_t)Bounds::APPS2_MAX - ThrottleBrake::APPS2_raw) * 32767 / (uint16_t)Bounds::APPS2_RANGE;
 };
         
 /**
  * @brief Gets Front Brake value SCALED from 0-32767
  *
- * @return int16_t
+ * @return uint16_t
  */
-int16_t ThrottleBrake::get_front_brake() {
-
+uint16_t ThrottleBrake::get_front_brake() {
+    return (ThrottleBrake::front_brake_raw - (uint16_t)Bounds::FRONT_BRAKE_MIN) * 32767 / (uint16_t)Bounds::FRONT_BRAKE_RANGE;
 }
         
 /**
  * @brief Gets Rear Brake value SCALED from 0-32767
  *
- * @return int16_t
+ * @return unt16_t
  */ 
-int16_t ThrottleBrake::get_rear_brake() {
-
+uint16_t ThrottleBrake::get_rear_brake() {
+    return (ThrottleBrake::rear_brake_raw - (uint16_t)Bounds::REAR_BRAKE_MIN) * 32767 / (uint16_t)Bounds::REAR_BRAKE_RANGE;
 };
         
 /**
@@ -70,7 +70,10 @@ bool ThrottleBrake::is_brake_pressed() {
     // check if the front brake value is over a certain threshold (actual threshold is TBD, need to test with brake sensors)
     // if yes: return true
     // if no: return false
-    return (ThrottleBrake::front_brake > (uint16_t)Bounds::BRAKE_PRESSED_THRESHOLD);
+    if (ThrottleBrake::front_brake > (uint16_t)Bounds::BRAKE_PRESSED_THRESHOLD) {
+        brake_pressed_signal = true;
+        return true;
+    }
 };
         
 /**
@@ -104,6 +107,7 @@ bool ThrottleBrake::is_brake_implausible() {
 bool ThrottleBrake::is_10_percent_rule_implausible() {
     // Convert APPS values from uint16_t (0-32767) to float (0-100)
     float APPS1_percentage = (ThrottleBrake::APPS1_raw - (uint16_t)Bounds::APPS1_MIN) / (uint16_t)Bounds::APPS1_RANGE * 100.0;
+    throttle_percent = APPS1_percentage;
     float APPS2_percentage = ((uint16_t)Bounds::APPS2_MAX - ThrottleBrake::APPS2_raw) / (uint16_t)Bounds::APPS2_RANGE * 100.0;
     int16_t APPS_diff = APPS1_percentage - APPS2_percentage; // Get percentage point difference between APPS values
     if (APPS_diff > 10.0 || APPS_diff < -10.0) { // If values differ by more than 10 percentage points
