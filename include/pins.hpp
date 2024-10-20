@@ -33,6 +33,6 @@ enum class Pins : uint8_t {
     FRONT_BRAKE_CS_PIN = 0,
     REAR_BRAKE_CS_PIN = 0,
     BRAKE_VALID_PIN = 0,
-    DRIVE_LEVER_PIN = 0
+    DRIVE_LEVER_PIN = 0,
     TS_ACTIVE_PIN = 0
 };
