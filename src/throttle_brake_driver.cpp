@@ -4,12 +4,15 @@
 #include "pins.hpp"
 
 /**
- * @brief Initializes pins
+ * @brief Initializes pins (uses pinMode() to set up pins)
  *
  * @return 
  */
 void ThrottleBrake::initialize() {
-    // use pinMode() to set up pins
+    pinMode((uint8_t)Pins::APPS1_CS_PIN, INPUT);
+    pinMode((uint8_t)Pins::APPS2_CS_PIN, INPUT);
+    pinMode((uint8_t)Pins::FRONT_BRAKE_CS_PIN, INPUT);
+    pinMode((uint8_t)Pins::REAR_BRAKE_CS_PIN, INPUT);
 };
 
 /**
@@ -18,22 +21,22 @@ void ThrottleBrake::initialize() {
 void ThrottleBrake::read_ADCs() {
 
 };
-        
- /**
+
+/**
  * @brief Gets APPS1 value SCALED from 0-32767
  *
- * @return int16_t
+ * @return uint16_t
  */   
-int16_t ThrottleBrake::get_APPS1() {
+uint16_t ThrottleBrake::get_APPS1() {
 
-}; 
+};
         
 /**
  * @brief Gets APPS2 value SCALED from 0-32767
  *
- * @return int16_t
+ * @return uint16_t
  */
-int16_t ThrottleBrake::get_APPS2() {
+uint16_t ThrottleBrake::get_APPS2() {
 
 };
         
@@ -44,7 +47,7 @@ int16_t ThrottleBrake::get_APPS2() {
  */
 int16_t ThrottleBrake::get_front_brake() {
 
-};
+}
         
 /**
  * @brief Gets Rear Brake value SCALED from 0-32767
@@ -64,6 +67,7 @@ bool ThrottleBrake::is_brake_pressed() {
     // check if the front brake value is over a certain threshold (actual threshold is TBD, need to test with brake sensors)
     // if yes: return true
     // if no: return false
+    return (ThrottleBrake::front_brake > (uint16_t)Bounds::BRAKE_PRESSED_THRESHOLD);
 };
         
 /**
@@ -73,7 +77,7 @@ bool ThrottleBrake::is_brake_pressed() {
  */
 bool ThrottleBrake::is_implausibility_present() {
     // if front brake or APPS fail any implausibility checks, return true
-
+    return (ThrottleBrake::is_brake_implausible() || ThrottleBrake::is_10_percent_rule_implausible() || ThrottleBrake::is_BPPC_implausible());
 };
         
 /**
@@ -84,7 +88,7 @@ bool ThrottleBrake::is_implausibility_present() {
  * @return bool
  */     
 bool ThrottleBrake::is_brake_implausible() {
-
+    return (ThrottleBrake::front_brake_raw > (uint16_t)Bounds::BRAKE_DEFAULT_HIGH_INPUT_RAW_ADC_THRESHOLD || ThrottleBrake::front_brake_raw < (uint16_t)Bounds::BRAKE_DEFAULT_LOW_INPUT_RAW_ADC_THRESHOLD);
 };
 
 /**
@@ -95,18 +99,39 @@ bool ThrottleBrake::is_brake_implausible() {
  * @return void
  */
 bool ThrottleBrake::is_10_percent_rule_implausible() {
-
-};
+    int16_t APPS_diff = ThrottleBrake::APPS1 - ThrottleBrake::APPS2;
+    if (APPS_diff > 327 || APPS_diff < -327) {
+        long current_time = millis();
+        if (ThrottleBrake::time_of_start_of_ten_percent_implasibility != 0) {
+            if (current_time - ThrottleBrake::time_of_start_of_ten_percent_implasibility < 100) {
+                return true;
+            }
+        } else {
+            ThrottleBrake::time_of_start_of_ten_percent_implasibility = current_time;
+        }
+    } else {
+        ThrottleBrake::time_of_start_of_ten_percent_implasibility = 0;
+    }
+    return false;
+}; 
 
 /**
  * @brief Returns true if both brake is pressed and throttle is >25%, 
- *        Returns false after throttle returns to >=5% (regardless of brake) or otherwise 
+ *        Returns false after throttle returns to <=5% (regardless of brake) or otherwise 
  *        (EV.4.7)
  *
  * @return 
  */
 bool ThrottleBrake::is_BPPC_implausible() {
-
+    if (ThrottleBrake::front_brake > (uint16_t)Bounds::FRONT_BRAKE_MIN && ThrottleBrake::rear_brake > (uint16_t)Bounds::REAR_BRAKE_MIN && ThrottleBrake::APPS1 > 8191) {
+        if (!ThrottleBrake::throttle_dropping_to_5_percent_after_brake_implausibility) {
+            ThrottleBrake::throttle_dropping_to_5_percent_after_brake_implausibility = true;
+        }
+        return true;
+    } else if (ThrottleBrake::throttle_dropping_to_5_percent_after_brake_implausibility && ThrottleBrake::APPS1 <= 1638) {
+        ThrottleBrake::throttle_dropping_to_5_percent_after_brake_implausibility = false;
+    }
+    return false;
 };
 
 /**
