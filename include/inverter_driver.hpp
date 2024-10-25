@@ -11,14 +11,17 @@ class Inverter {
         void get_motor_rpm();
         void get_IGBT_temp();
         void get_motor_temp();
-        void get_drive_lever_status();
         void read_inverter_CAN();
         void send_inverter_CAN();
         void request_torque(int32_t torque_mA); // how do we want to do the torque request function -- send torque in mA
         
     private:
         ICAN &can_interface;
-
+        int32_t motor_rpm;
+        int16_t IGBT_temp;
+        int16_t motor_temp;
+        int32_t requested_torque;
+        
         const uint16_t torque_limit = 32767;
         const uint16_t set_current_transmissionID = 0x100; // CAN msg address, get this from DBC (0x1xx)
         const uint16_t set_current_brake_TransmissionID = 0x200; // CAN msg address, get this from DBC (0x2xx)
