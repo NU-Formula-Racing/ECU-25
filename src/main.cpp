@@ -7,18 +7,6 @@
 #include "virtualTimer.h"
 #include "pins.hpp"
 
-// instantiate CAN bus
-ESPCAN drive_bus{};
-
-// instantiate timer group
-VirtualTimerGroup timers;
-
-// instantiate throttle/brake
-ThrottleBrake throttle_brake{drive_bus};
-
-// instantiate inverter
-// Inverter inverter{drive_bus};
-
 enum BMSState 
 {
   kShutdown = 0,
@@ -35,12 +23,54 @@ enum BMSCommand
   Shutdown = 2
 };
 
+enum ContactorsSwitch
+{
+  Open,
+  Close
+};
+
+enum Drive_Lever_State
+{
+  Neutral,
+  Drive
+};
+
+enum Brake_State
+{
+  NotPressed,
+  PressedInNeutral
+};
+
 enum state
 {
   OFF,
   N,
   DRIVE
 };
+
+// instantiate CAN bus
+ESPCAN drive_bus{};
+
+// instantiate timer group
+VirtualTimerGroup timers;
+
+// instantiate throttle/brake
+ThrottleBrake throttle_brake{drive_bus};
+
+// instantiate inverter
+// Inverter inverter{drive_bus};
+
+// Contactor Switch Variable (WILL BE CHANGED)
+ContactorsSwitch contactor_switch = ContactorsSwitch::Open;
+
+// State Variable for brake (WILL BE CHANGED)
+bool is_brake_pressed = false;
+
+// State Variable for Drive Lever (WILL BE CHANGED)
+Drive_Lever_State drive_lever = Drive_Lever_State::Neutral;
+
+// State Variable for brake pressed without drive switch
+Brake_State brake = NotPressed;
 
 // CAN signals -- get new addresses from DBC
 // add rx: wheel speed
@@ -76,6 +106,8 @@ void setup() {
   // inverter.initialize();
 
   // initialize drive lever -- use interrupts & pinMode
+
+
 }
 
 void loop() {
@@ -83,14 +115,47 @@ void loop() {
   drive_bus.Tick();
 }
 
+void set_brake() {
+  switch (brake) {
+    case NotPressed:
+      if (is_brake_pressed && drive_lever == Drive_Lever_State::Neutral) {
+        brake = PressedInNeutral;
+      }
+      break;
+    case PressedInNeutral:
+      if (!is_brake_pressed) {
+        brake = NotPressed;
+      }
+      break;
+  }
+}
+
 void change_state() {
+  set_brake();
   switch(current_state) {
     case OFF:
-
+      if (contactor_switch == ContactorsSwitch::Close && BMS_State == BMSState::kActive) {
+        current_state = N;
+      }
+      break;
+    
     case N:
+      if (brake == Brake_State::PressedInNeutral && drive_lever == Drive_Lever_State::Drive) {
+        current_state = DRIVE;
+      }
+      else if (contactor_switch == ContactorsSwitch::Open || BMS_State == BMSState::kFault) {
+        current_state = OFF;
+      }
+      break;
 
     case DRIVE:
-    int x = 1;
+      if (drive_lever == Drive_Lever_State::Neutral) {
+        current_state = N;
+      }
+      else if (contactor_switch == ContactorsSwitch::Open || BMS_State == BMSState::kFault) {
+        current_state = OFF;
+      }
+      break;
   }
 }
 
