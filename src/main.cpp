@@ -70,7 +70,7 @@ bool is_brake_pressed = false;
 Drive_Lever_State drive_lever = Drive_Lever_State::Neutral;
 
 // State Variable for brake pressed without drive switch
-Brake_State brake = NotPressed;
+Brake_State brake_state = NotPressed;
 
 // CAN signals -- get new addresses from DBC
 // add rx: wheel speed
@@ -115,23 +115,23 @@ void loop() {
   drive_bus.Tick();
 }
 
-void set_brake() {
-  switch (brake) {
+void change_brake_state() {
+  switch (brake_state) {
     case NotPressed:
       if (is_brake_pressed && drive_lever == Drive_Lever_State::Neutral) {
-        brake = PressedInNeutral;
+        brake_state = PressedInNeutral;
       }
       break;
     case PressedInNeutral:
       if (!is_brake_pressed) {
-        brake = NotPressed;
+        brake_state = NotPressed;
       }
       break;
   }
 }
 
 void change_state() {
-  set_brake();
+  change_brake_state();
   switch(current_state) {
     case OFF:
       if (contactor_switch == ContactorsSwitch::Close && BMS_State == BMSState::kActive) {
