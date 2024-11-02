@@ -9,7 +9,8 @@
  * @return 
  */
 void Inverter::initialize() {
-
+    requested_torque_brake = 0;
+    requested_torque_throttle = 0;
 }
 
 /**
@@ -17,8 +18,8 @@ void Inverter::initialize() {
  *
  * @return 
  */
-void Inverter::get_motor_rpm() {
-
+int32_t Inverter::get_motor_rpm() {
+    return motor_rpm;
 }
 
 /**
@@ -26,8 +27,8 @@ void Inverter::get_motor_rpm() {
  * 
  * @return
  */
-void Inverter::get_IGBT_temp() {
-
+int16_t Inverter::get_IGBT_temp() {
+    return IGBT_temp;
 }
 
 /**
@@ -35,8 +36,8 @@ void Inverter::get_IGBT_temp() {
  * 
  * @return
 */
-void Inverter::get_motor_temp() {
-
+int16_t Inverter::get_motor_temp() {
+    return motor_temp;
 }
 
 /**
@@ -56,8 +57,8 @@ void Inverter::read_inverter_CAN() {
  * @return
  */
 void Inverter::send_inverter_CAN() {
-    // Set_Current = ;
-    // Set_Current_Brake = ;
+    set_current = requested_torque_throttle;
+    set_current_brake = requested_torque_brake;
 }
 
 /**
@@ -66,5 +67,11 @@ void Inverter::send_inverter_CAN() {
  * @return
  */
 void Inverter::request_torque(int32_t torque_mA) {
-
+    if (torque_mA >= 0) {
+        requested_torque_throttle = torque_mA;
+        requested_torque_brake = 0;
+    } else {
+        requested_torque_brake = torque_mA;
+        requested_torque_throttle = 0;
+    }
 }
