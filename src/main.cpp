@@ -6,86 +6,7 @@
 #include "throttle_brake_driver.hpp"
 #include "virtualTimer.h"
 #include "pins.hpp"
-
-enum BMSState 
-{
-  kShutdown = 0,
-  kPrecharge = 1,
-  kActive = 2,
-  kCharging = 3,
-  kFault = 4
-};
-
-enum BMSCommand
-{
-  NoAction = 0,
-  PrechargeAndCloseContactors = 1,
-  Shutdown = 2
-};
-
-enum ContactorsSwitch
-{
-  Open,
-  Close
-};
-
-enum Drive_Lever_State
-{
-  Neutral,
-  Drive
-};
-
-enum Brake_State
-{
-  NotPressed,
-  PressedInNeutral
-};
-
-enum state
-{
-  OFF,
-  N,
-  DRIVE
-};
-
-// instantiate CAN bus
-ESPCAN drive_bus{};
-
-// instantiate timer group
-VirtualTimerGroup timers;
-
-// instantiate throttle/brake
-ThrottleBrake throttle_brake{drive_bus};
-
-// instantiate inverter
-// Inverter inverter{drive_bus};
-
-// Contactor Switch Variable (WILL BE CHANGED)
-ContactorsSwitch contactor_switch = ContactorsSwitch::Open;
-
-// State Variable for brake (WILL BE CHANGED)
-bool is_brake_pressed = false;
-
-// State Variable for Drive Lever (WILL BE CHANGED)
-Drive_Lever_State drive_lever = Drive_Lever_State::Neutral;
-
-// State Variable for brake pressed without drive switch
-Brake_State brake_state = NotPressed;
-
-// CAN signals -- get new addresses from DBC
-// add rx: wheel speed
-// add tx: 
-// APPS1, APPS2, front brake, rear brake, torque request will be handled in their respective .hpp files
-CANSignal<BMSState, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_State{};
-CANSignal<BMSCommand, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_Command{};
-CANSignal<float, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40), false> batt_temp{};
-CANSignal<uint8_t, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> current_state{};
-CANRXMessage<2> BMS_message{drive_bus, 0x241, BMS_State, batt_temp};
-CANTXMessage<1> BMS_command_message{drive_bus, 0x242, 8, 100, timers, BMS_Command};
-CANTXMessage<1> Drive_status{drive_bus, 0x000, 8, 100, timers, current_state};
-
-void change_state();
-void process_state();
+#include "fsm.hpp"
 
 void setup() {
   // Serial.begin(115200);
@@ -102,57 +23,65 @@ void setup() {
   // initialize throttle/brake class -- should set up SPI transaction and set pinModes
   throttle_brake.initialize();
 
+  tsactive_switch = TSActive::Inactive;
+  ready_to_drive = Ready_To_Drive_State::Neutral;
+  current_state = OFF;
+
   // initialize inverter class -- registers rx messages from inverter
   // inverter.initialize();
 
-  // initialize drive lever -- use interrupts & pinMode
+  // initialize Ready To Drive Switch -- use interrupts & pinMode
+  pinMode((uint8_t)Pins::READY_TO_DRIVE_SWITCH, INPUT);
+  attachInterrupt(digitalPinToInterrupt(static_cast<uint8_t>(Pins::READY_TO_DRIVE_SWITCH)), ready_to_drive_callback, CHANGE);
 
+  // initialize tsactive switch -- use interrupts & pinMode
+  pinMode((uint8_t)Pins::TS_ACTIVE_PIN, INPUT);
+  attachInterrupt(digitalPinToInterrupt(static_cast<uint8_t>(Pins::TS_ACTIVE_PIN)), tsactive_callback, CHANGE);
 
 }
 
-void loop() {
-  timers.Tick(millis());
-  drive_bus.Tick();
+// call this function when the ready to drive switch is flipped
+// currently, the switch is active low
+void ready_to_drive_callback() {
+  if (digitalRead(static_cast<uint8_t>(Pins::READY_TO_DRIVE_SWITCH)) == LOW && throttle_brake.is_brake_pressed()) {
+    ready_to_drive = Ready_To_Drive_State::Drive;
+  } else {
+    ready_to_drive = Ready_To_Drive_State::Neutral;
+  }
 }
 
-void change_brake_state() {
-  switch (brake_state) {
-    case NotPressed:
-      if (is_brake_pressed && drive_lever == Drive_Lever_State::Neutral) {
-        brake_state = PressedInNeutral;
-      }
-      break;
-    case PressedInNeutral:
-      if (!is_brake_pressed) {
-        brake_state = NotPressed;
-      }
-      break;
+// call this function when the tsactive switch is flipped
+// currently, the switch is active low
+void tsactive_callback() {
+  if (digitalRead((uint8_t)Pins::TS_ACTIVE_PIN) == LOW) {
+    tsactive_switch = TSActive::Active;
+  } else {
+    tsactive_switch = TSActive::Inactive;
   }
 }
 
 void change_state() {
-  change_brake_state();
   switch(current_state) {
     case OFF:
-      if (contactor_switch == ContactorsSwitch::Close && BMS_State == BMSState::kActive) {
+      if (tsactive_switch == TSActive::Active && BMS_State == BMSState::kActive) {
         current_state = N;
       }
       break;
     
     case N:
-      if (brake == Brake_State::PressedInNeutral && drive_lever == Drive_Lever_State::Drive) {
+      if (ready_to_drive == Ready_To_Drive_State::Drive) {
         current_state = DRIVE;
       }
-      else if (contactor_switch == ContactorsSwitch::Open || BMS_State == BMSState::kFault) {
+      if (tsactive_switch == TSActive::Inactive || BMS_State == BMSState::kFault) {
         current_state = OFF;
       }
       break;
 
     case DRIVE:
-      if (drive_lever == Drive_Lever_State::Neutral) {
+      if (ready_to_drive == Ready_To_Drive_State::Neutral) {
         current_state = N;
       }
-      else if (contactor_switch == ContactorsSwitch::Open || BMS_State == BMSState::kFault) {
+      if (tsactive_switch == TSActive::Inactive || BMS_State == BMSState::kFault) {
         current_state = OFF;
       }
       break;
@@ -162,10 +91,18 @@ void change_state() {
 void process_state() {
   switch(current_state) {
     case OFF:
+    break;
 
     case N:
+    break;
 
     case DRIVE:
+    break;
     int x = 1;
   }
+}
+
+void loop() {
+  timers.Tick(millis());
+  drive_bus.Tick();
 }
