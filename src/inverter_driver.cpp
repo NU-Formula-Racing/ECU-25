@@ -4,9 +4,9 @@
 #include "pins.hpp"
 
 /**
- * @brief 
+ * @brief Initialize Inverter class
  *
- * @return 
+ * @return void
  */
 void Inverter::initialize() {
     requested_torque_brake = 0;
@@ -14,36 +14,36 @@ void Inverter::initialize() {
 }
 
 /**
- * @brief 
+ * @brief Get RPM of motor
  *
- * @return 
+ * @return int32_t
  */
 int32_t Inverter::get_motor_rpm() {
     return motor_rpm;
 }
 
 /**
- * @brief
+ * @brief Get IGBT temperature
  * 
- * @return
+ * @return int16_t
  */
 int16_t Inverter::get_IGBT_temp() {
     return IGBT_temp;
 }
 
 /**
- * @brief
+ * @brief Get motor temperature
  * 
- * @return
+ * @return int16_t
 */
 int16_t Inverter::get_motor_temp() {
     return motor_temp;
 }
 
 /**
- * @brief
+ * @brief Read CAN messages from Inverter and set class variables accordingly
  * 
- * @return
+ * @return void
  */
 void Inverter::read_inverter_CAN() {
     motor_rpm = ERPM;
@@ -52,9 +52,9 @@ void Inverter::read_inverter_CAN() {
 }
 
 /**
- * @brief
+ * @brief Send CAN messages to Inverter (set current and set current brake)
  * 
- * @return
+ * @return void
  */
 void Inverter::send_inverter_CAN() {
     set_current = requested_torque_throttle;
@@ -62,9 +62,9 @@ void Inverter::send_inverter_CAN() {
 }
 
 /**
- * @brief
+ * @brief Request torque from Inverter
  * @param torque_mA -- torque in milliAmps
- * @return
+ * @return void
  */
 void Inverter::request_torque(int32_t torque_mA) {
     if (torque_mA >= 0) {
