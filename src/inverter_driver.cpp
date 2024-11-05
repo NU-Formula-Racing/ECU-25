@@ -52,7 +52,7 @@ void Inverter::read_inverter_CAN() {
 }
 
 /**
- * @brief Send CAN messages to Inverter (set current and set current brake)
+ * @brief Send CAN messages to Inverter (set_current and set_current_brake)
  * 
  * @return void
  */
