@@ -1,7 +1,8 @@
-# pragma once
+#pragma once
 #include "esp_can.h"
 #include "virtualTimer.h"
 #include "throttle_brake_driver.hpp"
+#include "inverter_driver.hpp"
 
 // enum definitions
 enum BMSState 
@@ -54,6 +55,20 @@ VirtualTimerGroup timers;
 // instantiate throttle/brake
 ThrottleBrake throttle_brake{drive_bus};
 
+// instantiate inverter
+Inverter inverter{drive_bus};
+
+// function forward initializations
+void change_state();
+void process_state();
+void change_brake_state();
+void ready_to_drive_callback();
+void tsactive_callback();
+
+// global state variables
+TSActive tsactive_switch;
+Ready_To_Drive_State ready_to_drive;
+
 // CAN signals -- get new addresses from DBC
 // add rx: wheel speed
 // add tx: 
@@ -65,16 +80,3 @@ CANSignal<uint8_t, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0),
 CANRXMessage<2> BMS_message{drive_bus, 0x241, BMS_State, batt_temp};
 CANTXMessage<1> BMS_command_message{drive_bus, 0x242, 8, 100, timers, BMS_Command};
 CANTXMessage<1> Drive_status{drive_bus, 0x000, 8, 100, timers, current_state};
-
-// function forward initializations
-void change_state();
-void process_state();
-void change_brake_state();
-void ready_to_drive_callback();
-void tsactive_callback();
-
-// global variables
-TSActive tsactive_switch;
-Ready_To_Drive_State ready_to_drive;
-// instantiate inverter
-// Inverter inverter{drive_bus};
