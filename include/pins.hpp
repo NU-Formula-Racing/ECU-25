@@ -25,10 +25,10 @@ enum class Bounds : uint16_t {
 // use GPIO names
 enum class Pins : uint8_t {
     APPS1_CS_PIN = 0,
-    APPS2_CS_PIN = 0,
-    FRONT_BRAKE_CS_PIN = 0,
-    REAR_BRAKE_CS_PIN = 0,
-    BRAKE_VALID_PIN = 0,
-    DRIVE_LEVER_PIN = 0,
-    TS_ACTIVE_PIN = 0
+    APPS2_CS_PIN = 1,
+    FRONT_BRAKE_CS_PIN = 2,
+    REAR_BRAKE_CS_PIN = 3,
+    BRAKE_VALID_PIN = 4,
+    DRIVE_LEVER_PIN = 5,
+    TS_ACTIVE_PIN = 6
 };
