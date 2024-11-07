@@ -22,7 +22,7 @@ void ThrottleBrake::initialize() {
  * @brief Reads data from ADCs and stores RAW sensor data (in ADC counts) in class variables  
  */
 void ThrottleBrake::read_ADCs() {
-
+    int x = 0;
 };
 
 /**
