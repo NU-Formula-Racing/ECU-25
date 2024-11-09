@@ -11,10 +11,6 @@ enum class Bounds : uint16_t {
     APPS2_MIN = 1456,
     APPS2_MAX = 4095,
     APPS2_RANGE = APPS2_MAX - APPS2_MIN,
-    APPS1_RANGE = 2639,
-    APPS2_MIN = 1456,
-    APPS2_MAX = 4095,
-    APPS2_RANGE = 2639,
     FRONT_BRAKE_MIN = 0,
     FRONT_BRAKE_MAX = 32767,
     FRONT_BRAKE_RANGE = FRONT_BRAKE_MAX - FRONT_BRAKE_MIN,
@@ -28,6 +24,7 @@ enum class Bounds : uint16_t {
 
 // use GPIO names
 enum class Pins : uint8_t {
+<<<<<<< HEAD
     APPS1_CS_PIN = 19,
     APPS2_CS_PIN = 21,
     FRONT_BRAKE_CS_PIN = 22,
@@ -35,4 +32,13 @@ enum class Pins : uint8_t {
     BRAKE_VALID_PIN = 32,
     READY_TO_DRIVE_SWITCH = 26,
     TS_ACTIVE_PIN = 27
+=======
+    APPS1_CS_PIN = 0,
+    APPS2_CS_PIN = 1,
+    FRONT_BRAKE_CS_PIN = 2,
+    REAR_BRAKE_CS_PIN = 3,
+    BRAKE_VALID_PIN = 4,
+    DRIVE_LEVER_PIN = 5,
+    TS_ACTIVE_PIN = 6
+>>>>>>> 0a2bb1c0526b72e97c21802f3f4ef6160d47f6da
 };
