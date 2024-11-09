@@ -1,5 +1,4 @@
 #include <Arduino.h>
-
 #include "LUT.hpp"
 #include "inverter_driver.hpp"
 #include "esp_can.h"
@@ -8,128 +7,8 @@
 #include "pins.hpp"
 #include "fsm.hpp"
 
-//// wrappers for send/read CAN functions: timers don't like if your callbacks are direct class member functions
-// send inverter wrapper
-void send_inverter_CAN_wrapper() {
-  inverter.send_inverter_CAN();
-}
-// read inverter wrapper
-void read_inverter_CAN_wrapper() {
-  inverter.read_inverter_CAN();
-}
-// send throttle/brake wrapper
-void send_throttle_brake_CAN_wrapper() {
-  throttle_brake.send_throttle_brake_CAN();
-}
-
 void setup() {
-  // Serial.begin(115200);
-  // initialize CAN bus
-  drive_bus.Initialize(ESPCAN::BaudRate::kBaud500K);
-
-  // initialize inverter class -- registers rx messages from inverter
-  inverter.initialize();
-
-  // initialize throttle/brake class -- should set up SPI transaction and set pinModes
-  throttle_brake.initialize();
-
-  // register BMS msg
-  drive_bus.RegisterRXMessage(BMS_message);
-
-  // add change_state and process_state to timer group -- called every 10 ms
-  timers.AddTimer(10, change_state);
-  timers.AddTimer(10, process_state);
-
-  // send and recieve inverter CAN messages
-  timers.AddTimer(10, read_inverter_CAN_wrapper);
-  timers.AddTimer(10, send_inverter_CAN_wrapper);
-
-  // send throttle/brake CAN messages -- can be less frequent since they're just going to logger
-  timers.AddTimer(100, send_throttle_brake_CAN_wrapper);
-
-  // initialize state variables
-  tsactive_switch = TSActive::Inactive;
-  ready_to_drive = Ready_To_Drive_State::Neutral;
-  current_state = OFF;
-
-  // initialize Ready To Drive Switch -- use interrupts & pinMode 
-  // **put pinModes/init stuff in a helper init function?**
-  pinMode((uint8_t)Pins::READY_TO_DRIVE_SWITCH, INPUT);
-  attachInterrupt(digitalPinToInterrupt(static_cast<uint8_t>(Pins::READY_TO_DRIVE_SWITCH)), ready_to_drive_callback, CHANGE);
-
-  // initialize tsactive switch -- use interrupts & pinMode
-  pinMode((uint8_t)Pins::TS_ACTIVE_PIN, INPUT);
-  attachInterrupt(digitalPinToInterrupt(static_cast<uint8_t>(Pins::TS_ACTIVE_PIN)), tsactive_callback, CHANGE);
-
-}
-
-// call this function when the ready to drive switch is flipped
-// currently, the switch is active low
-void ready_to_drive_callback() {
-  if (digitalRead(static_cast<uint8_t>(Pins::READY_TO_DRIVE_SWITCH)) == LOW && throttle_brake.is_brake_pressed()) {
-    ready_to_drive = Ready_To_Drive_State::Drive;
-  } else {
-    ready_to_drive = Ready_To_Drive_State::Neutral;
-  }
-}
-
-// call this function when the tsactive switch is flipped
-// currently, the switch is active low
-void tsactive_callback() {
-  if (digitalRead((uint8_t)Pins::TS_ACTIVE_PIN) == LOW) {
-    tsactive_switch = TSActive::Active; // should BMS_Command be ::CloseContactors here as well
-  } else {
-    tsactive_switch = TSActive::Inactive;
-  }
-}
-
-void change_state() {
-  switch(current_state) {
-    case OFF:
-      if (tsactive_switch == TSActive::Active && BMS_State == BMSState::kActive) {
-        current_state = N;
-      }
-      break;
-    
-    case N:
-      if (ready_to_drive == Ready_To_Drive_State::Drive) {
-        current_state = DRIVE;
-      }
-      if (tsactive_switch == TSActive::Inactive || BMS_State == BMSState::kFault) {
-        current_state = OFF;
-      }
-      break;
-
-    case DRIVE:
-      if (ready_to_drive == Ready_To_Drive_State::Neutral) {
-        current_state = N;
-      }
-      if (tsactive_switch == TSActive::Inactive || BMS_State == BMSState::kFault) {
-        current_state = OFF;
-      }
-      break;
-  }
-}
-
-void process_state() {
-  switch(current_state) {
-    case OFF:
-      BMS_Command = BMSCommand::NoAction;
-      inverter.request_torque(0);
-      break;
-    case N:
-      BMS_Command = BMSCommand::NoAction;
-      inverter.request_torque(0);
-      break;
-    case DRIVE:
-      // int32_t torque_req = calculate_torque(); // use this function to calculate torque based on LUTs and traction control when its time
-      int32_t torque_req = static_cast<int32_t>(throttle_brake.get_APPS1());
-      if (throttle_brake.is_implausibility_present()) {
-        torque_req = 0;
-      }
-      inverter.request_torque(torque_req); 
-      break;
-  }
+  init();
 }
 
 void loop() {

@@ -9,34 +9,21 @@
  * @return 
  */
 
-ThrottleBrake::ThrottleBrake(ICAN &can_interface_, uint16_t test_front_brake)
-    : can_interface(can_interface_), front_brake(test_front_brake) {
-}
-
 void ThrottleBrake::initialize() {
     pinMode((uint8_t)Pins::APPS1_CS_PIN, INPUT);
     pinMode((uint8_t)Pins::APPS2_CS_PIN, INPUT);
     pinMode((uint8_t)Pins::FRONT_BRAKE_CS_PIN, INPUT);
     pinMode((uint8_t)Pins::REAR_BRAKE_CS_PIN, INPUT);
     pinMode((uint8_t)Pins::BRAKE_VALID_PIN, INPUT);
-    pinMode((uint8_t)Pins::DRIVE_LEVER_PIN, INPUT);
+    pinMode((uint8_t)Pins::READY_TO_DRIVE_SWITCH, INPUT);
     pinMode((uint8_t)Pins::TS_ACTIVE_PIN, INPUT);
-<<<<<<< HEAD
-
-=======
-    ThrottleBrake::
->>>>>>> 205679e (.)
 };
 
 /**
  * @brief Reads data from ADCs and stores RAW sensor data (in ADC counts) in class variables  
  */
 void ThrottleBrake::read_ADCs() {
-<<<<<<< HEAD
-    int x = 0;
-=======
     
->>>>>>> 205679e (.)
 };
 
 /**

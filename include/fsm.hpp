@@ -39,7 +39,7 @@ enum Brake_State
   PressedInNeutral
 };
 
-enum state
+enum State
 {
   OFF,
   N,
@@ -59,11 +59,16 @@ ThrottleBrake throttle_brake{drive_bus};
 Inverter inverter{drive_bus};
 
 // function forward initializations
+void init();
 void change_state();
 void process_state();
 void change_brake_state();
 void ready_to_drive_callback();
 void tsactive_callback();
+void initialize_dash_switches();
+void send_inverter_CAN_wrapper();
+void read_inverter_CAN_wrapper();
+void send_throttle_brake_CAN_wrapper();
 
 // global state variables
 TSActive tsactive_switch;
