@@ -1,6 +1,8 @@
 #include <unity.h>
 #include "throttle_brake_driver.hpp"
+#ifdef ESP32
 #include "esp_can.h"
+#endif
 
 // instantiate CAN bus
 ESPCAN drive_bus{};

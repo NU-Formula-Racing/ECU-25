@@ -1,8 +1,14 @@
+#ifdef ARDUINO
 #include <Arduino.h>
+#endif
 
 #include "LUT.hpp"
 #include "inverter_driver.hpp"
+
+#ifdef ESP32
 #include "esp_can.h"
+#endif
+
 #include "throttle_brake_driver.hpp"
 #include "virtualTimer.h"
 #include "pins.hpp"

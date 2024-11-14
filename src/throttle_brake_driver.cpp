@@ -1,4 +1,7 @@
+#ifdef ARDUINO
 #include <Arduino.h>
+#include <SPI.h>
+#endif
 
 #include "throttle_brake_driver.hpp"
 #include "pins.hpp"
@@ -21,22 +24,28 @@ void ThrottleBrake::initialize() {
     pinMode((uint8_t)Pins::BRAKE_VALID_PIN, INPUT);
     pinMode((uint8_t)Pins::DRIVE_LEVER_PIN, INPUT);
     pinMode((uint8_t)Pins::TS_ACTIVE_PIN, INPUT);
-<<<<<<< HEAD
-
-=======
-    ThrottleBrake::
->>>>>>> 205679e (.)
 };
 
 /**
  * @brief Reads data from ADCs and stores RAW sensor data (in ADC counts) in class variables  
  */
 void ThrottleBrake::read_ADCs() {
-<<<<<<< HEAD
-    int x = 0;
-=======
+
+    SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE2));
+
+    // read APPS1
+    digitalWrite((uint8_t)Pins::APPS1_CS_PIN, LOW);
+    ThrottleBrake::APPS1_raw = SPI.transfer16(0x0000) >> 2;
+    digitalWrite((uint8_t)Pins::APPS1_CS_PIN, HIGH);
+
+    // read APPS2
+    digitalWrite((uint8_t)Pins::APPS2_CS_PIN, LOW);
+    ThrottleBrake::APPS2_raw = SPI.transfer16(0x0000) >> 2;
+    digitalWrite((uint8_t)Pins::APPS2_CS_PIN, HIGH);
+
+    SPI.endTransaction();
+
     
->>>>>>> 205679e (.)
 };
 
 /**

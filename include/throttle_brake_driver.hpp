@@ -1,6 +1,8 @@
 #pragma once
 
+#ifdef ESP32
 #include "esp_can.h"
+#endif
 #include "can_interface.h"
 #include "virtualTimer.h"
 
@@ -8,7 +10,7 @@
 
 class ThrottleBrake {
     public:
-        ThrottleBrake(ICAN &can_interface_) : can_interface(can_interface_){};
+        ThrottleBrake(ICAN &can_interface_, uint16_t test_front_brake);
         void initialize();
         void read_ADCs();
         uint16_t get_APPS1();
