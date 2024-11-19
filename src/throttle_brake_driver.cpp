@@ -17,6 +17,8 @@ ThrottleBrake::ThrottleBrake(ICAN &can_interface_, uint16_t test_front_brake)
 }
 
 void ThrottleBrake::initialize() {
+    // for all of these: instead of using (uint8_t)Pins::PIN_NAME, use static_cast<uint8_t>(Pins::PIN_NAME)
+    // static_cast is the C++ style of casting, and it's safer and more explicit than the C style casting (uint8_t)
     pinMode((uint8_t)Pins::APPS1_CS_PIN, INPUT);
     pinMode((uint8_t)Pins::APPS2_CS_PIN, INPUT);
     pinMode((uint8_t)Pins::FRONT_BRAKE_CS_PIN, INPUT);
@@ -34,14 +36,14 @@ void ThrottleBrake::read_ADCs() {
     SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE2));
 
     // read APPS1
-    digitalWrite((uint8_t)Pins::APPS1_CS_PIN, LOW);
-    ThrottleBrake::APPS1_raw = SPI.transfer16(0x0000) >> 2;
-    digitalWrite((uint8_t)Pins::APPS1_CS_PIN, HIGH);
+    digitalWrite((uint8_t)Pins::APPS1_CS_PIN, LOW); // fix casting
+    ThrottleBrake::APPS1_raw = SPI.transfer16(0x0000) >> 2; // need to shift left 2 to shift off the leading 2 0's, then shift right 4 to sign-extend
+    digitalWrite((uint8_t)Pins::APPS1_CS_PIN, HIGH); // fix casting
 
     // read APPS2
-    digitalWrite((uint8_t)Pins::APPS2_CS_PIN, LOW);
-    ThrottleBrake::APPS2_raw = SPI.transfer16(0x0000) >> 2;
-    digitalWrite((uint8_t)Pins::APPS2_CS_PIN, HIGH);
+    digitalWrite((uint8_t)Pins::APPS2_CS_PIN, LOW); // fix casting
+    ThrottleBrake::APPS2_raw = SPI.transfer16(0x0000) >> 2; // need to shift left 2 to shift off the leading 2 0's, then shift right 4 to sign-extend
+    digitalWrite((uint8_t)Pins::APPS2_CS_PIN, HIGH); // fix casting
 
     SPI.endTransaction();
 
@@ -53,8 +55,8 @@ void ThrottleBrake::read_ADCs() {
  *
  * @return uint16_t
  */   
-uint16_t ThrottleBrake::get_APPS1() {
-    return (ThrottleBrake::APPS1_raw - (uint16_t)Bounds::APPS1_MIN) * 32767 / (uint16_t)Bounds::APPS1_RANGE;
+uint16_t ThrottleBrake::get_APPS1() { // use int16_t instead of uint16_t in case APPS signals go negative, we don't want overflow to cause us to output massive throttle values
+    return (ThrottleBrake::APPS1_raw - (uint16_t)Bounds::APPS1_MIN) * 32767 / (uint16_t)Bounds::APPS1_RANGE; // fix casting
 };
         
 /**
@@ -62,8 +64,8 @@ uint16_t ThrottleBrake::get_APPS1() {
  *
  * @return uint16_t
  */
-uint16_t ThrottleBrake::get_APPS2() {
-    return ((uint16_t)Bounds::APPS2_MAX - ThrottleBrake::APPS2_raw) * 32767 / (uint16_t)Bounds::APPS2_RANGE;
+uint16_t ThrottleBrake::get_APPS2() { // use int16_t instead of uint16_t in case APPS signals go negative, we don't want overflow to cause us to output massive throttle values
+    return ((uint16_t)Bounds::APPS2_MAX - ThrottleBrake::APPS2_raw) * 32767 / (uint16_t)Bounds::APPS2_RANGE; // fix casting
 };
         
 /**
@@ -71,8 +73,8 @@ uint16_t ThrottleBrake::get_APPS2() {
  *
  * @return uint16_t
  */
-uint16_t ThrottleBrake::get_front_brake() {
-    return (ThrottleBrake::front_brake_raw - (uint16_t)Bounds::FRONT_BRAKE_MIN) * 32767 / (uint16_t)Bounds::FRONT_BRAKE_RANGE;
+uint16_t ThrottleBrake::get_front_brake() { // use int16_t instead of uint16_t in case brake signals go negative, we don't want overflow to cause us to output massive brake values
+    return (ThrottleBrake::front_brake_raw - (uint16_t)Bounds::FRONT_BRAKE_MIN) * 32767 / (uint16_t)Bounds::FRONT_BRAKE_RANGE; // fix casting
 }
         
 /**
@@ -80,8 +82,8 @@ uint16_t ThrottleBrake::get_front_brake() {
  *
  * @return unt16_t
  */ 
-uint16_t ThrottleBrake::get_rear_brake() {
-    return (ThrottleBrake::rear_brake_raw - (uint16_t)Bounds::REAR_BRAKE_MIN) * 32767 / (uint16_t)Bounds::REAR_BRAKE_RANGE;
+uint16_t ThrottleBrake::get_rear_brake() { // use int16_t instead of uint16_t in case brake signals go negative, we don't want overflow to cause us to output massive brake values
+    return (ThrottleBrake::rear_brake_raw - (uint16_t)Bounds::REAR_BRAKE_MIN) * 32767 / (uint16_t)Bounds::REAR_BRAKE_RANGE; // fix casting
 };
         
 /**
@@ -93,11 +95,11 @@ bool ThrottleBrake::is_brake_pressed() {
     // check if the front brake value is over a certain threshold (actual threshold is TBD, need to test with brake sensors)
     // if yes: return true
     // if no: return false
-    if (ThrottleBrake::front_brake > (uint16_t)Bounds::BRAKE_PRESSED_THRESHOLD) {
-        brake_pressed_signal = true;
+    if (ThrottleBrake::front_brake > (uint16_t)Bounds::BRAKE_PRESSED_THRESHOLD) { // fix casting
+        brake_pressed_signal = true; // this is a CAN signal, we only want to be changing the CAN signals in the send_throttle_brake_CAN() function. use brake_pressed instead
         return true;
     }
-    brake_pressed_signal = false;
+    brake_pressed_signal = false; // this is a CAN signal, we only want to be changing the CAN signals in the send_throttle_brake_CAN() function. use brake_pressed instead
     return false;
 };
         
@@ -106,6 +108,9 @@ bool ThrottleBrake::is_brake_pressed() {
  *
  * @return bool
  */
+// implausibility check function needs to be called periodically (ie. every 10ms)
+// add a timer in init() for this purpose
+// implausibility check function should be the callback
 bool ThrottleBrake::is_implausibility_present() {
     // if front brake or APPS fail any implausibility checks, return true
     return (ThrottleBrake::is_brake_implausible() || ThrottleBrake::is_10_percent_rule_implausible() || ThrottleBrake::is_BPPC_implausible());
@@ -119,6 +124,7 @@ bool ThrottleBrake::is_implausibility_present() {
  * @return bool
  */     
 bool ThrottleBrake::is_brake_implausible() {
+    // this doesnt account for the rules-requires 100ms delay, use a timer for this
     return (ThrottleBrake::front_brake_raw > (uint16_t)Bounds::BRAKE_DEFAULT_HIGH_INPUT_RAW_ADC_THRESHOLD || ThrottleBrake::front_brake_raw < (uint16_t)Bounds::BRAKE_DEFAULT_LOW_INPUT_RAW_ADC_THRESHOLD);
 };
 
