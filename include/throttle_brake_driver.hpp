@@ -11,9 +11,9 @@
 class ThrottleBrake {
     // we should have a larger conversation about scope/access control (what functions make sense as public vs private)
     // functions we want accessible outside of this class (ie. called in main): 
-    // // initialize(), get_APPS1(), is_brake_pressed(), is_implausibility_present(), send_throttle_brake_CAN()
+    // initialize(), get_APPS1(), is_brake_pressed(), is_implausibility_present(), send_throttle_brake_CAN()
     // functions we should make private (ie. not called anywhere but in the throttle/brake class):
-    // // read_ADCs(), get_APPS2(), get_front_brake(), get_rear_brake(), is_brake_implausible(), is_10_percent_rule_implausible(), is_BPPC_implausible() 
+    // read_ADCs(), get_APPS2(), get_front_brake(), get_rear_brake(), is_brake_implausible(), is_10_percent_rule_implausible(), is_BPPC_implausible() 
     public:
         // get rid of the test input here lol
         // add a pass by reference input to the constructor for a throttle/brake timer group 
@@ -23,16 +23,10 @@ class ThrottleBrake {
         // we'll have a callback function fires when the timer reaches its limit (ie. 100ms)
         // this callback will set a corresponding implausibility flag in a private struct containting all the implausibilities
         void initialize();
-        void read_ADCs();
         uint16_t get_APPS1();
         uint16_t get_APPS2();
         uint16_t get_front_brake();
         uint16_t get_rear_brake();
-        bool is_brake_pressed();
-        bool is_implausibility_present();
-        bool is_brake_implausible();
-        bool is_10_percent_rule_implausible();
-        bool is_BPPC_implausible();
         void send_throttle_brake_CAN();
     private:
         ICAN &can_interface;
@@ -50,6 +44,12 @@ class ThrottleBrake {
         bool throttle_dropping_to_5_percent_after_brake_implausibility = false;
         void ADC_setup(); // good that this is in private, move it out of the data members tho, into a function section. CAN should still be at the bottom of this file however
         // instead of using these (below) types of private data members + millis() to serve as timers, we should use the timer library (more comments about this above)
+        void readADCs();
+        bool is_brake_pressed();
+        bool is_implausibility_present();
+        bool is_brake_implausible();
+        bool is_10_percent_rule_implausible();
+        bool is_BPPC_implausible();
         long time_of_start_of_ten_percent_implasibility = 0;
         long time_of_start_of_brake_implausibility = 0;
         const uint16_t kTransmissionID = 0x111; // CAN msg address, get this from DBC

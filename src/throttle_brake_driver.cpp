@@ -19,19 +19,19 @@ ThrottleBrake::ThrottleBrake(ICAN &can_interface_, uint16_t test_front_brake)
 void ThrottleBrake::initialize() {
     // for all of these: instead of using (uint8_t)Pins::PIN_NAME, use static_cast<uint8_t>(Pins::PIN_NAME)
     // static_cast is the C++ style of casting, and it's safer and more explicit than the C style casting (uint8_t)
-    pinMode((uint8_t)Pins::APPS1_CS_PIN, INPUT);
-    pinMode((uint8_t)Pins::APPS2_CS_PIN, INPUT);
-    pinMode((uint8_t)Pins::FRONT_BRAKE_CS_PIN, INPUT);
-    pinMode((uint8_t)Pins::REAR_BRAKE_CS_PIN, INPUT);
-    pinMode((uint8_t)Pins::BRAKE_VALID_PIN, INPUT);
-    pinMode((uint8_t)Pins::DRIVE_LEVER_PIN, INPUT);
-    pinMode((uint8_t)Pins::TS_ACTIVE_PIN, INPUT);
+    pinMode(static_cast<uint8_t>(Pins::APPS1_CS_PIN), INPUT);
+    pinMode(static_cast<uint8_t>(Pins::APPS2_CS_PIN), INPUT);
+    pinMode(static_cast<uint8_t>(Pins::FRONT_BRAKE_CS_PIN), INPUT);
+    pinMode(static_cast<uint8_t>(Pins::REAR_BRAKE_CS_PIN), INPUT);
+    pinMode(static_cast<uint8_t>(Pins::BRAKE_VALID_PIN), INPUT);
+    pinMode(static_cast<uint8_t>(Pins::DRIVE_LEVER_PIN), INPUT);
+    pinMode(static_cast<uint8_t>(Pins::TS_ACTIVE_PIN), INPUT);
 };
 
 /**
  * @brief Reads data from ADCs and stores RAW sensor data (in ADC counts) in class variables  
  */
-void ThrottleBrake::read_ADCs() {
+void ThrottleBrake::readADCs() {
 
     SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE2));
 
@@ -47,7 +47,6 @@ void ThrottleBrake::read_ADCs() {
 
     SPI.endTransaction();
 
-    
 };
 
 /**
