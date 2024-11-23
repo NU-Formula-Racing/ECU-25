@@ -6,26 +6,44 @@
 #include "throttle_brake_driver.hpp"
 #include "pins.hpp"
 
-/**
- * @brief Initializes pins (uses pinMode() to set up pins)
- *
- * @return 
- */
 
-ThrottleBrake::ThrottleBrake(ICAN &can_interface_, uint16_t test_front_brake)
-    : can_interface(can_interface_), front_brake(test_front_brake) {
+void ThrottleBrake::initialize_SS_pin(uint8_t SS_pin) {
+    pinMode(SS_pin, OUTPUT);
+    digitalWrite(SS_pin, HIGH);
 }
 
+void ThrottleBrake::initialize_SS_pins(uint8_t SS_pins[]) {
+    for (uint8_t SS_pin : SS_pins) ThrottleBrake::initialize_SS_pin(SS_pin);
+}
+
+
+/**
+ * @brief Initializes pins (uses pinMode() to set up pins)
+ */
 void ThrottleBrake::initialize() {
+
+    Serial.begin(9600);
+
+    SPI.begin();
+
     // for all of these: instead of using (uint8_t)Pins::PIN_NAME, use static_cast<uint8_t>(Pins::PIN_NAME)
     // static_cast is the C++ style of casting, and it's safer and more explicit than the C style casting (uint8_t)
-    pinMode(static_cast<uint8_t>(Pins::APPS1_CS_PIN), INPUT);
-    pinMode(static_cast<uint8_t>(Pins::APPS2_CS_PIN), INPUT);
-    pinMode(static_cast<uint8_t>(Pins::FRONT_BRAKE_CS_PIN), INPUT);
-    pinMode(static_cast<uint8_t>(Pins::REAR_BRAKE_CS_PIN), INPUT);
+
+    uint8_t SS_pins[4] = {
+        static_cast<uint8_t>(Pins::APPS1_SS_PIN),
+        static_cast<uint8_t>(Pins::APPS2_SS_PIN),
+        static_cast<uint8_t>(Pins::FRONT_BRAKE_SS_PIN),
+        static_cast<uint8_t>(Pins::REAR_BRAKE_SS_PIN)
+    };
+
+    ThrottleBrake::initialize_SS_pins(SS_pins);
+
     pinMode(static_cast<uint8_t>(Pins::BRAKE_VALID_PIN), INPUT);
+
     pinMode(static_cast<uint8_t>(Pins::DRIVE_LEVER_PIN), INPUT);
+
     pinMode(static_cast<uint8_t>(Pins::TS_ACTIVE_PIN), INPUT);
+
 };
 
 /**
@@ -36,14 +54,24 @@ void ThrottleBrake::readADCs() {
     SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE2));
 
     // read APPS1
-    digitalWrite((uint8_t)Pins::APPS1_CS_PIN, LOW); // fix casting
+    digitalWrite(static_cast<uint8_t>(Pins::APPS1_SS_PIN), LOW);
     ThrottleBrake::APPS1_raw = SPI.transfer16(0x0000) >> 2; // need to shift left 2 to shift off the leading 2 0's, then shift right 4 to sign-extend
-    digitalWrite((uint8_t)Pins::APPS1_CS_PIN, HIGH); // fix casting
+    digitalWrite(static_cast<uint8_t>(Pins::APPS1_SS_PIN), HIGH);
 
     // read APPS2
-    digitalWrite((uint8_t)Pins::APPS2_CS_PIN, LOW); // fix casting
+    digitalWrite((uint8_t)Pins::APPS2_SS_PIN, LOW); // fix casting
     ThrottleBrake::APPS2_raw = SPI.transfer16(0x0000) >> 2; // need to shift left 2 to shift off the leading 2 0's, then shift right 4 to sign-extend
-    digitalWrite((uint8_t)Pins::APPS2_CS_PIN, HIGH); // fix casting
+    digitalWrite((uint8_t)Pins::APPS2_SS_PIN, HIGH); // fix casting
+
+    // read front_brake
+    digitalWrite((uint8_t)Pins::FRONT_BRAKE_SS_PIN, LOW); // fix casting
+    ThrottleBrake::front_brake_raw= SPI.transfer16(0x0000) >> 2; // need to shift left 2 to shift off the leading 2 0's, then shift right 4 to sign-extend
+    digitalWrite((uint8_t)Pins::FRONT_BRAKE_SS_PIN, HIGH); // fix casting
+
+    // read rear_brake
+    digitalWrite((uint8_t)Pins::REAR_BRAKE_SS_PIN, LOW); // fix casting
+    ThrottleBrake::rear_brake_raw = SPI.transfer16(0x0000) >> 2; // need to shift left 2 to shift off the leading 2 0's, then shift right 4 to sign-extend
+    digitalWrite((uint8_t)Pins::REAR_BRAKE_SS_PIN, HIGH); // fix casting
 
     SPI.endTransaction();
 

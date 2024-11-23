@@ -1,9 +1,21 @@
 #pragma once
 
-// to get bound/pin number as an int: constexpr int pin = static_cast<int>(Pins::PIN_NAME);
+// to get pin/bound number as an int:
+// constexpr int pin = static_cast<int>(Pins::PIN_NAME);
 
-// change specific bounds after testing with sensors in pedalbox
-enum class Bounds : uint16_t {
+// use GPIO names
+enum class Pins {
+    APPS1_SS_PIN = 0,
+    APPS2_SS_PIN = 1,
+    FRONT_BRAKE_SS_PIN = 2,
+    REAR_BRAKE_SS_PIN = 3,
+    BRAKE_VALID_PIN = 4,
+    DRIVE_LEVER_PIN = 5,
+    TS_ACTIVE_PIN = 6
+};
+
+// change specific bounds after testing with sensors in pedalbox:
+enum class Bounds {
     APPS1_RAW_MIN = 1456,
     APPS1_RAW_MAX = 4095,
     APPS1_RAW_SPAN = APPS1_RAW_MAX - APPS1_RAW_MIN,
@@ -19,15 +31,4 @@ enum class Bounds : uint16_t {
     FRONT_BRAKE_RAW_PRESSED_THRESHOLD = 1000,
     FRONT_BRAKE_RAW_DEFAULT_LOW_THRESHOLD = 1500,
     FRONT_BRAKE_RAW_DEFAULT_HIGH_THRESHOLD = 4000
-};
-
-// use GPIO names
-enum class Pins : uint8_t {
-    APPS1_SS_PIN = 0,
-    APPS2_SS_PIN = 1,
-    FRONT_BRAKE_SS_PIN = 2,
-    REAR_BRAKE_SS_PIN = 3,
-    BRAKE_VALID_PIN = 4,
-    DRIVE_LEVER_PIN = 5,
-    TS_ACTIVE_PIN = 6
 };
