@@ -17,24 +17,23 @@ void initialize_CS_pins() {
     initialize_CS_pin(static_cast<int8_t>(Pins::REAR_BRAKE_CS_PIN));
 }
 
-void ThrottleBrake::set_implausibilities_to_false() {
-
-    ThrottleBrake::implausibility_present = false;
-
-    ThrottleBrake::APPSs_disagreement_implausibility_present = false;
-    ThrottleBrake::pedal_misapplication_implausibility_present = false;
-    ThrottleBrake::brake_shorted_or_opened_implausibility_present = false;
-
-}
-
 /**
  * @brief Set implausibilities false, start SPI bus, set pin modes, write default HIGH to CS pins
  */
 void ThrottleBrake::initialize() {
-    ThrottleBrake::set_implausibilities_to_false();
+
+    // Set implausibilities to false:
+    ThrottleBrake::implausibility_present = false;
+    ThrottleBrake::APPSs_disagreement_implausibility_present = false;
+    ThrottleBrake::pedal_misapplication_implausibility_present = false;
+    ThrottleBrake::brake_shorted_or_opened_implausibility_present = false;
+
     SPI.begin();
+
     initialize_CS_pins();
+
     pinMode(static_cast<int8_t>(Pins::BRAKE_VALID_PIN), INPUT);
+    
 };
 
 void ThrottleBrake::set_APPSs_disagreement_implausibility_present_to_true() { 

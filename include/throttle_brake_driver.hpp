@@ -77,7 +77,6 @@ class ThrottleBrake {
         bool pedal_misapplication_implausibility_present;
         bool brake_shorted_or_opened_implausibility_present;
 
-        void set_implausibilities_to_false();
         void read_from_SPI_ADC(int8_t CS_pin, int16_t ThrottleBrake::*digital_signal);
         void read_from_SPI_ADCs();
 
