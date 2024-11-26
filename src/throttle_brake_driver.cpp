@@ -1,103 +1,143 @@
 #include <Arduino.h>
+#include <SPI.h>
 
 #include "throttle_brake_driver.hpp"
 #include "pins.hpp"
 
-/**
- * @brief Initializes pins (uses pinMode() to set up pins)
- *
- * @return 
- */
 
+void ThrottleBrake::initialize_CS_pin(uint8_t CS_pin) {
+    pinMode(CS_pin, OUTPUT);
+    digitalWrite(CS_pin, HIGH);
+}
+
+void ThrottleBrake::initialize_CS_pins() {
+    initialize_CS_pin(static_cast<uint8_t>(Pins::APPS1_CS_PIN));
+    initialize_CS_pin(static_cast<uint8_t>(Pins::APPS2_CS_PIN));
+    initialize_CS_pin(static_cast<uint8_t>(Pins::FRONT_BRAKE_CS_PIN));
+    initialize_CS_pin(static_cast<uint8_t>(Pins::REAR_BRAKE_CS_PIN));
+}
+
+/**
+ * @brief Set implausibilities false, start SPI bus, set pin modes, write default HIGH to CS pins
+ */
 void ThrottleBrake::initialize() {
-    pinMode((uint8_t)Pins::APPS1_CS_PIN, INPUT);
-    pinMode((uint8_t)Pins::APPS2_CS_PIN, INPUT);
-    pinMode((uint8_t)Pins::FRONT_BRAKE_CS_PIN, INPUT);
-    pinMode((uint8_t)Pins::REAR_BRAKE_CS_PIN, INPUT);
-    pinMode((uint8_t)Pins::BRAKE_VALID_PIN, INPUT);
-    pinMode((uint8_t)Pins::READY_TO_DRIVE_SWITCH, INPUT);
-    pinMode((uint8_t)Pins::TS_ACTIVE_PIN, INPUT);
+
+    // Set implausibilities to false:
+    ThrottleBrake::APPSs_disagreement_implausibility_present = false;
+    ThrottleBrake::BPPC_implausibility_present = false;
+    ThrottleBrake::brake_shorted_or_opened_implausibility_present = false;
+
+    SPI.begin();
+
+    initialize_CS_pins();
+
+    pinMode(static_cast<uint8_t>(Pins::BRAKE_VALID_PIN), INPUT);
+    
 };
 
 /**
  * @brief Reads data from ADCs and stores RAW sensor data (in ADC counts) in class variables  
  */
-void ThrottleBrake::read_ADCs() {
+void ThrottleBrake::read_from_SPI_ADCs() {
     
-};
+    SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE2));
+    // 1000000: clock rate
+    // MSBFIRST: Most significant bit first
+
+    digitalWrite(static_cast<uint8_t>(Pins::APPS1_CS_PIN), LOW);
+    ThrottleBrake::APPS1_RAW = (SPI.transfer16(0x0000) << 2) >> 4;
+    digitalWrite(static_cast<uint8_t>(Pins::APPS1_CS_PIN), HIGH);
+
+    digitalWrite(static_cast<uint8_t>(Pins::APPS2_CS_PIN), LOW);
+    ThrottleBrake::APPS2_RAW = (SPI.transfer16(0x0000) << 2) >> 4;
+    digitalWrite(static_cast<uint8_t>(Pins::APPS2_CS_PIN), HIGH);
+
+    digitalWrite(static_cast<uint8_t>(Pins::FRONT_BRAKE_CS_PIN), LOW);
+    ThrottleBrake::front_break_RAW = (SPI.transfer16(0x0000) << 2) >> 4;
+    digitalWrite(static_cast<uint8_t>(Pins::FRONT_BRAKE_CS_PIN), HIGH);
+
+    digitalWrite(static_cast<uint8_t>(Pins::REAR_BRAKE_CS_PIN), LOW);
+    ThrottleBrake::rear_break_RAW = (SPI.transfer16(0x0000) << 2) >> 4;
+    digitalWrite(static_cast<uint8_t>(Pins::REAR_BRAKE_CS_PIN), HIGH);
+
+    SPI.endTransaction();
+}
+
+int16_t ThrottleBrake::get_safe_RAW(int16_t RAW, int16_t projected_min, int16_t projected_max) {
+    if (RAW < projected_min) {
+        return projected_min;
+    } else if (RAW > projected_max) {
+        return projected_max;
+    } else {
+        return RAW;
+    }
+}
+
+void ThrottleBrake::update_sensor_values() {
+
+    ThrottleBrake::read_from_SPI_ADCs();
+
+    int16_t safe_APPS1_RAW = get_safe_RAW(ThrottleBrake::APPS1_RAW, static_cast<int32_t>(Bounds::APPS1_RAW_MIN), static_cast<int32_t>(Bounds::APPS1_RAW_MAX));
+    ThrottleBrake::APPS1_throttle = (safe_APPS1_RAW - static_cast<int32_t>(Bounds::APPS1_RAW_MIN)) / static_cast<int32_t>(Bounds::APPS1_RAW_SPAN) * 32767;
+
+    int16_t safe_APPS2_RAW = get_safe_RAW(ThrottleBrake::APPS2_RAW, static_cast<int32_t>(Bounds::APPS2_RAW_MIN), static_cast<int32_t>(Bounds::APPS2_RAW_MAX));
+    ThrottleBrake::APPS2_throttle = (static_cast<int32_t>(Bounds::APPS2_RAW_MAX) - safe_APPS2_RAW) / static_cast<int32_t>(Bounds::APPS2_RAW_SPAN) * 32767;
+
+    int16_t safe_front_break_RAW = get_safe_RAW(ThrottleBrake::front_break_RAW, static_cast<int32_t>(Bounds::FRONT_BRAKE_RAW_MIN), static_cast<int32_t>(Bounds::FRONT_BRAKE_RAW_MAX));
+    ThrottleBrake::front_brake = (safe_front_break_RAW - static_cast<int32_t>(Bounds::FRONT_BRAKE_RAW_MIN)) / static_cast<int32_t>(Bounds::FRONT_BRAKE_RAW_SPAN) * 32767;
+
+    int16_t safe_rear_break_RAW = get_safe_RAW(ThrottleBrake::rear_break_RAW, static_cast<int32_t>(Bounds::REAR_BRAKE_RAW_MIN), static_cast<int32_t>(Bounds::REAR_BRAKE_RAW_MAX));
+    ThrottleBrake::rear_brake = (safe_rear_break_RAW - static_cast<int32_t>(Bounds::REAR_BRAKE_RAW_MIN)) / static_cast<int32_t>(Bounds::REAR_BRAKE_RAW_SPAN) * 32767;
+
+}
 
 /**
- * @brief Gets APPS1 value SCALED from 0-32767
+ * @brief Returns APPS1 throttle value, scaled 0-32767
  *
- * @return uint16_t
+ * @return int32_t
  */   
-uint16_t ThrottleBrake::get_APPS1() {
-    return (ThrottleBrake::APPS1_raw - (uint16_t)Bounds::APPS1_MIN) * 32767 / (uint16_t)Bounds::APPS1_RANGE;
+int16_t ThrottleBrake::get_throttle() {
+    return ThrottleBrake::APPS1_throttle;
 };
-        
-/**
- * @brief Gets APPS2 value SCALED from 0-32767
- *
- * @return uint16_t
- */
-uint16_t ThrottleBrake::get_APPS2() {
-    return ((uint16_t)Bounds::APPS2_MAX - ThrottleBrake::APPS2_raw) * 32767 / (uint16_t)Bounds::APPS2_RANGE;
-};
-        
-/**
- * @brief Gets Front Brake value SCALED from 0-32767
- *
- * @return uint16_t
- */
-uint16_t ThrottleBrake::get_front_brake() {
-    return (ThrottleBrake::front_brake_raw - (uint16_t)Bounds::FRONT_BRAKE_MIN) * 32767 / (uint16_t)Bounds::FRONT_BRAKE_RANGE;
-}
-        
-/**
- * @brief Gets Rear Brake value SCALED from 0-32767
- *
- * @return unt16_t
- */ 
-uint16_t ThrottleBrake::get_rear_brake() {
-    return (ThrottleBrake::rear_brake_raw - (uint16_t)Bounds::REAR_BRAKE_MIN) * 32767 / (uint16_t)Bounds::REAR_BRAKE_RANGE;
-};
-        
-/**
- * @brief Returns true if brake is pressed, false otherwise
- *
- * @return bool
- */
-bool ThrottleBrake::is_brake_pressed() {
-    // check if the front brake value is over a certain threshold (actual threshold is TBD, need to test with brake sensors)
-    // if yes: return true
-    // if no: return false
-    if (ThrottleBrake::front_brake > (uint16_t)Bounds::BRAKE_PRESSED_THRESHOLD) {
-        brake_pressed_signal = true;
-        return true;
-    }
-    brake_pressed_signal = false;
-    return false;
-};
-        
+
 /**
  * @brief Returns true if any implausibility is present, false otherwise
  *
  * @return bool
  */
 bool ThrottleBrake::is_implausibility_present() {
-    // if front brake or APPS fail any implausibility checks, return true
-    return (ThrottleBrake::is_brake_implausible() || ThrottleBrake::is_10_percent_rule_implausible() || ThrottleBrake::is_BPPC_implausible());
+    return ThrottleBrake::APPSs_disagreement_implausibility_present || ThrottleBrake::brake_shorted_or_opened_implausibility_present || ThrottleBrake::BPPC_implausibility_present;
 };
+
+void ThrottleBrake::set_is_APPSs_disagreement_implausibility_present_to_true() {
+    ThrottleBrake::APPSs_disagreement_implausibility_present = true;
+};
+
+void ThrottleBrake::set_is_brake_shorted_or_opened_implausibility_present_to_true() {
+    ThrottleBrake::brake_shorted_or_opened_implausibility_present = true;
+};
+
+void ThrottleBrake::check_for_implausibilities() {
+    ThrottleBrake::check_APPSs_disagreement_implausibility();
+    ThrottleBrake::check_BPPC_implausibility();
+    ThrottleBrake::check_brake_shorted_or_opened_implausibility();
+}
         
 /**
- * @brief Returns true if brake is implausible (open or shorted for >100ms), 
- *        Returns false otherwise
- *        (T.4.3.3)
+ * @brief Checks if brake is implausible (open or shorted for >100ms). (T.4.3.3)
  *
- * @return bool
+ * @return void
  */     
-bool ThrottleBrake::is_brake_implausible() {
-    return (ThrottleBrake::front_brake_raw > (uint16_t)Bounds::BRAKE_DEFAULT_HIGH_INPUT_RAW_ADC_THRESHOLD || ThrottleBrake::front_brake_raw < (uint16_t)Bounds::BRAKE_DEFAULT_LOW_INPUT_RAW_ADC_THRESHOLD);
+void ThrottleBrake::check_brake_shorted_or_opened_implausibility() {
+    if (digitalRead(static_cast<uint8_t>(Pins::BRAKE_VALID_PIN)) == static_cast<bool>(BrakeStatus::INVALID) && ThrottleBrake::brake_shorted_or_opened_implausibility_timer.GetTimerState() == VirtualTimer::State::kNotStarted) {
+        ThrottleBrake::brake_shorted_or_opened_implausibility_timer.Start(millis());
+    }
+    else if (digitalRead(static_cast<uint8_t>(Pins::BRAKE_VALID_PIN)) == static_cast<bool>(BrakeStatus::VALID) && ThrottleBrake::brake_shorted_or_opened_implausibility_timer.GetTimerState() == VirtualTimer::State::kRunning) {
+        ThrottleBrake::brake_shorted_or_opened_implausibility_timer.Disable();
+        ThrottleBrake::brake_shorted_or_opened_implausibility_timer.Enable();
+    }
+    // if implausibility detected and timer already running, then do nothing (timer ticks in main)
+    // if there is no implausibility detected and no current implausibility timer running, then do nothing
 };
 
 /**
@@ -107,44 +147,55 @@ bool ThrottleBrake::is_brake_implausible() {
  *
  * @return void
  */
-bool ThrottleBrake::is_10_percent_rule_implausible() {
-    // Convert APPS values from uint16_t (0-32767) to float (0-100)
-    float APPS1_percentage = (ThrottleBrake::APPS1_raw - (uint16_t)Bounds::APPS1_MIN) / (uint16_t)Bounds::APPS1_RANGE * 100.0;
-    throttle_percent = APPS1_percentage;
-    float APPS2_percentage = ((uint16_t)Bounds::APPS2_MAX - ThrottleBrake::APPS2_raw) / (uint16_t)Bounds::APPS2_RANGE * 100.0;
-    int16_t APPS_diff = APPS1_percentage - APPS2_percentage; // Get percentage point difference between APPS values
-    if (APPS_diff > 10.0 || APPS_diff < -10.0) { // If values differ by more than 10 percentage points
-        long current_time = millis();
-        if (ThrottleBrake::time_of_start_of_ten_percent_implasibility != 0) { // If this isn't the start of an implausibility
-            if (current_time - ThrottleBrake::time_of_start_of_ten_percent_implasibility < 100) { // If it's been more than 100 milliseconds since the implausibility started
-                return true;
-            }
-        } else { // This is the start of an implausibility
-            ThrottleBrake::time_of_start_of_ten_percent_implasibility = current_time; // Record the start time
-        }
-    } else {
-        ThrottleBrake::time_of_start_of_ten_percent_implasibility = 0; // No implausibility detected, set start time to zero
+void ThrottleBrake::check_APPSs_disagreement_implausibility() {
+    // Convert APPS raw values to throttle percentages (0-100)
+    float APPS1_percentage = ((ThrottleBrake::APPS1_RAW - static_cast<int32_t>(Bounds::APPS1_RAW_MIN)) * 100.0) / static_cast<int32_t>(Bounds::APPS1_RAW_SPAN);
+    float APPS2_percentage = ((static_cast<int32_t>(Bounds::APPS2_RAW_MAX) - ThrottleBrake::APPS2_RAW) * 100.0) / static_cast<int32_t>(Bounds::APPS2_RAW_SPAN);
+    int32_t APPS_diff = APPS1_percentage - APPS2_percentage; // Get percentage point difference between APPS values
+    if ((APPS_diff > 10.0 || APPS_diff < -10.0) && ThrottleBrake::APPSs_disagreement_implausibility_timer.GetTimerState() == VirtualTimer::State::kNotStarted) {
+        ThrottleBrake::APPSs_disagreement_implausibility_timer.Start(millis());
+        
+    } else if (!(APPS_diff > 10.0 || APPS_diff < -10.0) && ThrottleBrake::APPSs_disagreement_implausibility_timer.GetTimerState() == VirtualTimer::State::kRunning) {
+        ThrottleBrake::APPSs_disagreement_implausibility_timer.Disable();
+        ThrottleBrake::APPSs_disagreement_implausibility_timer.Enable();
     }
+
+};
+
+/**
+ * @brief Returns true if brake is pressed, false otherwise
+ *
+ * @return bool
+ */
+bool ThrottleBrake::is_brake_pressed() {
+    // check if the front brake value is over a certain threshold (actual threshold is TBD, need to test with brake sensors)
+    // if yes: return true
+    // if no: return false
+    if (ThrottleBrake::front_break_RAW >= static_cast<int32_t>(Bounds::FRONT_BRAKE_RAW_PRESSED_THRESHOLD)) {
+        ThrottleBrake::brake_pressed = true;
+        return true;
+    }
+    ThrottleBrake::brake_pressed = false;
     return false;
 };
 
 /**
- * @brief Returns true if both brake is pressed and throttle is >25%, 
- *        Returns false after throttle returns to <=5% (regardless of brake) or otherwise 
+ * @brief Sets true if both brake is pressed and throttle is >25%, 
+ *        Sets false after throttle returns to <=5% (regardless of brake) or otherwise 
  *        (EV.4.7)
  *
  * @return 
  */
-bool ThrottleBrake::is_BPPC_implausible() {
-    if (ThrottleBrake::front_brake > (uint16_t)Bounds::FRONT_BRAKE_MIN && ThrottleBrake::rear_brake > (uint16_t)Bounds::REAR_BRAKE_MIN && ThrottleBrake::APPS1 > 8191) {
-        if (!ThrottleBrake::throttle_dropping_to_5_percent_after_brake_implausibility) {
-            ThrottleBrake::throttle_dropping_to_5_percent_after_brake_implausibility = true;
-        }
-        return true;
-    } else if (ThrottleBrake::throttle_dropping_to_5_percent_after_brake_implausibility && ThrottleBrake::APPS1 <= 1638) {
-        ThrottleBrake::throttle_dropping_to_5_percent_after_brake_implausibility = false;
+void ThrottleBrake::check_BPPC_implausibility() {
+
+    float APPS1_percentage = ((ThrottleBrake::APPS1_RAW - static_cast<int32_t>(Bounds::APPS1_RAW_MIN)) * 100.0) / static_cast<int32_t>(Bounds::APPS1_RAW_SPAN);
+    if (ThrottleBrake::is_brake_pressed() && (APPS1_percentage > 25.0)) {
+        ThrottleBrake::BPPC_implausibility_present = true;
     }
-    return false;
+    if (APPS1_percentage < 5.0) {
+        ThrottleBrake::BPPC_implausibility_present = false;
+    }
+
 };
 
 /**
@@ -152,6 +203,11 @@ bool ThrottleBrake::is_BPPC_implausible() {
  *
  * @return void
  */
-void ThrottleBrake::send_throttle_brake_CAN() {
-
+void ThrottleBrake::update_throttle_brake_CAN_signals() {
+    ThrottleBrake::APPS1_throttle_signal = ThrottleBrake::APPS1_throttle;
+    ThrottleBrake::APPS2_throttle_signal = ThrottleBrake::APPS2_throttle;
+    ThrottleBrake::front_brake_signal = ThrottleBrake::front_brake;
+    ThrottleBrake::rear_brake_signal = ThrottleBrake::rear_brake;
+    ThrottleBrake::brake_pressed_signal = ThrottleBrake::brake_pressed;
+    ThrottleBrake::implausibility_present_signal = ThrottleBrake::is_implausibility_present();
 };

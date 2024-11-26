@@ -1,4 +1,6 @@
+#ifdef ARDUINO
 #include <Arduino.h>
+#endif
 
 #include "inverter_driver.hpp"
 #include "pins.hpp"

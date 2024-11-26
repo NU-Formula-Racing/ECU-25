@@ -1,53 +1,111 @@
 #pragma once
 
+#ifdef ESP32
 #include "esp_can.h"
+#endif
+
 #include "can_interface.h"
 #include "virtualTimer.h"
 
-// #define MAX_THROTTLE 32767
+// change specific bounds after testing with sensors in pedalbox:
+enum class Bounds {
+
+    APPS1_RAW_MIN = 1456,
+    APPS1_RAW_MAX = 4095,
+    APPS1_RAW_SPAN = APPS1_RAW_MAX - APPS1_RAW_MIN,
+
+    APPS2_RAW_MIN = 1456,
+    APPS2_RAW_MAX = 4095,
+    APPS2_RAW_SPAN = APPS2_RAW_MAX - APPS2_RAW_MIN,
+
+    FRONT_BRAKE_RAW_MIN = 1456,
+    FRONT_BRAKE_RAW_MAX = 4095,
+    FRONT_BRAKE_RAW_SPAN = FRONT_BRAKE_RAW_MAX - FRONT_BRAKE_RAW_MIN,
+
+    REAR_BRAKE_RAW_MIN = 1456,
+    REAR_BRAKE_RAW_MAX = 4095,
+    REAR_BRAKE_RAW_SPAN = REAR_BRAKE_RAW_MAX - REAR_BRAKE_RAW_MIN,
+
+    FRONT_BRAKE_RAW_PRESSED_THRESHOLD = 1000
+
+    // FIVE_PERCENT_THROTTLE = 1639,
+    // TEN_PERCENT_THROTTLE = 3276,
+    // TWENTY_FIVE_PERCENT_THROTTLE = 8191
+
+};
+
+enum class BrakeStatus {
+    VALID = 1,
+    INVALID = 0
+};
 
 class ThrottleBrake {
+    // functions we want accessible outside of this class (ie. called in main): 
+    // initialize(), get_APPS1(), is_brake_pressed(), is_implausibility_present(), send_throttle_brake_CAN()
+    // functions we should make private (ie. not called anywhere but in the throttle/brake class):
+    // read_ADCs(), get_APPS2(), get_front_brake(), get_rear_brake(), is_brake_implausible(), is_10_percent_rule_implausible(), is_BPPC_implausible() 
     public:
-        ThrottleBrake(ICAN &can_interface_) : can_interface(can_interface_){};
+        ThrottleBrake(ICAN &can_interface_, VirtualTimer &APPSs_disagreement_implausibility_timer_, VirtualTimer &brake_shorted_or_opened_implausibility_timer_) : 
+            CAN_interface(can_interface_),
+            APPSs_disagreement_implausibility_timer(APPSs_disagreement_implausibility_timer_),
+            brake_shorted_or_opened_implausibility_timer(brake_shorted_or_opened_implausibility_timer_) {};
+        // init timers in initialize()
+        // we want 1 single-use timer per implausibility check
+        // we'll have a callback function fires when the timer reaches its limit (ie. 100ms)
+        // this callback will set a corresponding implausibility flag in a private struct containting all the implausibilities
         void initialize();
-        void read_ADCs();
-        uint16_t get_APPS1();
-        uint16_t get_APPS2();
-        uint16_t get_front_brake();
-        uint16_t get_rear_brake();
-        bool is_brake_pressed();
+        void update_sensor_values();
+        int16_t get_throttle();
+        void set_is_APPSs_disagreement_implausibility_present_to_true(); // callback
+        void set_is_brake_shorted_or_opened_implausibility_present_to_true(); // callback
+        void check_for_implausibilities();
         bool is_implausibility_present();
-        bool is_brake_implausible();
-        bool is_10_percent_rule_implausible();
-        bool is_BPPC_implausible();
-        void send_throttle_brake_CAN();
+        bool is_brake_pressed();
+        void update_throttle_brake_CAN_signals();
+
     private:
-        ICAN &can_interface;
-        uint16_t APPS1_raw; // raw value from APPS1 sensor in ADC counts
-        uint16_t APPS2_raw; 
-        uint16_t front_brake_raw;
-        uint16_t rear_brake_raw;
-        uint16_t APPS1; // APPS1 value SCALED from 0-32767
-        uint16_t APPS2; // APPS2 value SCALED from 0-32767
-        uint16_t front_brake;
-        uint16_t rear_brake;
+        int16_t APPS1_RAW; // 12-bit ADC: 0-4095
+        int16_t APPS2_RAW; // 12-bit ADC: 0-4095
+        int16_t front_break_RAW; // 12-bit ADC: 0-4095
+        int16_t rear_break_RAW; // 12-bit ADC: 0-4095
+
+        int16_t APPS1_throttle; // throttle calculated from APPS1 and scaled 0-32767
+        int16_t APPS2_throttle; // throttle calculated from APPS2 and scaled 0-32767
+        int16_t front_brake; // front brake scaled 0-32767
+        int16_t rear_brake; // rear brake scaled 0-32767
+
+        bool APPSs_disagreement_implausibility_present;
+        bool BPPC_implausibility_present;
+        bool brake_shorted_or_opened_implausibility_present; 
+
+        void read_from_SPI_ADCs();
+
+        VirtualTimer &APPSs_disagreement_implausibility_timer;
+        VirtualTimer &brake_shorted_or_opened_implausibility_timer;
+
         bool brake_pressed;
-        bool implausibility_present;
-        bool brake_valid;
-        bool throttle_dropping_to_5_percent_after_brake_implausibility = false;
-        void ADC_setup();
-        long time_of_start_of_ten_percent_implasibility = 0;
-        long time_of_start_of_brake_implausibility = 0;
-        const uint16_t kTransmissionID = 0x111; // CAN msg address, get this from DBC
+
+        void initialize_CS_pin(uint8_t CS_pin);
+        void initialize_CS_pins();
+
+        int16_t get_safe_RAW(int16_t RAW, int16_t projected_min, int16_t projected_max);
+
+        void check_BPPC_implausibility();
+        void check_brake_shorted_or_opened_implausibility();
+        void check_APPSs_disagreement_implausibility();
+
+        ICAN &CAN_interface;
+        const uint32_t kTransmissionID = 0x111; // CAN msg address, get this from DBC
         // CAN signals & msgs 
         // tx: throttle percent, front brake, rear brake, brake pressed, implausibility present
-        CANSignal<int16_t, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> throttle_percent{};
-        CANSignal<int16_t, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> front_brake_pressure{};
-        CANSignal<int16_t, 32, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> rear_brake_pressure{};
-        CANSignal<bool, 48, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> brake_pressed_signal{};
-        CANSignal<bool, 56, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> implausibility_present_signal{};
-        CANTXMessage<5> throttle_brake_data{
-            can_interface, kTransmissionID, 8, 100,
-            throttle_percent, front_brake_pressure, rear_brake_pressure, brake_pressed_signal, implausibility_present_signal
+        CANSignal<int32_t, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> APPS1_throttle_signal{};
+        CANSignal<int32_t, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> APPS2_throttle_signal{};
+        CANSignal<int32_t, 32, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> front_brake_signal{};
+        CANSignal<int32_t, 48, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> rear_brake_signal{};
+        CANSignal<bool, 64, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> brake_pressed_signal{};
+        CANSignal<bool, 72, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> implausibility_present_signal{};
+        CANTXMessage<6> throttle_brake_data{
+            CAN_interface, kTransmissionID, 10, 100, 
+            APPS1_throttle_signal, APPS2_throttle_signal, front_brake_signal, rear_brake_signal, brake_pressed_signal, implausibility_present_signal
         };
 };
