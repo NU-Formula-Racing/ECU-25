@@ -1,4 +1,3 @@
-#pragma once
 #include "LUT.hpp"
 #include "inverter_driver.hpp"
 #include "esp_can.h"
