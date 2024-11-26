@@ -46,7 +46,7 @@ void ThrottleBrake::set_brake_shorted_or_opened_implausibility_present_to_true()
     ThrottleBrake::implausibility_present = true;
 }
 
-void ThrottleBrake::read_from_SPI_ADC(int8_t CS_pin, int16_t ThrottleBrake::*digital_signal) {
+void ThrottleBrake::read_from_SPI_ADC(int8_t CS_pin, int32_t ThrottleBrake::*digital_signal) {
     digitalWrite(CS_pin, LOW);
     this->*digital_signal = (SPI.transfer32(0x0000) << 2) >> 4;
     digitalWrite(CS_pin, HIGH);
@@ -69,7 +69,7 @@ void ThrottleBrake::read_from_SPI_ADCs() {
     SPI.endTransaction();
 }
 
-int16_t get_safe_digital_signal(int16_t digital_signal, int16_t projected_min, int16_t projected_max) {
+int32_t get_safe_digital_signal(int32_t digital_signal, int32_t projected_min, int32_t projected_max) {
     if (digital_signal < projected_min) {
         return projected_min;
     } else if (digital_signal > projected_max) {
@@ -83,26 +83,26 @@ void ThrottleBrake::update_sensor_values() {
 
     ThrottleBrake::read_from_SPI_ADCs();
 
-    int16_t safe_APPS1_digital_signal = get_safe_digital_signal(ThrottleBrake::APPS1_digital_signal, static_cast<int16_t>(Bounds::APPS1_DIGITAL_SIGNAL_MIN), static_cast<int16_t>(Bounds::APPS1_DIGITAL_SIGNAL_MAX));
-    ThrottleBrake::APPS1_throttle = (safe_APPS1_digital_signal - static_cast<int16_t>(Bounds::APPS1_DIGITAL_SIGNAL_MIN)) / static_cast<int16_t>(Bounds::APPS1_DIGITAL_SIGNAL_SPAN) * 32767;
+    int32_t safe_APPS1_digital_signal = get_safe_digital_signal(ThrottleBrake::APPS1_digital_signal, static_cast<int32_t>(Bounds::APPS1_DIGITAL_SIGNAL_MIN), static_cast<int32_t>(Bounds::APPS1_DIGITAL_SIGNAL_MAX));
+    ThrottleBrake::APPS1_throttle = (safe_APPS1_digital_signal - static_cast<int32_t>(Bounds::APPS1_DIGITAL_SIGNAL_MIN)) / static_cast<int32_t>(Bounds::APPS1_DIGITAL_SIGNAL_SPAN) * 32767;
 
-    int16_t safe_APPS2_digital_signal = get_safe_digital_signal(ThrottleBrake::APPS2_digital_signal, static_cast<int16_t>(Bounds::APPS2_DIGITAL_SIGNAL_MIN), static_cast<int16_t>(Bounds::APPS2_DIGITAL_SIGNAL_MAX));
-    ThrottleBrake::APPS2_throttle = (static_cast<int16_t>(Bounds::APPS2_DIGITAL_SIGNAL_MAX) - safe_APPS2_digital_signal) / static_cast<int16_t>(Bounds::APPS2_DIGITAL_SIGNAL_SPAN) * 32767;
+    int32_t safe_APPS2_digital_signal = get_safe_digital_signal(ThrottleBrake::APPS2_digital_signal, static_cast<int32_t>(Bounds::APPS2_DIGITAL_SIGNAL_MIN), static_cast<int32_t>(Bounds::APPS2_DIGITAL_SIGNAL_MAX));
+    ThrottleBrake::APPS2_throttle = (static_cast<int32_t>(Bounds::APPS2_DIGITAL_SIGNAL_MAX) - safe_APPS2_digital_signal) / static_cast<int32_t>(Bounds::APPS2_DIGITAL_SIGNAL_SPAN) * 32767;
 
-    int16_t safe_front_break_digital_signal = get_safe_digital_signal(ThrottleBrake::front_break_digital_signal, static_cast<int16_t>(Bounds::FRONT_BRAKE_DIGITAL_SIGNAL_MIN), static_cast<int16_t>(Bounds::FRONT_BRAKE_DIGITAL_SIGNAL_MAX));
-    ThrottleBrake::front_brake = (safe_front_break_digital_signal - static_cast<int16_t>(Bounds::FRONT_BRAKE_DIGITAL_SIGNAL_MIN)) / static_cast<int16_t>(Bounds::FRONT_BRAKE_DIGITAL_SIGNAL_SPAN) * 32767;
+    int32_t safe_front_break_digital_signal = get_safe_digital_signal(ThrottleBrake::front_break_digital_signal, static_cast<int32_t>(Bounds::FRONT_BRAKE_DIGITAL_SIGNAL_MIN), static_cast<int32_t>(Bounds::FRONT_BRAKE_DIGITAL_SIGNAL_MAX));
+    ThrottleBrake::front_brake = (safe_front_break_digital_signal - static_cast<int32_t>(Bounds::FRONT_BRAKE_DIGITAL_SIGNAL_MIN)) / static_cast<int32_t>(Bounds::FRONT_BRAKE_DIGITAL_SIGNAL_SPAN) * 32767;
 
-    int16_t safe_rear_break_digital_signal = get_safe_digital_signal(ThrottleBrake::rear_break_digital_signal, static_cast<int16_t>(Bounds::REAR_BRAKE_DIGITAL_SIGNAL_MIN), static_cast<int16_t>(Bounds::REAR_BRAKE_DIGITAL_SIGNAL_MAX));
-    ThrottleBrake::rear_brake = (safe_rear_break_digital_signal - static_cast<int16_t>(Bounds::REAR_BRAKE_DIGITAL_SIGNAL_MIN)) / static_cast<int16_t>(Bounds::REAR_BRAKE_DIGITAL_SIGNAL_SPAN) * 32767;
+    int32_t safe_rear_break_digital_signal = get_safe_digital_signal(ThrottleBrake::rear_break_digital_signal, static_cast<int32_t>(Bounds::REAR_BRAKE_DIGITAL_SIGNAL_MIN), static_cast<int32_t>(Bounds::REAR_BRAKE_DIGITAL_SIGNAL_MAX));
+    ThrottleBrake::rear_brake = (safe_rear_break_digital_signal - static_cast<int32_t>(Bounds::REAR_BRAKE_DIGITAL_SIGNAL_MIN)) / static_cast<int32_t>(Bounds::REAR_BRAKE_DIGITAL_SIGNAL_SPAN) * 32767;
 
 }
 
 /**
  * @brief Returns APPS1 throttle value, scaled 0-32767
  *
- * @return int16_t
+ * @return int32_t
  */   
-int16_t ThrottleBrake::get_APPS1_throttle() {
+int32_t ThrottleBrake::get_APPS1_throttle() {
     return ThrottleBrake::APPS1_throttle;
 };
 
@@ -136,8 +136,8 @@ void ThrottleBrake::check_brake_shorted_or_opened_implausibility() {
     } // if there is no implausibility detected and no current implausibility timer running, then do nothing
 };
 
-int16_t get_APPSs_throttle_difference(int16_t APPS1_throttle, int16_t APPS2_throttle) {
-    int16_t APPS1_throttle_minus_APPS2_throttle = APPS1_throttle - APPS2_throttle;
+int32_t get_APPSs_throttle_difference(int32_t APPS1_throttle, int32_t APPS2_throttle) {
+    int32_t APPS1_throttle_minus_APPS2_throttle = APPS1_throttle - APPS2_throttle;
     if (APPS1_throttle_minus_APPS2_throttle < 0) {
         return APPS1_throttle_minus_APPS2_throttle * -1;
     } else {
@@ -154,8 +154,8 @@ int16_t get_APPSs_throttle_difference(int16_t APPS1_throttle, int16_t APPS2_thro
  */
 void ThrottleBrake::check_APPSs_disagreement_implausibility() {
 
-    int16_t APPSs_throttle_difference = get_APPSs_throttle_difference(ThrottleBrake::APPS1_throttle, ThrottleBrake::APPS2_throttle);
-    if (APPSs_throttle_difference > static_cast<int16_t>(Bounds::TEN_PERCENT_THROTTLE)) {
+    int32_t APPSs_throttle_difference = get_APPSs_throttle_difference(ThrottleBrake::APPS1_throttle, ThrottleBrake::APPS2_throttle);
+    if (APPSs_throttle_difference > static_cast<int32_t>(Bounds::TEN_PERCENT_THROTTLE)) {
         if (ThrottleBrake::APPSs_disagreement_implausibility_timer.GetTimerState() == VirtualTimer::State::kNotStarted) {
             ThrottleBrake::APPSs_disagreement_implausibility_present = true;
             ThrottleBrake::implausibility_present = true;
@@ -213,10 +213,10 @@ bool ThrottleBrake::is_brake_pressed() {
  */
 void ThrottleBrake::check_pedal_misapplication_implausibility() {
 
-    if (ThrottleBrake::brake_pressed && ThrottleBrake::APPS1_throttle > static_cast<int16_t>(Bounds::TWENTY_FIVE_PERCENT_THROTTLE)) {
+    if (ThrottleBrake::brake_pressed && ThrottleBrake::APPS1_throttle > static_cast<int32_t>(Bounds::TWENTY_FIVE_PERCENT_THROTTLE)) {
         ThrottleBrake::pedal_misapplication_implausibility_present = true;
         ThrottleBrake::implausibility_present = true;
-    } else if (ThrottleBrake::APPS1_throttle < static_cast<int16_t>(Bounds::FIVE_PERCENT_THROTTLE)) {
+    } else if (ThrottleBrake::APPS1_throttle < static_cast<int32_t>(Bounds::FIVE_PERCENT_THROTTLE)) {
         ThrottleBrake::pedal_misapplication_implausibility_present = false;
         ThrottleBrake::implausibility_present = false;
     }

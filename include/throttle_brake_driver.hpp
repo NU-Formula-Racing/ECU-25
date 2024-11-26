@@ -54,7 +54,7 @@ class ThrottleBrake {
         void set_APPSs_disagreement_implausibility_present_to_true();
         void set_brake_shorted_or_opened_implausibility_present_to_true();
         void update_sensor_values();
-        int16_t get_APPS1_throttle();
+        int32_t get_APPS1_throttle();
         bool is_implausibility_present();
         void check_brake_shorted_or_opened_implausibility();
         void check_APPSs_disagreement_implausibility();
@@ -62,22 +62,22 @@ class ThrottleBrake {
         void update_throttle_brake_CAN_signals();
 
     private:
-        int16_t APPS1_digital_signal; // 12-bit ADC: 0-4095
-        int16_t APPS2_digital_signal; // 12-bit ADC: 0-4095
-        int16_t front_break_digital_signal; // 12-bit ADC: 0-4095
-        int16_t rear_break_digital_signal; // 12-bit ADC: 0-4095
+        int32_t APPS1_digital_signal; // 12-bit ADC: 0-4095
+        int32_t APPS2_digital_signal; // 12-bit ADC: 0-4095
+        int32_t front_break_digital_signal; // 12-bit ADC: 0-4095
+        int32_t rear_break_digital_signal; // 12-bit ADC: 0-4095
 
-        int16_t APPS1_throttle; // throttle calculated from APPS1 and scaled 0-32767
-        int16_t APPS2_throttle; // throttle calculated from APPS2 and scaled 0-32767
-        int16_t front_brake; // front brake scaled 0-32767
-        int16_t rear_brake; // rear brake scaled 0-32767
+        int32_t APPS1_throttle; // throttle calculated from APPS1 and scaled 0-32767
+        int32_t APPS2_throttle; // throttle calculated from APPS2 and scaled 0-32767
+        int32_t front_brake; // front brake scaled 0-32767
+        int32_t rear_brake; // rear brake scaled 0-32767
 
         bool implausibility_present;
         bool APPSs_disagreement_implausibility_present;
         bool pedal_misapplication_implausibility_present;
         bool brake_shorted_or_opened_implausibility_present;
 
-        void read_from_SPI_ADC(int8_t CS_pin, int16_t ThrottleBrake::*digital_signal);
+        void read_from_SPI_ADC(int8_t CS_pin, int32_t ThrottleBrake::*digital_signal);
         void read_from_SPI_ADCs();
 
         VirtualTimer &APPSs_disagreement_implausibility_timer;
@@ -91,9 +91,9 @@ class ThrottleBrake {
         const uint32_t kTransmissionID = 0x111; // CAN msg address, get this from DBC
         // CAN signals & msgs 
         // tx: throttle percent, front brake, rear brake, brake pressed, implausibility present
-        CANSignal<int16_t, 0, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> throttle_signal{};
-        CANSignal<int16_t, 32, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> front_brake_signal{};
-        CANSignal<int16_t, 32, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> rear_brake_signal{};
+        CANSignal<int32_t, 0, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> throttle_signal{};
+        CANSignal<int32_t, 32, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> front_brake_signal{};
+        CANSignal<int32_t, 32, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> rear_brake_signal{};
         CANSignal<bool, 48, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> brake_pressed_signal{};
         CANSignal<bool, 56, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> implausibility_present_signal{};
         CANTXMessage<5> throttle_brake_data{
