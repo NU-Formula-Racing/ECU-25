@@ -11,8 +11,8 @@
  * @return void
  */
 void Inverter::initialize() {
-    requested_torque_brake = 0;
-    requested_torque_throttle = 0;
+    Inverter::requested_torque_brake = 0;
+    Inverter::requested_torque_throttle = 0;
 }
 
 /**
@@ -21,7 +21,7 @@ void Inverter::initialize() {
  * @return int32_t
  */
 int32_t Inverter::get_motor_rpm() {
-    return motor_rpm;
+    return Inverter::motor_rpm;
 }
 
 /**
@@ -30,7 +30,7 @@ int32_t Inverter::get_motor_rpm() {
  * @return int16_t
  */
 int16_t Inverter::get_IGBT_temp() {
-    return IGBT_temp;
+    return Inverter::IGBT_temp;
 }
 
 /**
@@ -39,7 +39,7 @@ int16_t Inverter::get_IGBT_temp() {
  * @return int16_t
 */
 int16_t Inverter::get_motor_temp() {
-    return motor_temp;
+    return Inverter::motor_temp;
 }
 
 /**
@@ -48,9 +48,9 @@ int16_t Inverter::get_motor_temp() {
  * @return void
  */
 void Inverter::read_inverter_CAN() {
-    motor_rpm = ERPM;
-    IGBT_temp = Temp_FET;
-    motor_temp = Temp_Motor;
+    Inverter::motor_rpm = Inverter::ERPM; 
+    Inverter::IGBT_temp = Inverter::Temp_FET;
+    Inverter::motor_temp = Inverter::Temp_Motor;
 }
 
 /**
@@ -59,8 +59,8 @@ void Inverter::read_inverter_CAN() {
  * @return void
  */
 void Inverter::send_inverter_CAN() {
-    set_current = requested_torque_throttle;
-    set_current_brake = requested_torque_brake;
+    Inverter::set_current = Inverter::requested_torque_throttle;
+    Inverter::set_current_brake = Inverter::requested_torque_brake;
 }
 
 /**
@@ -70,10 +70,10 @@ void Inverter::send_inverter_CAN() {
  */
 void Inverter::request_torque(int32_t torque_mA) {
     if (torque_mA >= 0) {
-        requested_torque_throttle = torque_mA;
-        requested_torque_brake = 0;
+        Inverter::requested_torque_throttle = torque_mA;
+        Inverter::requested_torque_brake = 0;
     } else {
-        requested_torque_brake = torque_mA;
-        requested_torque_throttle = 0;
+        Inverter::requested_torque_brake = torque_mA;
+        Inverter::requested_torque_throttle = 0;
     }
 }
