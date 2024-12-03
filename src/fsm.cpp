@@ -35,7 +35,7 @@ void init()
   // initialize state variables
   tsactive_switch = TSActive::Inactive;
   ready_to_drive = Ready_To_Drive_State::Neutral;
-  current_state = OFF;
+  current_state = State::OFF;
 
   // initialize dash switches
   initialize_dash_switches();
@@ -52,7 +52,7 @@ void read_inverter_CAN_wrapper() {
 }
 // send throttle/brake wrapper
 void send_throttle_brake_CAN_wrapper() {
-  throttle_brake.send_throttle_brake_CAN();
+  throttle_brake.update_throttle_brake_CAN_signals();
 }
 
 // call this function when the ready to drive switch is flipped
@@ -87,27 +87,27 @@ void initialize_dash_switches() {
 
 void change_state() {
   switch(current_state) {
-    case OFF:
+    case State::OFF:
       if (tsactive_switch == TSActive::Active && BMS_State == BMSState::kActive) {
-        current_state = N;
+        current_state = State::N;
       }
       break;
     
-    case N:
+    case State::N:
       if (ready_to_drive == Ready_To_Drive_State::Drive) {
-        current_state = DRIVE;
+        current_state = State::DRIVE;
       }
       if (tsactive_switch == TSActive::Inactive || BMS_State == BMSState::kFault) {
-        current_state = OFF;
+        current_state = State::OFF;
       }
       break;
 
-    case DRIVE:
+    case State::DRIVE:
       if (ready_to_drive == Ready_To_Drive_State::Neutral) {
-        current_state = N;
+        current_state = State::N;
       }
       if (tsactive_switch == TSActive::Inactive || BMS_State == BMSState::kFault) {
-        current_state = OFF;
+        current_state = State::OFF;
       }
       break;
   }
@@ -115,17 +115,17 @@ void change_state() {
 
 void process_state() {
   switch(current_state) {
-    case OFF:
+    case State::OFF:
       BMS_Command = BMSCommand::NoAction;
       inverter.request_torque(0);
       break;
-    case N:
+    case State::N:
       BMS_Command = BMSCommand::NoAction;
       inverter.request_torque(0);
       break;
-    case DRIVE:
+    case State::DRIVE:
       // int32_t torque_req = calculate_torque(); // use this function to calculate torque based on LUTs and traction control when its time
-      int32_t torque_req = static_cast<int32_t>(throttle_brake.get_APPS1());
+      int32_t torque_req = static_cast<int32_t>(throttle_brake.get_throttle());
       if (throttle_brake.is_implausibility_present()) {
         torque_req = 0;
       }
