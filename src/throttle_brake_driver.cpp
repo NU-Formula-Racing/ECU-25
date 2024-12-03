@@ -4,6 +4,10 @@
 #include "throttle_brake_driver.hpp"
 #include "pins.hpp"
 
+ThrottleBrake::ThrottleBrake(ICAN &can_interface_, VirtualTimer &APPSs_disagreement_implausibility_timer_, VirtualTimer &brake_shorted_or_opened_implausibility_timer_) :
+    CAN_interface(can_interface_),
+    APPSs_disagreement_implausibility_timer(APPSs_disagreement_implausibility_timer_),
+    brake_shorted_or_opened_implausibility_timer(brake_shorted_or_opened_implausibility_timer_) {};
 
 void ThrottleBrake::initialize_CS_pin(uint8_t CS_pin) {
     pinMode(CS_pin, OUTPUT);

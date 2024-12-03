@@ -10,7 +10,7 @@
 #include "fsm.hpp"
 
 void setup() {
-  init();
+  fsm_init();
 }
 
 void loop() {

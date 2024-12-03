@@ -47,36 +47,36 @@ enum class State
 };
 
 // instantiate CAN bus
-ESPCAN drive_bus{};
+static ESPCAN drive_bus{};
 
 // instantiate timer group
-VirtualTimerGroup timers;
+static VirtualTimerGroup timers;
 
 // instantiate throttle/brake timers
-VirtualTimer APPSs_disagree_timer;
-VirtualTimer brake_implausible_timer;
+static VirtualTimer APPSs_disagree_timer;
+static VirtualTimer brake_implausible_timer;
 
 // instantiate throttle/brake
-ThrottleBrake throttle_brake{drive_bus, APPSs_disagree_timer, brake_implausible_timer};
+static ThrottleBrake throttle_brake{drive_bus, APPSs_disagree_timer, brake_implausible_timer};
 
 // instantiate inverter
-Inverter inverter{drive_bus};
+static Inverter inverter{drive_bus};
 
 // function forward initializations
-void init();
-void change_state();
-void process_state();
-void change_brake_state();
-void ready_to_drive_callback();
-void tsactive_callback();
-void initialize_dash_switches();
-void send_inverter_CAN_wrapper();
-void read_inverter_CAN_wrapper();
-void send_throttle_brake_CAN_wrapper();
+static void fsm_init();
+static void change_state();
+static void process_state();
+static void change_brake_state();
+static void ready_to_drive_callback();
+static void tsactive_callback();
+static void initialize_dash_switches();
+static void send_inverter_CAN_wrapper();
+static void read_inverter_CAN_wrapper();
+static void send_throttle_brake_CAN_wrapper();
 
 // global state variables
-TSActive tsactive_switch;
-Ready_To_Drive_State ready_to_drive;
+static TSActive tsactive_switch;
+static Ready_To_Drive_State ready_to_drive;
 
 // CAN signals -- get new addresses from DBC
 // add rx: wheel speed

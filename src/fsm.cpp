@@ -6,7 +6,7 @@
 #include "pins.hpp"
 #include "fsm.hpp"
 
-void init()
+static void fsm_init()
 {
    // Serial.begin(115200);
   // initialize CAN bus
@@ -43,21 +43,21 @@ void init()
 
 //// wrappers for send/read CAN functions: timers don't like if your callbacks are direct class member functions
 // send inverter wrapper
-void send_inverter_CAN_wrapper() {
+static void send_inverter_CAN_wrapper() {
   inverter.send_inverter_CAN();
 }
 // read inverter wrapper
-void read_inverter_CAN_wrapper() {
+static void read_inverter_CAN_wrapper() {
   inverter.read_inverter_CAN();
 }
 // send throttle/brake wrapper
-void send_throttle_brake_CAN_wrapper() {
+static void send_throttle_brake_CAN_wrapper() {
   throttle_brake.update_throttle_brake_CAN_signals();
 }
 
 // call this function when the ready to drive switch is flipped
 // currently, the switch is active low
-void ready_to_drive_callback() {
+static void ready_to_drive_callback() {
   if (digitalRead(static_cast<uint8_t>(Pins::READY_TO_DRIVE_SWITCH)) == LOW && throttle_brake.is_brake_pressed()) {
     ready_to_drive = Ready_To_Drive_State::Drive;
   } else {
@@ -67,7 +67,7 @@ void ready_to_drive_callback() {
 
 // call this function when the tsactive switch is flipped
 // currently, the switch is active low
-void tsactive_callback() {
+static void tsactive_callback() {
   if (digitalRead((uint8_t)Pins::TS_ACTIVE_PIN) == LOW) {
     tsactive_switch = TSActive::Active; // should BMS_Command be ::CloseContactors here as well
   } else {
@@ -75,7 +75,7 @@ void tsactive_callback() {
   }
 }
 
-void initialize_dash_switches() {
+static void initialize_dash_switches() {
   // initialize Ready To Drive Switch -- use interrupts & pinMode 
   pinMode((uint8_t)Pins::READY_TO_DRIVE_SWITCH, INPUT);
   attachInterrupt(digitalPinToInterrupt(static_cast<uint8_t>(Pins::READY_TO_DRIVE_SWITCH)), ready_to_drive_callback, CHANGE);
@@ -86,7 +86,7 @@ void initialize_dash_switches() {
 }
 
 // this function will be used to change the state of the vehicle based on the current state and the state of the switches
-void change_state() {
+static void change_state() {
   switch(current_state) {
     case State::OFF:
       if (tsactive_switch == TSActive::Active && BMS_State == BMSState::kActive) {
@@ -115,7 +115,7 @@ void change_state() {
 }
 
 // this function will be used to calculate torque based on LUTs and traction control when its time
-void process_state() {
+static void process_state() {
   switch(current_state) {
     case State::OFF:
       BMS_Command = BMSCommand::NoAction;

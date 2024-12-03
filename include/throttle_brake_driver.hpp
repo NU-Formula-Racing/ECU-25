@@ -43,10 +43,8 @@ class ThrottleBrake {
     // functions we should make private (ie. not called anywhere but in the throttle/brake class):
     // read_ADCs(), get_APPS2(), get_front_brake(), get_rear_brake(), is_brake_implausible(), is_10_percent_rule_implausible(), is_BPPC_implausible() 
     public:
-        ThrottleBrake(ICAN &can_interface_, VirtualTimer &APPSs_disagreement_implausibility_timer_, VirtualTimer &brake_shorted_or_opened_implausibility_timer_) : 
-            CAN_interface(can_interface_),
-            APPSs_disagreement_implausibility_timer(APPSs_disagreement_implausibility_timer_),
-            brake_shorted_or_opened_implausibility_timer(brake_shorted_or_opened_implausibility_timer_) {};
+        ThrottleBrake(ICAN &can_interface_, VirtualTimer &APPSs_disagreement_implausibility_timer_, VirtualTimer &brake_shorted_or_opened_implausibility_timer_); 
+    
         // init timers in initialize()
         // we want 1 single-use timer per implausibility check
         // we'll have a callback function fires when the timer reaches its limit (ie. 100ms)
