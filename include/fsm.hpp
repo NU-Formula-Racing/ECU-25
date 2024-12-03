@@ -5,7 +5,7 @@
 #include "inverter_driver.hpp"
 
 // enum definitions
-enum class BMSState 
+enum class BMSState
 {
   kShutdown = 0,
   kPrecharge = 1,
@@ -63,7 +63,7 @@ static ThrottleBrake throttle_brake{drive_bus, APPSs_disagree_timer, brake_impla
 static Inverter inverter{drive_bus};
 
 // function forward initializations
-static void fsm_init();
+void fsm_init();
 static void change_state();
 static void process_state();
 static void change_brake_state();

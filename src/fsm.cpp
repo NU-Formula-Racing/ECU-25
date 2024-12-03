@@ -6,7 +6,8 @@
 #include "pins.hpp"
 #include "fsm.hpp"
 
-static void fsm_init()
+
+void fsm_init()
 {
    // Serial.begin(115200);
   // initialize CAN bus
