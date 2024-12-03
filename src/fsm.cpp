@@ -85,6 +85,7 @@ void initialize_dash_switches() {
   attachInterrupt(digitalPinToInterrupt(static_cast<uint8_t>(Pins::TS_ACTIVE_PIN)), tsactive_callback, CHANGE);
 }
 
+// this function will be used to change the state of the vehicle based on the current state and the state of the switches
 void change_state() {
   switch(current_state) {
     case State::OFF:
@@ -113,6 +114,7 @@ void change_state() {
   }
 }
 
+// this function will be used to calculate torque based on LUTs and traction control when its time
 void process_state() {
   switch(current_state) {
     case State::OFF:
