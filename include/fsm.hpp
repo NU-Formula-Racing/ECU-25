@@ -82,10 +82,10 @@ static Ready_To_Drive_State ready_to_drive;
 // add rx: wheel speed
 // add tx: 
 // APPS1, APPS2, front brake, rear brake, torque request will be handled in their respective .hpp files
-CANSignal<BMSState, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_State{};
-CANSignal<BMSCommand, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_Command{};
-CANSignal<float, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40), false> batt_temp{};
-CANSignal<State, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> current_state{};
-CANRXMessage<2> BMS_message{drive_bus, 0x241, BMS_State, batt_temp};
-CANTXMessage<1> BMS_command_message{drive_bus, 0x242, 8, 100, timers, BMS_Command};
-CANTXMessage<1> Drive_status{drive_bus, 0x000, 8, 100, timers, current_state};
+extern CANSignal<BMSState, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_State;
+extern CANSignal<BMSCommand, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_Command;
+extern CANSignal<float, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40), false> batt_temp;
+extern CANSignal<State, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> current_state;
+extern CANRXMessage<2> BMS_message;
+extern CANTXMessage<1> BMS_command_message;
+extern CANTXMessage<1> Drive_status;
