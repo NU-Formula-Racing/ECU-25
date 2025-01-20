@@ -29,7 +29,7 @@ class Inverter {
         const uint16_t Set_Current_transmissionID = 0x100; // CAN msg address, get this from DBC (0x1xx)
         const uint16_t Set_Current_Brake_TransmissionID = 0x200; // CAN msg address, get this from DBC (0x2xx)
         const uint16_t inverter_status_1_transmissionID = 0x900; // CAN msg address, get this from DBC (0x9xx)
-        const uint16_t inverter_status_2_transmissionID = 0x1600; // CAN msg address, get this from DBC (0x16xx)
+        const uint16_t inverter_status_4_transmissionID = 0x1600; // CAN msg address, get this from DBC (0x16xx)
         // CAN signals & msgs 
         // tx: Set_Current, Set_Current_Brake
         CANSignal<int32_t, 0, 32, CANTemplateConvertFloat(1000), CANTemplateConvertFloat(0), false> set_current{};
@@ -49,6 +49,6 @@ class Inverter {
         CANSignal<int16_t, 32, 16, CANTemplateConvertFloat(10), CANTemplateConvertFloat(0), false> Current_In{}; // dont need this for LUTs
         CANSignal<int16_t, 48, 16, CANTemplateConvertFloat(50), CANTemplateConvertFloat(0), false> PID_Pos{}; // dont need this for LUTs
         CANRXMessage<4> Inverter_Status_4{
-            can_interface, inverter_status_2_transmissionID, 
+            can_interface, inverter_status_4_transmissionID, 
             Temp_FET, Temp_Motor, Current_In, PID_Pos};
 };
