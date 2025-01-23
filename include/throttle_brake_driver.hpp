@@ -91,29 +91,27 @@ class ThrottleBrake {
         void check_APPSs_disagreement_implausibility();
 
         ICAN &CAN_interface;
-        const uint32_t kTransmissionID = 0x111; // CAN msg address, get this from DBC
+        const uint32_t kTransmissionIDThrottle = 0x202; // CAN msg address, get this from DBC
+        const uint32_t kTransmissionIDBrake = 0x203; // CAN msg address, get this from DBC
+        const uint32_t kTransmissionIDImplausibility = 0x204; // CAN msg address, get this from DBC
         // CAN signals & msgs 
         // tx: throttle percent, front brake, rear brake, brake pressed, implausibility present
-        CANSignal<int32_t, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> APPS1_throttle_signal{};
-        CANSignal<int32_t, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> APPS2_throttle_signal{};
-        CANSignal<int32_t, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> front_brake_signal{};
-        CANSignal<int32_t, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> rear_brake_signal{};
-        CANSignal<bool, 32, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> brake_pressed_signal{};
-        CANSignal<bool, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> implausibility_present_signal{};
-        // CANTXMessage<6> throttle_brake_data{
-        //     CAN_interface, kTransmissionID, 10, 100, 
-        //     APPS1_throttle_signal, APPS2_throttle_signal, front_brake_signal, rear_brake_signal, brake_pressed_signal, implausibility_present_signal
-        // };
-        CANTXMessage<2> throttle_data{
-            CAN_interface, kTransmissionID, 10, 100,
-            APPS1_throttle_signal, APPS2_throttle_signal
+        CANSignal<int32_t, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> APPS1_Throttle{};
+        CANSignal<int32_t, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> APPS2_Throttle{};
+        CANSignal<int32_t, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Front_Brake_Pressure{};
+        CANSignal<int32_t, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Rear_Brake_Pressure{};
+        CANSignal<bool, 32, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Brake_Pressed{};
+        CANSignal<bool, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Implausibility_Present{};
+        CANTXMessage<2> ECU_Throttle{
+            CAN_interface, kTransmissionIDThrottle, 10, 100,
+            APPS1_Throttle, APPS2_Throttle
         };
-        CANTXMessage<3> brake_data{
-            CAN_interface, kTransmissionID, 10, 100,
-            front_brake_signal, rear_brake_signal, brake_pressed_signal
+        CANTXMessage<3> ECU_Brake{
+            CAN_interface, kTransmissionIDBrake, 10, 100,
+            Front_Brake_Pressure, Rear_Brake_Pressure, Brake_Pressed
         };
-        CANTXMessage<1> implausibility_data{
-            CAN_interface, kTransmissionID, 10, 100,
-            implausibility_present_signal
+        CANTXMessage<1> ECU_Implausibility{
+            CAN_interface, kTransmissionIDImplausibility, 10, 100,
+            Implausibility_Present
         };
 };

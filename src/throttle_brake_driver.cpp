@@ -208,10 +208,10 @@ void ThrottleBrake::check_BPPC_implausibility() {
  * @return void
  */
 void ThrottleBrake::update_throttle_brake_CAN_signals() {
-    ThrottleBrake::APPS1_throttle_signal = ThrottleBrake::APPS1_throttle;
-    ThrottleBrake::APPS2_throttle_signal = ThrottleBrake::APPS2_throttle;
-    ThrottleBrake::front_brake_signal = ThrottleBrake::front_brake;
-    ThrottleBrake::rear_brake_signal = ThrottleBrake::rear_brake;
-    ThrottleBrake::brake_pressed_signal = ThrottleBrake::brake_pressed;
-    ThrottleBrake::implausibility_present_signal = ThrottleBrake::is_implausibility_present();
+    ThrottleBrake::APPS1_Throttle = ThrottleBrake::APPS1_throttle;
+    ThrottleBrake::APPS2_Throttle = ThrottleBrake::APPS2_throttle;
+    ThrottleBrake::Front_Brake_Pressure = ThrottleBrake::front_brake;
+    ThrottleBrake::Rear_Brake_Pressure = ThrottleBrake::rear_brake;
+    ThrottleBrake::Brake_Pressed = ThrottleBrake::brake_pressed;
+    ThrottleBrake::Implausibility_Present = ThrottleBrake::is_implausibility_present();
 };

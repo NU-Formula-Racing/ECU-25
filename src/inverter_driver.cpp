@@ -1,6 +1,4 @@
-#ifdef ARDUINO
 #include <Arduino.h>
-#endif
 
 #include "inverter_driver.hpp"
 #include "pins.hpp"
@@ -59,8 +57,11 @@ void Inverter::read_inverter_CAN() {
  * @return void
  */
 void Inverter::send_inverter_CAN() {
-    Inverter::set_current = Inverter::requested_torque_throttle;
-    Inverter::set_current_brake = Inverter::requested_torque_brake;
+    // Inverter::set_current = Inverter::requested_torque_throttle;
+    // Inverter::set_current_brake = Inverter::requested_torque_brake;
+    Serial.begin(115200);
+    Inverter::Set_Current = 5;
+    Inverter::Set_Current_Brake = 12;
 }
 
 /**

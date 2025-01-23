@@ -9,9 +9,9 @@
 
 void fsm_init()
 {
-   // Serial.begin(115200);
+  Serial.begin(115200);
   // initialize CAN bus
-  drive_bus.Initialize(ESPCAN::BaudRate::kBaud500K);
+  drive_bus.Initialize(ESPCAN::BaudRate::kBaud1M);
 
   // initialize inverter class -- registers rx messages from inverter
   inverter.initialize();
@@ -20,7 +20,7 @@ void fsm_init()
   throttle_brake.initialize();
 
   // register BMS msg
-  drive_bus.RegisterRXMessage(BMS_message);
+  drive_bus.RegisterRXMessage(BMS_Message);
 
   // add change_state and process_state to timer group -- called every 10 ms
   timers.AddTimer(10, change_state);
@@ -36,7 +36,7 @@ void fsm_init()
   // initialize state variables
   tsactive_switch = TSActive::Inactive;
   ready_to_drive = Ready_To_Drive_State::Neutral;
-  current_state = State::OFF;
+  Drive_State = State::OFF;
 
   // initialize dash switches
   initialize_dash_switches();
@@ -88,28 +88,28 @@ static void initialize_dash_switches() {
 
 // this function will be used to change the state of the vehicle based on the current state and the state of the switches
 static void change_state() {
-  switch(current_state) {
+  switch(Drive_State) {
     case State::OFF:
       if (tsactive_switch == TSActive::Active && BMS_State == BMSState::kActive) {
-        current_state = State::N;
+        Drive_State = State::N;
       }
       break;
     
     case State::N:
       if (ready_to_drive == Ready_To_Drive_State::Drive) {
-        current_state = State::DRIVE;
+        Drive_State = State::DRIVE;
       }
       if (tsactive_switch == TSActive::Inactive || BMS_State == BMSState::kFault) {
-        current_state = State::OFF;
+        Drive_State = State::OFF;
       }
       break;
 
     case State::DRIVE:
       if (ready_to_drive == Ready_To_Drive_State::Neutral) {
-        current_state = State::N;
+        Drive_State = State::N;
       }
       if (tsactive_switch == TSActive::Inactive || BMS_State == BMSState::kFault) {
-        current_state = State::OFF;
+        Drive_State = State::OFF;
       }
       break;
   }
@@ -117,7 +117,7 @@ static void change_state() {
 
 // this function will be used to calculate torque based on LUTs and traction control when its time
 static void process_state() {
-  switch(current_state) {
+  switch(Drive_State) {
     case State::OFF:
       BMS_Command = BMSCommand::NoAction;
       inverter.request_torque(0);
@@ -144,7 +144,7 @@ static void process_state() {
 CANSignal<BMSState, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_State{};
 CANSignal<BMSCommand, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_Command{};
 CANSignal<float, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40), false> batt_temp{};
-CANSignal<State, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> current_state{};
-CANRXMessage<2> BMS_message{drive_bus, 0x241, BMS_State, batt_temp};
-CANTXMessage<1> BMS_command_message{drive_bus, 0x242, 8, 100, timers, BMS_Command};
-CANTXMessage<1> Drive_status{drive_bus, 0x000, 8, 100, timers, current_state};
+CANSignal<State, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Drive_State{};
+CANRXMessage<2> BMS_Message{drive_bus, 0x205, BMS_State, batt_temp};
+CANTXMessage<1> BMS_Command_Message{drive_bus, 0x242, 8, 100, timers, BMS_Command};
+CANTXMessage<1> Drive_Status{drive_bus, 0x206, 8, 100, timers, Drive_State};

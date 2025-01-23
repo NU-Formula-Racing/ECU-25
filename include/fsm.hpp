@@ -78,14 +78,11 @@ static void send_throttle_brake_CAN_wrapper();
 static TSActive tsactive_switch;
 static Ready_To_Drive_State ready_to_drive;
 
-// CAN signals -- get new addresses from DBC
-// add rx: wheel speed
-// add tx: 
-// APPS1, APPS2, front brake, rear brake, torque request will be handled in their respective .hpp files
+// CAN signals
 extern CANSignal<BMSState, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_State;
 extern CANSignal<BMSCommand, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_Command;
 extern CANSignal<float, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40), false> batt_temp;
-extern CANSignal<State, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> current_state;
-extern CANRXMessage<2> BMS_message;
-extern CANTXMessage<1> BMS_command_message;
-extern CANTXMessage<1> Drive_status;
+extern CANSignal<State, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Drive_State;
+extern CANRXMessage<2> BMS_Message;
+extern CANTXMessage<1> BMS_Command_Message;
+extern CANTXMessage<1> Drive_Status;
