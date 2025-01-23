@@ -46,9 +46,9 @@ int16_t Inverter::get_motor_temp() {
  * @return void
  */
 void Inverter::read_inverter_CAN() {
-    Inverter::motor_rpm = Inverter::ERPM; 
-    Inverter::IGBT_temp = Inverter::Temp_FET;
-    Inverter::motor_temp = Inverter::Temp_Motor;
+    Inverter::motor_rpm = Inverter::RPM; 
+    Inverter::IGBT_temp = Inverter::IGBT_Temp;
+    Inverter::motor_temp = Inverter::Motor_Temp;
 }
 
 /**
@@ -59,7 +59,6 @@ void Inverter::read_inverter_CAN() {
 void Inverter::send_inverter_CAN() {
     // Inverter::set_current = Inverter::requested_torque_throttle;
     // Inverter::set_current_brake = Inverter::requested_torque_brake;
-    Serial.begin(115200);
     Inverter::Set_Current = 5;
     Inverter::Set_Current_Brake = 12;
 }

@@ -96,10 +96,10 @@ class ThrottleBrake {
         const uint32_t kTransmissionIDImplausibility = 0x204; // CAN msg address, get this from DBC
         // CAN signals & msgs 
         // tx: throttle percent, front brake, rear brake, brake pressed, implausibility present
-        CANSignal<int32_t, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> APPS1_Throttle{};
-        CANSignal<int32_t, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> APPS2_Throttle{};
-        CANSignal<int32_t, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Front_Brake_Pressure{};
-        CANSignal<int32_t, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Rear_Brake_Pressure{};
+        CANSignal<int32_t, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), true> APPS1_Throttle{};
+        CANSignal<int32_t, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), true> APPS2_Throttle{};
+        CANSignal<int32_t, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), true> Front_Brake_Pressure{};
+        CANSignal<int32_t, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), true> Rear_Brake_Pressure{};
         CANSignal<bool, 32, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Brake_Pressed{};
         CANSignal<bool, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Implausibility_Present{};
         CANTXMessage<2> ECU_Throttle{

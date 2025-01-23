@@ -32,24 +32,22 @@ class Inverter {
         const uint16_t kTransmissionIDInverterTempStatus = 0x281; // CAN msg address, get this from DBC (0x16xx)
         // CAN signals & msgs 
         // tx: Set_Current, Set_Current_Brake
-        CANSignal<int32_t, 0, 32, CANTemplateConvertFloat(1000), CANTemplateConvertFloat(0), false> Set_Current{};
+        CANSignal<int32_t, 0, 32, CANTemplateConvertFloat(0.001), CANTemplateConvertFloat(0), true> Set_Current{};
         CANTXMessage<1> ECU_Set_Current{can_interface, kTransmissionIDSetCurrent, 8, 100, Set_Current};
-        CANSignal<int32_t, 0, 32, CANTemplateConvertFloat(1000), CANTemplateConvertFloat(0), false> Set_Current_Brake{};
+        CANSignal<int32_t, 0, 32, CANTemplateConvertFloat(0.001), CANTemplateConvertFloat(0), true> Set_Current_Brake{};
         CANTXMessage<1> ECU_Set_Current_Brake{can_interface, kTransmissionIDSetCurrentBrake, 8, 100, Set_Current_Brake};
 
         // rx: from inverter: motor temp, motor rpm, inverter/fet temp
-        CANSignal<int32_t, 0, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> RPM{};
-        CANSignal<int16_t, 32, 16, CANTemplateConvertFloat(10), CANTemplateConvertFloat(0), false> Motor_Current{}; // dont need this for LUTs
-        CANSignal<int16_t, 48, 16, CANTemplateConvertFloat(1000), CANTemplateConvertFloat(0), false> DC_Voltage{}; // dont need this for LUTs
-        CANSignal<int16_t>, 
-        CANRXMessage<3> Inverter_Motor_Status{
+        CANSignal<int16_t, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), true> RPM{};
+        // CANSignal<int16_t, 16, 32, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), true> Motor_Current{}; // dont need this for LUTs
+        // CANSignal<int16_t, 32, 48, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), true> DC_Voltage{}; // dont need this for LUTs
+        // CANSignal<int16_t>, 48, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), true> DC_Current{}; // dont need this for LUTs
+        CANRXMessage<1> Inverter_Motor_Status{
             can_interface, kTransmissionIDInverterMotorStatus, 
-            RPM, Motor_Current, Motor_Duty_Cycle};
-        CANSignal<int16_t, 0, 16, CANTemplateConvertFloat(10), CANTemplateConvertFloat(0), false> Temp_FET{};
-        CANSignal<int16_t, 16, 16, CANTemplateConvertFloat(10), CANTemplateConvertFloat(0), false> Temp_Motor{};
-        CANSignal<int16_t, 32, 16, CANTemplateConvertFloat(10), CANTemplateConvertFloat(0), false> Current_In{}; // dont need this for LUTs
-        CANSignal<int16_t, 48, 16, CANTemplateConvertFloat(50), CANTemplateConvertFloat(0), false> PID_Pos{}; // dont need this for LUTs
-        CANRXMessage<4> Inverter_Temp_Status{
+            RPM /*, Motor_Current, DC_Voltage, DC_Current*/};
+        CANSignal<int16_t, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), true> IGBT_Temp{};
+        CANSignal<int16_t, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), true> Motor_Temp{};
+        CANRXMessage<2> Inverter_Temp_Status{
             can_interface, kTransmissionIDInverterTempStatus,
-            Temp_FET, Temp_Motor, Current_In, PID_Pos};
+            IGBT_Temp, Motor_Temp};
 };
