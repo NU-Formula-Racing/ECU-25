@@ -31,7 +31,7 @@ void ThrottleBrake::initialize() {
     ThrottleBrake::BPPC_implausibility_present = false;
     ThrottleBrake::brake_shorted_or_opened_implausibility_present = false;
 
-    SPI.begin();
+    SPI.begin(static_cast<uint8_t>(Pins::SPI_CLK), static_cast<uint8_t>(Pins::SPI_MISO), static_cast<uint8_t>(Pins::SPI_MOSI));
 
     initialize_CS_pins();
 

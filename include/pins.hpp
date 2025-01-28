@@ -11,5 +11,8 @@ enum class Pins : uint8_t {
     REAR_BRAKE_CS_PIN = 23,
     BRAKE_VALID_PIN = 32,
     READY_TO_DRIVE_SWITCH = 26,
-    TS_ACTIVE_PIN = 27
+    TS_ACTIVE_PIN = 27,
+    SPI_CLK = 25,
+    SPI_MISO = 18,
+    SPI_MOSI = 34
 };
