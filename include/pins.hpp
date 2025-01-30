@@ -14,5 +14,5 @@ enum class Pins : uint8_t {
     TS_ACTIVE_PIN = 27,
     SPI_CLK = 25,
     SPI_MISO = 18,
-    SPI_MOSI = 34
+    SPI_MOSI = 255 // not used, still need to give an input to SPI.begin() 
 };

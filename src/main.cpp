@@ -11,9 +11,12 @@
 
 void setup() {
   fsm_init();
+  Serial.begin(115200);
 }
 
 void loop() {
+  throttle_brake.print_throttle_info();
+  inverter.print_inverter_info();
   timers.Tick(millis());
   drive_bus.Tick();
 }

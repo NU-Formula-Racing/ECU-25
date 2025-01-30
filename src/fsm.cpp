@@ -50,10 +50,12 @@ static void send_inverter_CAN_wrapper() {
 // read inverter wrapper
 static void read_inverter_CAN_wrapper() {
   inverter.read_inverter_CAN();
+  // inverter.print_inverter_info();
 }
 // send throttle/brake wrapper
 static void send_throttle_brake_CAN_wrapper() {
   throttle_brake.update_throttle_brake_CAN_signals();
+  // throttle_brake.print_throttle_info();
 }
 
 // call this function when the ready to drive switch is flipped

@@ -57,10 +57,8 @@ void Inverter::read_inverter_CAN() {
  * @return void
  */
 void Inverter::send_inverter_CAN() {
-    // Inverter::set_current = Inverter::requested_torque_throttle;
-    // Inverter::set_current_brake = Inverter::requested_torque_brake;
-    Inverter::Set_Current = 5;
-    Inverter::Set_Current_Brake = 12;
+    Inverter::Set_Current = Inverter::requested_torque_throttle;
+    Inverter::Set_Current_Brake = Inverter::requested_torque_brake;
 }
 
 /**
@@ -76,4 +74,9 @@ void Inverter::request_torque(int32_t torque_mA) {
         Inverter::requested_torque_brake = torque_mA;
         Inverter::requested_torque_throttle = 0;
     }
+}
+
+void Inverter::print_inverter_info() {
+    Serial.print("Set_Current: ");
+    Serial.println(Inverter::requested_torque_throttle);
 }

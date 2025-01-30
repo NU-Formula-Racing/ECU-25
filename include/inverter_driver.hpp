@@ -16,6 +16,7 @@ class Inverter {
         void read_inverter_CAN();
         void send_inverter_CAN();
         void request_torque(int32_t torque_mA); // how do we want to do the torque request function -- send torque in mA
+        void print_inverter_info();
          
     private:
         ICAN &can_interface;

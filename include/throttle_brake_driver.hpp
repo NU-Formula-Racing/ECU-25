@@ -58,6 +58,7 @@ class ThrottleBrake {
         bool is_implausibility_present();
         bool is_brake_pressed();
         void update_throttle_brake_CAN_signals();
+        void print_throttle_info();
 
     private:
         int16_t APPS1_RAW; // 12-bit ADC: 0-4095
