@@ -70,7 +70,8 @@ static void ready_to_drive_callback() {
 // currently, the switch is active low
 static void tsactive_callback() {
   if (digitalRead((uint8_t)Pins::TS_ACTIVE_PIN) == LOW) {
-    tsactive_switch = TSActive::Active; // should BMS_Command be ::CloseContactors here as well
+    tsactive_switch = TSActive::Active; 
+    BMS_Command = BMSCommand::PrechargeAndCloseContactors;
   } else {
     tsactive_switch = TSActive::Inactive;
   }
@@ -128,9 +129,12 @@ static void process_state() {
       break;
     case State::DRIVE:
       // int32_t torque_req = calculate_torque(); // use this function to calculate torque based on LUTs and traction control when its time
-      int32_t torque_req = static_cast<int32_t>(throttle_brake.get_throttle());
+      int32_t torque_req;
       if (throttle_brake.is_implausibility_present()) {
         torque_req = 0;
+      }
+      else {
+        torque_req = static_cast<int32_t>(throttle_brake.get_throttle());
       }
       inverter.request_torque(torque_req); 
       break;
