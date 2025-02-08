@@ -42,7 +42,7 @@ void fsm_init()
   timers.AddTimer(10, tick_CAN);
 
   // timer for print debugging msgs
-  // timers.AddTimer(100, print_all);
+  timers.AddTimer(100, print_fsm);
 
   Serial.println("added everything to timergroup");
 
@@ -74,7 +74,7 @@ void tick_CAN() {
   // Serial.println("tick fsm inverter CAN");
   // inverter.send_inverter_CAN();
   // inverter.read_inverter_CAN();
-  Serial.println(millis());
+  // Serial.println(millis());
   drive_bus.Tick();
 }
 
@@ -101,11 +101,11 @@ static void tsactive_callback() {
 
 static void initialize_dash_switches() {
   // initialize Ready To Drive Switch -- use interrupts & pinMode 
-  pinMode((uint8_t)Pins::READY_TO_DRIVE_SWITCH, INPUT);
+  pinMode(static_cast<uint8_t>(Pins::READY_TO_DRIVE_SWITCH), INPUT);
   attachInterrupt(digitalPinToInterrupt(static_cast<uint8_t>(Pins::READY_TO_DRIVE_SWITCH)), ready_to_drive_callback, CHANGE);
 
   // initialize tsactive switch -- use interrupts & pinMode
-  pinMode((uint8_t)Pins::TS_ACTIVE_PIN, INPUT);
+  pinMode(static_cast<uint8_t>(Pins::TS_ACTIVE_PIN), INPUT);
   attachInterrupt(digitalPinToInterrupt(static_cast<uint8_t>(Pins::TS_ACTIVE_PIN)), tsactive_callback, CHANGE);
 }
 
@@ -136,7 +136,6 @@ static void change_state() {
       }
       break;
   }
-  // Serial.println("end of change state");
 }
 
 // this function will be used to calculate torque based on LUTs and traction control when its time
@@ -144,7 +143,7 @@ static void process_state() {
   switch(Drive_State) {
     case State::OFF:
       Serial.println("OFF");
-      BMS_Command = BMSCommand::NoAction;
+      BMS_Command = BMSCommand::Shutdown;
       inverter.request_torque(0);
       break;
     case State::N:
@@ -178,6 +177,14 @@ void print_fsm() {
   // Serial.println(static_cast<int>(BMS_State));
   // Serial.print("BMS Command: ");
   // Serial.println(static_cast<int>(BMS_Command));
+  Serial.print("TS active switch: ");
+  Serial.println(static_cast<int>(tsactive_switch));
+  Serial.print("Front Brake: ");
+  Serial.println(throttle_brake.is_brake_pressed());
+  Serial.print("Ready to Drive: ");
+  Serial.println(static_cast<int>(ready_to_drive));
+  // Serial.print("BMS msg: ");
+  // Serial.println(static_cast<int>(BMS_State));
 }
 
 void print_all() {
@@ -199,6 +206,6 @@ CANSignal<BMSState, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)
 CANSignal<BMSCommand, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_Command{};
 CANSignal<float, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40), false> batt_temp{};
 CANSignal<State, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Drive_State{};
-CANRXMessage<2> BMS_Message{drive_bus, 0x205, BMS_State, batt_temp}; // these addresses might be wrong, check DBC
-CANTXMessage<1> BMS_Command_Message{drive_bus, 0x242, 8, 100, timers, BMS_Command};
+CANRXMessage<2> BMS_Message{drive_bus, 0x242, BMS_State, batt_temp}; // these addresses might be wrong, check DBC
+CANTXMessage<1> BMS_Command_Message{drive_bus, 0x205, 8, 100, timers, BMS_Command};
 CANTXMessage<1> Drive_Status{drive_bus, 0x206, 8, 100, timers, Drive_State};

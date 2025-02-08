@@ -34,9 +34,9 @@ class Inverter {
         // CAN signals & msgs 
         // tx: Set_Current, Set_Current_Brake
         CANSignal<int32_t, 0, 32, CANTemplateConvertFloat(0.001), CANTemplateConvertFloat(0), true> Set_Current{};
-        CANTXMessage<1> ECU_Set_Current{can_interface, kTransmissionIDSetCurrent, 8, 100, Set_Current};
+        CANTXMessage<1> ECU_Set_Current{can_interface, kTransmissionIDSetCurrent, 4, 10, Set_Current};
         CANSignal<int32_t, 0, 32, CANTemplateConvertFloat(0.001), CANTemplateConvertFloat(0), true> Set_Current_Brake{};
-        CANTXMessage<1> ECU_Set_Current_Brake{can_interface, kTransmissionIDSetCurrentBrake, 8, 100, Set_Current_Brake};
+        CANTXMessage<1> ECU_Set_Current_Brake{can_interface, kTransmissionIDSetCurrentBrake, 4, 10, Set_Current_Brake};
 
         // rx: from inverter: motor temp, motor rpm, inverter/fet temp
         CANSignal<int16_t, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), true> RPM{};
