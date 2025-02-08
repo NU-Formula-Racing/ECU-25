@@ -1,4 +1,6 @@
 #pragma once
+#include <Arduino.h>
+
 #include "esp_can.h"
 #include "virtualTimer.h"
 #include "throttle_brake_driver.hpp"
@@ -60,7 +62,7 @@ static VirtualTimer brake_implausible_timer;
 static ThrottleBrake throttle_brake{drive_bus, APPSs_disagree_timer, brake_implausible_timer};
 
 // instantiate inverter
-static Inverter inverter{drive_bus};
+static Inverter inverter(drive_bus);
 
 // function forward initializations
 void fsm_init();
@@ -73,6 +75,9 @@ static void initialize_dash_switches();
 static void send_inverter_CAN_wrapper();
 static void read_inverter_CAN_wrapper();
 static void send_throttle_brake_CAN_wrapper();
+void tick_CAN();
+static void print_all();
+void tick_timers();
 
 // global state variables
 static TSActive tsactive_switch;

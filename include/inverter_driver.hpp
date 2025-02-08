@@ -27,10 +27,10 @@ class Inverter {
         int32_t requested_torque_brake;
         
         const uint16_t torque_limit = 32767;
-        const uint16_t kTransmissionIDSetCurrent = 0x200; // CAN msg address, get this from DBC (0x1xx)
-        const uint16_t kTransmissionIDSetCurrentBrake = 0x201; // CAN msg address, get this from DBC (0x2xx)
-        const uint16_t kTransmissionIDInverterMotorStatus = 0x280; // CAN msg address, get this from DBC (0x9xx)
-        const uint16_t kTransmissionIDInverterTempStatus = 0x281; // CAN msg address, get this from DBC (0x16xx)
+        const uint16_t kTransmissionIDSetCurrent = 0x200; // CAN msg address, get this from DBC 
+        const uint16_t kTransmissionIDSetCurrentBrake = 0x201; // CAN msg address, get this from DBC 
+        const uint16_t kTransmissionIDInverterMotorStatus = 0x280; // CAN msg address, get this from DBC 
+        const uint16_t kTransmissionIDInverterTempStatus = 0x281; // CAN msg address, get this from DBC 
         // CAN signals & msgs 
         // tx: Set_Current, Set_Current_Brake
         CANSignal<int32_t, 0, 32, CANTemplateConvertFloat(0.001), CANTemplateConvertFloat(0), true> Set_Current{};

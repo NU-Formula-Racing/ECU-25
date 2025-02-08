@@ -217,12 +217,12 @@ void ThrottleBrake::update_throttle_brake_CAN_signals() {
 };
 
 void ThrottleBrake::print_throttle_info() {
-    Serial.print("APPS1 RAW: ");
-    Serial.println(ThrottleBrake::APPS1_RAW);
-    Serial.print("APPS2 RAW: ");
-    Serial.println(ThrottleBrake::APPS2_RAW);
-    Serial.print("APPS1 Scaled (CAN): ");
-    Serial.println(ThrottleBrake::APPS1_throttle);
-    Serial.print("APPS2 Scaled (CAN): ");
-    Serial.println(ThrottleBrake::APPS2_throttle);
+    // Serial.print("APPS1 RAW: ");
+    // Serial.println(ThrottleBrake::APPS1_RAW);
+    // Serial.print("APPS2 RAW: ");
+    // Serial.println(ThrottleBrake::APPS2_RAW);
+    // Serial.print("APPS1 Scaled (CAN): ");
+    // Serial.println(ThrottleBrake::APPS1_throttle);
+    // Serial.print("APPS2 Scaled (CAN): ");
+    // Serial.println(ThrottleBrake::APPS2_throttle);
 }
