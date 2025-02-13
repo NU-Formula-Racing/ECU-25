@@ -25,8 +25,8 @@ enum class BMSCommand
 
 enum class TSActive
 {
-  Active,
-  Inactive
+  Active = 0,
+  Inactive = 1
 };
 
 enum class Ready_To_Drive_State
@@ -55,8 +55,8 @@ static ESPCAN drive_bus{};
 static VirtualTimerGroup timers;
 
 // instantiate throttle/brake timers
-static VirtualTimer APPSs_disagree_timer;
-static VirtualTimer brake_implausible_timer;
+extern VirtualTimer APPSs_disagree_timer; // this timer needs to call Throttle_Brake::set_is_APPSs_disagreement_implausibility_present_to_true()
+extern VirtualTimer brake_implausible_timer; // this timer needs to call Throttle_Brake::set_is_brake_shorted_or_opened_implausibility_present_to_true()
 
 // instantiate throttle/brake
 static ThrottleBrake throttle_brake{drive_bus, APPSs_disagree_timer, brake_implausible_timer};
@@ -75,14 +75,18 @@ static void initialize_dash_switches();
 static void send_inverter_CAN_wrapper();
 static void read_inverter_CAN_wrapper();
 static void send_throttle_brake_CAN_wrapper();
+static void APPSs_disagreement_timer_callback();
+static void brake_implausible_timer_callback();
+static void refresh_throttle_brake();
 void tick_CAN();
 void print_fsm();
 static void print_all();
 void tick_timers();
 
 // global state variables
-static TSActive tsactive_switch;
-static Ready_To_Drive_State ready_to_drive;
+static TSActive tsactive_switch; // physical status of the tsactive dashboard switch
+static Ready_To_Drive_State ready_to_drive_switch; // physical status of the ready to drive dashboard switch
+static Ready_To_Drive_State ready_to_drive; // goes to drive when the when the brake is held while the ready_to_drive switch is flipped
 
 // CAN signals
 extern CANSignal<BMSState, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_State;

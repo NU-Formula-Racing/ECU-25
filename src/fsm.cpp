@@ -35,6 +35,9 @@ void fsm_init()
   // timers.AddTimer(10, read_inverter_CAN_wrapper);
   timers.AddTimer(10, send_inverter_CAN_wrapper);
 
+  // refresh throttle/brake values and check for implausibilities
+  timers.AddTimer(10, refresh_throttle_brake);
+
   // send throttle/brake CAN messages -- can be less frequent since they're just going to logger
   // timers.AddTimer(100, send_throttle_brake_CAN_wrapper);
 
@@ -42,13 +45,14 @@ void fsm_init()
   timers.AddTimer(10, tick_CAN);
 
   // timer for print debugging msgs
-  timers.AddTimer(100, print_fsm);
+  timers.AddTimer(1000, print_fsm);
 
   Serial.println("added everything to timergroup");
 
   // initialize state variables
   tsactive_switch = TSActive::Inactive;
   ready_to_drive = Ready_To_Drive_State::Neutral;
+  ready_to_drive_switch = Ready_To_Drive_State::Neutral;
   Drive_State = State::OFF;
 
   // initialize dash switches
@@ -78,9 +82,33 @@ void tick_CAN() {
   drive_bus.Tick();
 }
 
+// read from ADCs, update internal throttle/brake values, and perform internal implausibility checks
+static void refresh_throttle_brake() {
+  throttle_brake.update_sensor_values();
+  throttle_brake.check_for_implausibilities();
+}
+
+// wrapper for APPSs disagreement timer function
+static void APPSs_disagreement_timer_callback() {
+  throttle_brake.set_is_APPSs_disagreement_implausibility_present_to_true();
+}
+
+// wrapper for brake implausible timer function
+static void brake_implausible_timer_callback() {
+  throttle_brake.set_is_brake_shorted_or_opened_implausibility_present_to_true();
+}
+
 // call this function when the ready to drive switch is flipped
 // currently, the switch is active low
 static void ready_to_drive_callback() {
+  // update ready_to_drive_switch variable so we can see status of switch for testing
+  if (digitalRead(static_cast<uint8_t>(Pins::READY_TO_DRIVE_SWITCH)) == LOW) {
+    ready_to_drive_switch = Ready_To_Drive_State::Drive;
+  } else {
+    ready_to_drive_switch = Ready_To_Drive_State::Neutral;
+  }
+
+  // if the ready to drive switch is flipped and the brake is pressed, set ready_to_drive to drive
   if (digitalRead(static_cast<uint8_t>(Pins::READY_TO_DRIVE_SWITCH)) == LOW && throttle_brake.is_brake_pressed()) {
     ready_to_drive = Ready_To_Drive_State::Drive;
   } else {
@@ -140,19 +168,20 @@ static void change_state() {
 
 // this function will be used to calculate torque based on LUTs and traction control when its time
 static void process_state() {
+  throttle_brake.update_sensor_values();
   switch(Drive_State) {
     case State::OFF:
-      Serial.println("OFF");
+      // Serial.println("OFF");
       BMS_Command = BMSCommand::Shutdown;
       inverter.request_torque(0);
       break;
     case State::N:
-      Serial.println("N");
+      // Serial.println("N");
       BMS_Command = BMSCommand::NoAction;
       inverter.request_torque(0);
       break;
     case State::DRIVE:
-      Serial.println("DRIVE");
+      // Serial.println("DRIVE");
       // int32_t torque_req = calculate_torque(); // use this function to calculate torque based on LUTs and traction control when its time
       int32_t torque_req;
       if (throttle_brake.is_implausibility_present()) {
@@ -167,6 +196,18 @@ static void process_state() {
 }
 
 void print_fsm() {
+  Serial.print("Drive State: ");
+  switch (Drive_State) {
+    case State::OFF:
+      Serial.print("OFF");
+      break;
+    case State::N:
+      Serial.print("N");
+      break;
+    case State::DRIVE:
+      Serial.print("DRIVE");
+      break;
+  }
   // Serial.print("Drive State: ");
   // Serial.println(static_cast<State>(Drive_State)); // cant print CAN signals ...
   // Serial.print("Ready to Drive: ");
@@ -177,14 +218,23 @@ void print_fsm() {
   // Serial.println(static_cast<int>(BMS_State));
   // Serial.print("BMS Command: ");
   // Serial.println(static_cast<int>(BMS_Command));
-  Serial.print("TS active switch: ");
-  Serial.println(static_cast<int>(tsactive_switch));
-  Serial.print("Front Brake: ");
-  Serial.println(throttle_brake.is_brake_pressed());
-  Serial.print("Ready to Drive: ");
-  Serial.println(static_cast<int>(ready_to_drive));
+  Serial.print(" TS active switch: ");
+  Serial.print(static_cast<int>(tsactive_switch));
+  Serial.print(" Front Brake: ");
+  Serial.print(throttle_brake.is_brake_pressed());
+  Serial.print(" Ready to Drive: ");
+  Serial.print(static_cast<int>(ready_to_drive));
+  Serial.print(" Ready to Drive Switch: ");
+  Serial.print(static_cast<int>(ready_to_drive_switch));
+  Serial.print(" Throttle: ");
+  Serial.print(throttle_brake.get_throttle());
+  throttle_brake.print_throttle_info();
+
   // Serial.print("BMS msg: ");
   // Serial.println(static_cast<int>(BMS_State));
+
+  Serial.println("");
+
 }
 
 void print_all() {
@@ -195,8 +245,13 @@ void print_all() {
 
 void tick_timers() {
   // Serial.println("tick timers");
+  APPSs_disagree_timer.Tick(millis());
+  brake_implausible_timer.Tick(millis());
   timers.Tick(millis());
 }
+// implausibility timer definitions
+VirtualTimer APPSs_disagree_timer(100U, APPSs_disagreement_timer_callback, VirtualTimer::Type::kSingleUse); // this timer needs to call Throttle_Brake::set_is_APPSs_disagreement_implausibility_present_to_true()
+VirtualTimer brake_implausible_timer(100U, brake_implausible_timer_callback, VirtualTimer::Type::kSingleUse); // this timer needs to call Throttle_Brake::set_is_brake_shorted_or_opened_implausibility_present_to_true()
 
 // CAN signals -- get new addresses from DBC
 // add rx: wheel speed

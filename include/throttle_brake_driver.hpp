@@ -8,12 +8,12 @@
 // change specific bounds after testing with sensors in pedalbox:
 enum class Bounds {
 
-    APPS1_RAW_MIN = 1456,
-    APPS1_RAW_MAX = 4095,
+    APPS1_RAW_MIN = 155,
+    APPS1_RAW_MAX = 4000,
     APPS1_RAW_SPAN = APPS1_RAW_MAX - APPS1_RAW_MIN,
 
-    APPS2_RAW_MIN = 1456,
-    APPS2_RAW_MAX = 4095,
+    APPS2_RAW_MIN = 185,
+    APPS2_RAW_MAX = 4010,
     APPS2_RAW_SPAN = APPS2_RAW_MAX - APPS2_RAW_MIN,
 
     FRONT_BRAKE_RAW_MIN = 1456,
@@ -49,9 +49,9 @@ class ThrottleBrake {
         // we want 1 single-use timer per implausibility check
         // we'll have a callback function fires when the timer reaches its limit (ie. 100ms)
         // this callback will set a corresponding implausibility flag in a private struct containting all the implausibilities
-        void initialize();
-        void update_sensor_values();
-        int16_t get_throttle();
+        void initialize(); // initialize CS pins, SPI, and implausibility states
+        void update_sensor_values(); // read from SPI ADCs and update throttle/brake values
+        int16_t get_throttle(); // return scaled throttle value
         void set_is_APPSs_disagreement_implausibility_present_to_true(); // callback
         void set_is_brake_shorted_or_opened_implausibility_present_to_true(); // callback
         void check_for_implausibilities();

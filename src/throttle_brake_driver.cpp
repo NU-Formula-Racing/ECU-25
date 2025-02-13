@@ -49,10 +49,12 @@ void ThrottleBrake::read_from_SPI_ADCs() {
     // MSBFIRST: Most significant bit first
 
     digitalWrite(static_cast<uint8_t>(Pins::APPS1_CS_PIN), LOW);
+    // ThrottleBrake::APPS1_RAW = static_cast<int16_t>((SPI.transfer16(0x0000)) << 2) >> 4;
     ThrottleBrake::APPS1_RAW = (SPI.transfer16(0x0000) << 2) >> 4;
     digitalWrite(static_cast<uint8_t>(Pins::APPS1_CS_PIN), HIGH);
 
     digitalWrite(static_cast<uint8_t>(Pins::APPS2_CS_PIN), LOW);
+    // ThrottleBrake::APPS2_RAW = static_cast<int16_t>((SPI.transfer16(0x0000)) << 2) >> 4;
     ThrottleBrake::APPS2_RAW = (SPI.transfer16(0x0000) << 2) >> 4;
     digitalWrite(static_cast<uint8_t>(Pins::APPS2_CS_PIN), HIGH);
 
@@ -82,16 +84,18 @@ void ThrottleBrake::update_sensor_values() {
     ThrottleBrake::read_from_SPI_ADCs();
 
     int16_t safe_APPS1_RAW = get_safe_RAW(ThrottleBrake::APPS1_RAW, static_cast<int32_t>(Bounds::APPS1_RAW_MIN), static_cast<int32_t>(Bounds::APPS1_RAW_MAX));
-    ThrottleBrake::APPS1_throttle = (safe_APPS1_RAW - static_cast<int32_t>(Bounds::APPS1_RAW_MIN)) / static_cast<int32_t>(Bounds::APPS1_RAW_SPAN) * 32767;
+    // Serial.print("safe_APPS1_RAW: ");
+    // Serial.println(safe_APPS1_RAW);
+    ThrottleBrake::APPS1_throttle = ((safe_APPS1_RAW - static_cast<int32_t>(Bounds::APPS1_RAW_MIN)) * 32767) / static_cast<int32_t>(Bounds::APPS1_RAW_SPAN);
 
     int16_t safe_APPS2_RAW = get_safe_RAW(ThrottleBrake::APPS2_RAW, static_cast<int32_t>(Bounds::APPS2_RAW_MIN), static_cast<int32_t>(Bounds::APPS2_RAW_MAX));
-    ThrottleBrake::APPS2_throttle = (static_cast<int32_t>(Bounds::APPS2_RAW_MAX) - safe_APPS2_RAW) / static_cast<int32_t>(Bounds::APPS2_RAW_SPAN) * 32767;
+    ThrottleBrake::APPS2_throttle = ((static_cast<int32_t>(Bounds::APPS2_RAW_MAX) - safe_APPS2_RAW) * 32767) / static_cast<int32_t>(Bounds::APPS2_RAW_SPAN);
 
     int16_t safe_front_break_RAW = get_safe_RAW(ThrottleBrake::front_break_RAW, static_cast<int32_t>(Bounds::FRONT_BRAKE_RAW_MIN), static_cast<int32_t>(Bounds::FRONT_BRAKE_RAW_MAX));
-    ThrottleBrake::front_brake = (safe_front_break_RAW - static_cast<int32_t>(Bounds::FRONT_BRAKE_RAW_MIN)) / static_cast<int32_t>(Bounds::FRONT_BRAKE_RAW_SPAN) * 32767;
+    ThrottleBrake::front_brake = ((safe_front_break_RAW - static_cast<int32_t>(Bounds::FRONT_BRAKE_RAW_MIN)) * 32767) / static_cast<int32_t>(Bounds::FRONT_BRAKE_RAW_SPAN);
 
     int16_t safe_rear_break_RAW = get_safe_RAW(ThrottleBrake::rear_break_RAW, static_cast<int32_t>(Bounds::REAR_BRAKE_RAW_MIN), static_cast<int32_t>(Bounds::REAR_BRAKE_RAW_MAX));
-    ThrottleBrake::rear_brake = (safe_rear_break_RAW - static_cast<int32_t>(Bounds::REAR_BRAKE_RAW_MIN)) / static_cast<int32_t>(Bounds::REAR_BRAKE_RAW_SPAN) * 32767;
+    ThrottleBrake::rear_brake = (safe_rear_break_RAW - static_cast<int32_t>(Bounds::REAR_BRAKE_RAW_MIN) * 32767) / static_cast<int32_t>(Bounds::REAR_BRAKE_RAW_SPAN);
 
 }
 
@@ -193,10 +197,14 @@ bool ThrottleBrake::is_brake_pressed() {
 void ThrottleBrake::check_BPPC_implausibility() {
 
     float APPS1_percentage = ((ThrottleBrake::APPS1_RAW - static_cast<int32_t>(Bounds::APPS1_RAW_MIN)) * 100.0) / static_cast<int32_t>(Bounds::APPS1_RAW_SPAN);
-    if (ThrottleBrake::is_brake_pressed() && (APPS1_percentage > 25.0)) {
+    float APPS2_percentage = ((static_cast<int32_t>(Bounds::APPS2_RAW_MAX) - ThrottleBrake::APPS2_RAW) * 100.0) / static_cast<int32_t>(Bounds::APPS2_RAW_SPAN);
+    float percentage_diff = APPS1_percentage - APPS2_percentage;
+    // Serial.print("percentage_diff: ");
+    // Serial.println(percentage_diff);
+    if (ThrottleBrake::is_brake_pressed() && ((percentage_diff > 25.0) || percentage_diff < -25.0)) {
         ThrottleBrake::BPPC_implausibility_present = true;
     }
-    if (APPS1_percentage < 5.0) {
+    if (percentage_diff < 5.0 && percentage_diff > -5.0) {
         ThrottleBrake::BPPC_implausibility_present = false;
     }
 
@@ -217,8 +225,23 @@ void ThrottleBrake::update_throttle_brake_CAN_signals() {
 };
 
 void ThrottleBrake::print_throttle_info() {
-    // Serial.print("APPS1 RAW: ");
-    // Serial.println(ThrottleBrake::APPS1_RAW);
+    // Serial.print(" APPS1 RAW: ");
+    // Serial.print(ThrottleBrake::APPS1_RAW);
+    // Serial.print(" APPS2 RAW: ");
+    // Serial.print(ThrottleBrake::APPS2_RAW);
+
+    Serial.print(" APPS1: ");
+    Serial.print(ThrottleBrake::APPS1_throttle);
+    Serial.print(" APPS2: ");
+    Serial.print(ThrottleBrake::APPS2_throttle);
+    Serial.print(" Front Brake: ");
+    Serial.print(ThrottleBrake::front_brake);
+    Serial.print(" Rear Brake: ");
+    Serial.print(ThrottleBrake::rear_brake);
+    // Serial.print(" APPS2 RAW: ");
+    // Serial.print(ThrottleBrake::APPS2_RAW, BIN);
+    // Serial.print(" APPS2 RAW: ");
+    // Serial.print(ThrottleBrake::APPS2_RAW);
     // Serial.print("APPS2 RAW: ");
     // Serial.println(ThrottleBrake::APPS2_RAW);
     // Serial.print("APPS1 Scaled (CAN): ");
