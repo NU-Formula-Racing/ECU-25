@@ -66,21 +66,21 @@ static Inverter inverter{drive_bus};
 
 // function forward initializations
 void fsm_init();
-static void change_state();
-static void process_state();
-static void change_brake_state();
-static void ready_to_drive_callback();
-static void tsactive_callback();
-static void initialize_dash_switches();
-static void send_inverter_CAN_wrapper();
-static void read_inverter_CAN_wrapper();
-static void send_throttle_brake_CAN_wrapper();
-static void APPSs_disagreement_timer_callback();
-static void brake_implausible_timer_callback();
-static void refresh_throttle_brake();
+void change_state();
+void process_state();
+void change_brake_state();
+void ready_to_drive_callback();
+void tsactive_callback();
+void initialize_dash_switches();
+void send_inverter_CAN_wrapper();
+void read_inverter_CAN_wrapper();
+void send_throttle_brake_CAN_wrapper();
+void APPSs_disagreement_timer_callback();
+void brake_implausible_timer_callback();
+void refresh_throttle_brake();
 void tick_CAN();
 void print_fsm();
-static void print_all();
+void print_all();
 void tick_timers();
 
 // global state variables

@@ -61,15 +61,15 @@ void fsm_init()
 
 //// wrappers for send/read CAN functions: timers don't like if your callbacks are direct class member functions
 // send inverter wrapper
-static void send_inverter_CAN_wrapper() {
+void send_inverter_CAN_wrapper() {
   inverter.send_inverter_CAN();
 }
 // read inverter wrapper
-static void read_inverter_CAN_wrapper() {
+void read_inverter_CAN_wrapper() {
   inverter.read_inverter_CAN();
 }
 // send throttle/brake wrapper
-static void send_throttle_brake_CAN_wrapper() {
+void send_throttle_brake_CAN_wrapper() {
   throttle_brake.update_throttle_brake_CAN_signals();
 }
 
@@ -83,24 +83,24 @@ void tick_CAN() {
 }
 
 // read from ADCs, update internal throttle/brake values, and perform internal implausibility checks
-static void refresh_throttle_brake() {
+void refresh_throttle_brake() {
   throttle_brake.update_sensor_values();
   throttle_brake.check_for_implausibilities();
 }
 
 // wrapper for APPSs disagreement timer function
-static void APPSs_disagreement_timer_callback() {
+void APPSs_disagreement_timer_callback() {
   throttle_brake.set_is_APPSs_disagreement_implausibility_present_to_true();
 }
 
 // wrapper for brake implausible timer function
-static void brake_implausible_timer_callback() {
+void brake_implausible_timer_callback() {
   throttle_brake.set_is_brake_shorted_or_opened_implausibility_present_to_true();
 }
 
 // call this function when the ready to drive switch is flipped
 // currently, the switch is active low
-static void ready_to_drive_callback() {
+void ready_to_drive_callback() {
   // update ready_to_drive_switch variable so we can see status of switch for testing
   if (digitalRead(static_cast<uint8_t>(Pins::READY_TO_DRIVE_SWITCH)) == LOW) {
     ready_to_drive_switch = Ready_To_Drive_State::Drive;
@@ -118,7 +118,7 @@ static void ready_to_drive_callback() {
 
 // call this function when the tsactive switch is flipped
 // currently, the switch is active low
-static void tsactive_callback() {
+void tsactive_callback() {
   if (digitalRead((uint8_t)Pins::TS_ACTIVE_PIN) == LOW) {
     tsactive_switch = TSActive::Active; 
     BMS_Command = BMSCommand::PrechargeAndCloseContactors;
@@ -127,7 +127,7 @@ static void tsactive_callback() {
   }
 }
 
-static void initialize_dash_switches() {
+void initialize_dash_switches() {
   // initialize Ready To Drive Switch -- use interrupts & pinMode 
   pinMode(static_cast<uint8_t>(Pins::READY_TO_DRIVE_SWITCH), INPUT);
   attachInterrupt(digitalPinToInterrupt(static_cast<uint8_t>(Pins::READY_TO_DRIVE_SWITCH)), ready_to_drive_callback, CHANGE);
@@ -138,7 +138,7 @@ static void initialize_dash_switches() {
 }
 
 // this function will be used to change the state of the vehicle based on the current state and the state of the switches
-static void change_state() {
+void change_state() {
   switch(Drive_State) {
     case State::OFF:
       if (tsactive_switch == TSActive::Active && BMS_State == BMSState::kActive) {
@@ -167,7 +167,7 @@ static void change_state() {
 }
 
 // this function will be used to calculate torque based on LUTs and traction control when its time
-static void process_state() {
+void process_state() {
   throttle_brake.update_sensor_values();
   switch(Drive_State) {
     case State::OFF:
