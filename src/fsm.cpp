@@ -229,7 +229,7 @@ void print_fsm() {
   // Serial.print("BMS msg: ");
   // Serial.println(static_cast<int>(BMS_State));
 
-  Serial.println("");
+  // Serial.println("");
 
 }
 
@@ -237,6 +237,7 @@ void print_all() {
   print_fsm();
   inverter.print_inverter_info();
   throttle_brake.print_throttle_info();
+  Serial.println("");
 }
 
 void tick_timers() {

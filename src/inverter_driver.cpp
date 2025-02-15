@@ -77,6 +77,6 @@ void Inverter::request_torque(int32_t torque_mA) {
 }
 
 void Inverter::print_inverter_info() {
-    Serial.print("Set_Current: ");
-    Serial.println(Inverter::requested_torque_throttle);
+    Serial.print(" Set_Current: ");
+    Serial.print(Inverter::requested_torque_throttle);
 }
