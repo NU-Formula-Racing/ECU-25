@@ -53,9 +53,6 @@ void fsm_init()
   // refresh throttle/brake values and check for implausibilities
   timers.AddTimer(10, refresh_throttle_brake);
 
-  // send throttle/brake CAN messages -- can be less frequent since they're just going to logger
-  // timers.AddTimer(100, send_throttle_brake_CAN_wrapper);
-
   // 10 ms timer for CAN messages
   timers.AddTimer(10, tick_CAN);
 
@@ -77,13 +74,8 @@ void fsm_init()
 //// wrappers for send/read CAN functions: timers don't like if your callbacks are direct class member functions
 // send inverter wrapper
 void update_inverter() {
-  Serial.println("update inverter");
   inverter.read_inverter_CAN();
   inverter.send_inverter_CAN();
-}
-// send throttle/brake wrapper
-void send_throttle_brake_CAN_wrapper() {
-  throttle_brake.update_throttle_brake_CAN_signals();
 }
 
 // wrapper for CAN msgs sent/read every 10ms: inverter, fsm
@@ -93,8 +85,10 @@ void tick_CAN() {
 
 // read from ADCs, update internal throttle/brake values, and perform internal implausibility checks
 void refresh_throttle_brake() {
+  Serial.println("refresh throttle brake");
   throttle_brake.update_sensor_values();
   throttle_brake.check_for_implausibilities();
+  throttle_brake.update_throttle_brake_CAN_signals();
 }
 
 // wrapper for APPSs disagreement timer function
@@ -272,5 +266,5 @@ CANSignal<BMSCommand, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(
 CANSignal<float, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40), false> batt_temp{};
 CANSignal<State, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Drive_State{};
 CANRXMessage<2> BMS_Message{drive_bus, 0x242, BMS_State, batt_temp}; // these addresses might be wrong, check DBC
-CANTXMessage<1> BMS_Command_Message{drive_bus, 0x205, 8, 100, timers, BMS_Command};
-CANTXMessage<1> Drive_Status{drive_bus, 0x206, 8, 100, timers, Drive_State};
+CANTXMessage<1> BMS_Command_Message{drive_bus, 0x205, 1, 100, timers, BMS_Command};
+CANTXMessage<1> Drive_Status{drive_bus, 0x206, 1, 100, timers, Drive_State};
