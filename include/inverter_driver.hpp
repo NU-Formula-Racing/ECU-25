@@ -8,7 +8,7 @@
 
 class Inverter {
     public:
-        Inverter(ICAN &can_interface_) : can_interface(can_interface_){};
+        Inverter(ICAN &can_interface_, VirtualTimerGroup &timer_group) : can_interface(can_interface_), timers(timer_group){};
         void initialize();
         int32_t get_motor_rpm();
         int16_t get_IGBT_temp();
@@ -20,6 +20,7 @@ class Inverter {
          
     private:
         ICAN &can_interface;
+        VirtualTimerGroup &timers;
         int32_t motor_rpm;
         int16_t IGBT_temp;
         int16_t motor_temp;
@@ -34,9 +35,9 @@ class Inverter {
         // CAN signals & msgs 
         // tx: Set_Current, Set_Current_Brake
         CANSignal<int32_t, 0, 32, CANTemplateConvertFloat(0.001), CANTemplateConvertFloat(0), true> Set_Current{};
-        CANTXMessage<1> ECU_Set_Current{can_interface, kTransmissionIDSetCurrent, 4, 10, Set_Current};
+        CANTXMessage<1> ECU_Set_Current{can_interface, kTransmissionIDSetCurrent, 4, 10, timers, Set_Current};
         CANSignal<int32_t, 0, 32, CANTemplateConvertFloat(0.001), CANTemplateConvertFloat(0), true> Set_Current_Brake{};
-        CANTXMessage<1> ECU_Set_Current_Brake{can_interface, kTransmissionIDSetCurrentBrake, 4, 10, Set_Current_Brake};
+        CANTXMessage<1> ECU_Set_Current_Brake{can_interface, kTransmissionIDSetCurrentBrake, 4, 10, timers, Set_Current_Brake};
 
         // rx: from inverter: motor temp, motor rpm, inverter/fet temp
         CANSignal<int16_t, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), true> RPM{};

@@ -20,10 +20,10 @@ ESPCAN drive_bus{};
 VirtualTimerGroup timers;
 
 // instantiate throttle/brake
-ThrottleBrake throttle_brake{drive_bus, APPSs_disagree_timer, brake_implausible_timer};
+ThrottleBrake throttle_brake{drive_bus, timers, APPSs_disagree_timer, brake_implausible_timer};
 
 // instantiate inverter
-Inverter inverter{drive_bus};
+Inverter inverter{drive_bus, timers};
 
 void fsm_init()
 {
@@ -48,8 +48,7 @@ void fsm_init()
   Serial.println("added change and process to timergroup");
 
   // send and recieve inverter CAN messages
-  // timers.AddTimer(10, read_inverter_CAN_wrapper);
-  timers.AddTimer(10, send_inverter_CAN_wrapper);
+  timers.AddTimer(10, update_inverter);
 
   // refresh throttle/brake values and check for implausibilities
   timers.AddTimer(10, refresh_throttle_brake);
@@ -77,12 +76,10 @@ void fsm_init()
 
 //// wrappers for send/read CAN functions: timers don't like if your callbacks are direct class member functions
 // send inverter wrapper
-void send_inverter_CAN_wrapper() {
-  inverter.send_inverter_CAN();
-}
-// read inverter wrapper
-void read_inverter_CAN_wrapper() {
+void update_inverter() {
+  Serial.println("update inverter");
   inverter.read_inverter_CAN();
+  inverter.send_inverter_CAN();
 }
 // send throttle/brake wrapper
 void send_throttle_brake_CAN_wrapper() {
@@ -91,10 +88,6 @@ void send_throttle_brake_CAN_wrapper() {
 
 // wrapper for CAN msgs sent/read every 10ms: inverter, fsm
 void tick_CAN() {
-  // Serial.println("tick fsm inverter CAN");
-  // inverter.send_inverter_CAN();
-  // inverter.read_inverter_CAN();
-  // Serial.println(millis());
   drive_bus.Tick();
 }
 

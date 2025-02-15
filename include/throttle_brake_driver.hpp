@@ -1,7 +1,6 @@
 #pragma once
 
 #include "esp_can.h"
-
 #include "can_interface.h"
 #include "virtualTimer.h"
 
@@ -43,7 +42,11 @@ class ThrottleBrake {
     // functions we should make private (ie. not called anywhere but in the throttle/brake class):
     // read_ADCs(), get_APPS2(), get_front_brake(), get_rear_brake(), is_brake_implausible(), is_10_percent_rule_implausible(), is_BPPC_implausible() 
     public:
-        ThrottleBrake(ICAN &can_interface_, VirtualTimer &APPSs_disagreement_implausibility_timer_, VirtualTimer &brake_shorted_or_opened_implausibility_timer_); 
+        ThrottleBrake(ICAN &can_interface_, VirtualTimerGroup &timer_group, VirtualTimer &APPSs_disagreement_implausibility_timer_, VirtualTimer &brake_shorted_or_opened_implausibility_timer_) 
+        : can_interface(can_interface_), 
+          timers(timer_group), 
+          APPSs_disagreement_implausibility_timer(APPSs_disagreement_implausibility_timer_), 
+          brake_shorted_or_opened_implausibility_timer(brake_shorted_or_opened_implausibility_timer_){}; 
     
         // init timers in initialize()
         // we want 1 single-use timer per implausibility check
@@ -61,6 +64,12 @@ class ThrottleBrake {
         void print_throttle_info();
 
     private:
+        ICAN &can_interface;
+        VirtualTimerGroup &timers;
+
+        VirtualTimer &APPSs_disagreement_implausibility_timer;
+        VirtualTimer &brake_shorted_or_opened_implausibility_timer;
+
         int16_t APPS1_RAW; // 12-bit ADC: 0-4095
         int16_t APPS2_RAW; // 12-bit ADC: 0-4095
         int16_t front_break_RAW; // 12-bit ADC: 0-4095
@@ -77,9 +86,6 @@ class ThrottleBrake {
 
         void read_from_SPI_ADCs();
 
-        VirtualTimer &APPSs_disagreement_implausibility_timer;
-        VirtualTimer &brake_shorted_or_opened_implausibility_timer;
-
         bool brake_pressed;
 
         void initialize_CS_pin(uint8_t CS_pin);
@@ -91,7 +97,6 @@ class ThrottleBrake {
         void check_brake_shorted_or_opened_implausibility();
         void check_APPSs_disagreement_implausibility();
 
-        ICAN &CAN_interface;
         const uint32_t kTransmissionIDThrottle = 0x202; // CAN msg address, get this from DBC
         const uint32_t kTransmissionIDBrake = 0x203; // CAN msg address, get this from DBC
         const uint32_t kTransmissionIDImplausibility = 0x204; // CAN msg address, get this from DBC
@@ -104,15 +109,15 @@ class ThrottleBrake {
         CANSignal<bool, 32, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Brake_Pressed{};
         CANSignal<bool, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Implausibility_Present{};
         CANTXMessage<2> ECU_Throttle{
-            CAN_interface, kTransmissionIDThrottle, 10, 100,
+            can_interface, kTransmissionIDThrottle, 10, 100, timers,
             APPS1_Throttle, APPS2_Throttle
         };
         CANTXMessage<3> ECU_Brake{
-            CAN_interface, kTransmissionIDBrake, 10, 100,
+            can_interface, kTransmissionIDBrake, 10, 100, timers,
             Front_Brake_Pressure, Rear_Brake_Pressure, Brake_Pressed
         };
         CANTXMessage<1> ECU_Implausibility{
-            CAN_interface, kTransmissionIDImplausibility, 10, 100,
+            can_interface, kTransmissionIDImplausibility, 10, 100, timers,
             Implausibility_Present
         };
 };
