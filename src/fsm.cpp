@@ -85,7 +85,6 @@ void tick_CAN() {
 
 // read from ADCs, update internal throttle/brake values, and perform internal implausibility checks
 void refresh_throttle_brake() {
-  Serial.println("refresh throttle brake");
   throttle_brake.update_sensor_values();
   throttle_brake.check_for_implausibilities();
   throttle_brake.update_throttle_brake_CAN_signals();
@@ -266,5 +265,5 @@ CANSignal<BMSCommand, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(
 CANSignal<float, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40), false> batt_temp{};
 CANSignal<State, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Drive_State{};
 CANRXMessage<2> BMS_Message{drive_bus, 0x242, BMS_State, batt_temp}; // these addresses might be wrong, check DBC
-CANTXMessage<1> BMS_Command_Message{drive_bus, 0x205, 1, 100, timers, BMS_Command};
-CANTXMessage<1> Drive_Status{drive_bus, 0x206, 1, 100, timers, Drive_State};
+CANTXMessage<1> ECU_BMS_Command_Message{drive_bus, 0x205, 1, 100, timers, BMS_Command};
+CANTXMessage<1> ECU_Drive_Status{drive_bus, 0x206, 1, 100, timers, Drive_State};
