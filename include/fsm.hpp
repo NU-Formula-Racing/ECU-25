@@ -88,10 +88,10 @@ extern Ready_To_Drive_State ready_to_drive_switch; // physical status of the rea
 extern Ready_To_Drive_State ready_to_drive; // goes to drive when the when the brake is held while the ready_to_drive switch is flipped
 
 // CAN signals
-extern CANSignal<BMSState, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_State;
+extern CANSignal<BMSState, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_State; // says 1 bit in DBC .. im just using 8
+extern CANSignal<float, 40, 8, CANTemplateConvertFloat(0.5), CANTemplateConvertFloat(0), false> BMS_SOC; // says starts at bit 40 in DBC, also says size is 8 bits even tho its a float
 extern CANSignal<BMSCommand, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_Command;
-extern CANSignal<float, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40), false> batt_temp;
 extern CANSignal<State, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Drive_State;
-extern CANRXMessage<2> BMS_Message;
-extern CANTXMessage<1> BMS_Command_Message;
-extern CANTXMessage<1> Drive_Status;
+extern CANRXMessage<2> BMS_Status;
+extern CANTXMessage<1> ECU_BMS_Command_Message;
+extern CANTXMessage<1> ECU_Drive_Status;

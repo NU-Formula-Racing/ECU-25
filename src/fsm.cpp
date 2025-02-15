@@ -39,7 +39,7 @@ void fsm_init()
   throttle_brake.initialize();
 
   // register BMS msg
-  drive_bus.RegisterRXMessage(BMS_Message);
+  drive_bus.RegisterRXMessage(BMS_Status);
 
   // add change_state and process_state to timer group -- called every 10 ms
   timers.AddTimer(10, change_state);
