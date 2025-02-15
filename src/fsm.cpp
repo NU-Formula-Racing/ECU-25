@@ -28,12 +28,11 @@ Inverter inverter{drive_bus, timers};
 void fsm_init()
 {
   Serial.begin(115200);
-  Serial.println("fsm init");
   
   // initialize CAN bus
   drive_bus.Initialize(ESPCAN::BaudRate::kBaud1M);
 
-  // initialize inverter class -- registers rx messages from inverter
+  // initialize inverter class
   inverter.initialize();
 
   // initialize throttle/brake class -- should set up SPI transaction and set pinModes
@@ -45,7 +44,6 @@ void fsm_init()
   // add change_state and process_state to timer group -- called every 10 ms
   timers.AddTimer(10, change_state);
   timers.AddTimer(10, process_state);
-  Serial.println("added change and process to timergroup");
 
   // send and recieve inverter CAN messages
   timers.AddTimer(10, update_inverter);
@@ -58,8 +56,6 @@ void fsm_init()
 
   // timer for print debugging msgs
   timers.AddTimer(1000, print_fsm);
-
-  Serial.println("added everything to timergroup");
 
   // initialize state variables
   tsactive_switch = TSActive::Inactive;
@@ -173,18 +169,15 @@ void process_state() {
   throttle_brake.update_sensor_values();
   switch(Drive_State) {
     case State::OFF:
-      // Serial.println("OFF");
       ready_to_drive = Ready_To_Drive_State::Neutral;
       BMS_Command = BMSCommand::Shutdown;
       inverter.request_torque(0);
       break;
     case State::N:
-      // Serial.println("N");
       BMS_Command = BMSCommand::NoAction;
       inverter.request_torque(0);
       break;
     case State::DRIVE:
-      // Serial.println("DRIVE");
       // int32_t torque_req = calculate_torque(); // use this function to calculate torque based on LUTs and traction control when its time
       int32_t torque_req;
       if (throttle_brake.is_implausibility_present()) {
@@ -260,10 +253,10 @@ VirtualTimer brake_implausible_timer(100U, brake_implausible_timer_callback, Vir
 // add rx: wheel speed
 // add tx: 
 // APPS1, APPS2, front brake, rear brake, torque request will be handled in their respective .hpp files
-CANSignal<BMSState, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_State{};
+CANSignal<BMSState, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_State{}; // says 1 bit in DBC .. im just using 8
+CANSignal<float, 40, 8, CANTemplateConvertFloat(0.5), CANTemplateConvertFloat(0), false> BMS_SOC{}; // says starts at bit 40 in DBC, also says size is 8 bits even tho its a float
 CANSignal<BMSCommand, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_Command{};
-CANSignal<float, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40), false> batt_temp{};
 CANSignal<State, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Drive_State{};
-CANRXMessage<2> BMS_Message{drive_bus, 0x242, BMS_State, batt_temp}; // these addresses might be wrong, check DBC
+CANRXMessage<2> BMS_Status{drive_bus, 0x175, BMS_State, BMS_SOC}; // these addresses might be wrong, check DBC
 CANTXMessage<1> ECU_BMS_Command_Message{drive_bus, 0x205, 1, 100, timers, BMS_Command};
 CANTXMessage<1> ECU_Drive_Status{drive_bus, 0x206, 1, 100, timers, Drive_State};
