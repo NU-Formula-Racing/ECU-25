@@ -49,20 +49,20 @@ enum class State
 };
 
 // instantiate CAN bus
-static ESPCAN drive_bus{};
+extern ESPCAN drive_bus;
 
 // instantiate timer group
-static VirtualTimerGroup timers;
+extern VirtualTimerGroup timers;
 
 // instantiate throttle/brake timers
 extern VirtualTimer APPSs_disagree_timer; // this timer needs to call Throttle_Brake::set_is_APPSs_disagreement_implausibility_present_to_true()
 extern VirtualTimer brake_implausible_timer; // this timer needs to call Throttle_Brake::set_is_brake_shorted_or_opened_implausibility_present_to_true()
 
 // instantiate throttle/brake
-static ThrottleBrake throttle_brake{drive_bus, APPSs_disagree_timer, brake_implausible_timer};
+extern ThrottleBrake throttle_brake;
 
 // instantiate inverter
-static Inverter inverter{drive_bus};
+extern Inverter inverter;
 
 // function forward initializations
 void fsm_init();
@@ -84,9 +84,9 @@ void print_all();
 void tick_timers();
 
 // global state variables
-static TSActive tsactive_switch; // physical status of the tsactive dashboard switch
-static Ready_To_Drive_State ready_to_drive_switch; // physical status of the ready to drive dashboard switch
-static Ready_To_Drive_State ready_to_drive; // goes to drive when the when the brake is held while the ready_to_drive switch is flipped
+extern TSActive tsactive_switch; // physical status of the tsactive dashboard switch
+extern Ready_To_Drive_State ready_to_drive_switch; // physical status of the ready to drive dashboard switch
+extern Ready_To_Drive_State ready_to_drive; // goes to drive when the when the brake is held while the ready_to_drive switch is flipped
 
 // CAN signals
 extern CANSignal<BMSState, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_State;

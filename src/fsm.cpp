@@ -8,6 +8,22 @@
 #include "pins.hpp"
 #include "fsm.hpp"
 
+// initialize state variables
+TSActive tsactive_switch;
+Ready_To_Drive_State ready_to_drive;
+Ready_To_Drive_State ready_to_drive_switch;
+
+// instantiate CAN bus
+ESPCAN drive_bus{};
+
+// instantiate timer group
+VirtualTimerGroup timers;
+
+// instantiate throttle/brake
+ThrottleBrake throttle_brake{drive_bus, APPSs_disagree_timer, brake_implausible_timer};
+
+// instantiate inverter
+Inverter inverter{drive_bus};
 
 void fsm_init()
 {
