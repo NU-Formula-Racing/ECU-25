@@ -172,6 +172,7 @@ void process_state() {
   switch(Drive_State) {
     case State::OFF:
       // Serial.println("OFF");
+      ready_to_drive = Ready_To_Drive_State::Neutral;
       BMS_Command = BMSCommand::Shutdown;
       inverter.request_torque(0);
       break;
@@ -220,7 +221,7 @@ void print_fsm() {
   // Serial.println(static_cast<int>(BMS_Command));
   Serial.print(" TS active switch: ");
   Serial.print(static_cast<int>(tsactive_switch));
-  Serial.print(" Front Brake: ");
+  Serial.print(" is brake pressed: ");
   Serial.print(throttle_brake.is_brake_pressed());
   Serial.print(" Ready to Drive: ");
   Serial.print(static_cast<int>(ready_to_drive));

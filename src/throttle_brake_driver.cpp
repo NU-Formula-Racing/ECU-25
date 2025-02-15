@@ -50,20 +50,25 @@ void ThrottleBrake::read_from_SPI_ADCs() {
 
     digitalWrite(static_cast<uint8_t>(Pins::APPS1_CS_PIN), LOW);
     // ThrottleBrake::APPS1_RAW = static_cast<int16_t>((SPI.transfer16(0x0000)) << 2) >> 4;
-    ThrottleBrake::APPS1_RAW = (SPI.transfer16(0x0000) << 2) >> 4;
+    int16_t APPS1 = SPI.transfer16(0x0000);
+    ThrottleBrake::APPS1_RAW = (APPS1 << 2) >> 4;
     digitalWrite(static_cast<uint8_t>(Pins::APPS1_CS_PIN), HIGH);
 
     digitalWrite(static_cast<uint8_t>(Pins::APPS2_CS_PIN), LOW);
-    // ThrottleBrake::APPS2_RAW = static_cast<int16_t>((SPI.transfer16(0x0000)) << 2) >> 4;
-    ThrottleBrake::APPS2_RAW = (SPI.transfer16(0x0000) << 2) >> 4;
+    int16_t APPS2 = SPI.transfer16(0x0000);
+    ThrottleBrake::APPS2_RAW = (APPS2 << 2) >> 4;
     digitalWrite(static_cast<uint8_t>(Pins::APPS2_CS_PIN), HIGH);
 
     digitalWrite(static_cast<uint8_t>(Pins::FRONT_BRAKE_CS_PIN), LOW);
-    ThrottleBrake::front_break_RAW = (SPI.transfer16(0x0000) << 2) >> 4;
+    int16_t front = SPI.transfer16(0x0000);
+    ThrottleBrake::front_break_RAW = (front << 2) >> 4;
+    // Serial.print(" front break raw: ");
+    // Serial.println(ThrottleBrake::front_break_RAW);
     digitalWrite(static_cast<uint8_t>(Pins::FRONT_BRAKE_CS_PIN), HIGH);
 
     digitalWrite(static_cast<uint8_t>(Pins::REAR_BRAKE_CS_PIN), LOW);
-    ThrottleBrake::rear_break_RAW = (SPI.transfer16(0x0000) << 2) >> 4;
+    int16_t rear = SPI.transfer16(0x0000);
+    ThrottleBrake::rear_break_RAW = (rear << 2) >> 4;
     digitalWrite(static_cast<uint8_t>(Pins::REAR_BRAKE_CS_PIN), HIGH);
 
     SPI.endTransaction();
@@ -97,6 +102,12 @@ void ThrottleBrake::update_sensor_values() {
     int16_t safe_rear_break_RAW = get_safe_RAW(ThrottleBrake::rear_break_RAW, static_cast<int32_t>(Bounds::REAR_BRAKE_RAW_MIN), static_cast<int32_t>(Bounds::REAR_BRAKE_RAW_MAX));
     ThrottleBrake::rear_brake = (safe_rear_break_RAW - static_cast<int32_t>(Bounds::REAR_BRAKE_RAW_MIN) * 32767) / static_cast<int32_t>(Bounds::REAR_BRAKE_RAW_SPAN);
 
+    if (ThrottleBrake::front_break_RAW >= static_cast<int32_t>(Bounds::FRONT_BRAKE_RAW_PRESSED_THRESHOLD)) {
+        ThrottleBrake::brake_pressed = true;
+    }
+    else {
+        ThrottleBrake::brake_pressed = false;
+    }
 }
 
 /**
@@ -176,15 +187,9 @@ void ThrottleBrake::check_APPSs_disagreement_implausibility() {
  * @return bool
  */
 bool ThrottleBrake::is_brake_pressed() {
-    // check if the front brake value is over a certain threshold (actual threshold is TBD, need to test with brake sensors)
-    // if yes: return true
-    // if no: return false
-    if (ThrottleBrake::front_break_RAW >= static_cast<int32_t>(Bounds::FRONT_BRAKE_RAW_PRESSED_THRESHOLD)) {
-        ThrottleBrake::brake_pressed = true;
-        return true;
-    }
-    ThrottleBrake::brake_pressed = false;
-    return false;
+    // true: pressed
+    // false: not pressed
+    return ThrottleBrake::brake_pressed;
 };
 
 /**
@@ -230,14 +235,16 @@ void ThrottleBrake::print_throttle_info() {
     // Serial.print(" APPS2 RAW: ");
     // Serial.print(ThrottleBrake::APPS2_RAW);
 
-    Serial.print(" APPS1: ");
-    Serial.print(ThrottleBrake::APPS1_throttle);
-    Serial.print(" APPS2: ");
-    Serial.print(ThrottleBrake::APPS2_throttle);
+    // Serial.print(" APPS1: ");
+    // Serial.print(ThrottleBrake::APPS1_throttle);
+    // Serial.print(" APPS2: ");
+    // Serial.print(ThrottleBrake::APPS2_throttle);
     Serial.print(" Front Brake: ");
     Serial.print(ThrottleBrake::front_brake);
-    Serial.print(" Rear Brake: ");
-    Serial.print(ThrottleBrake::rear_brake);
+    // Serial.print("brake pressed: ");
+    // Serial.print(ThrottleBrake::brake_pressed);
+    // Serial.print(" Rear Brake: ");
+    // Serial.print(ThrottleBrake::rear_brake);
     // Serial.print(" APPS2 RAW: ");
     // Serial.print(ThrottleBrake::APPS2_RAW, BIN);
     // Serial.print(" APPS2 RAW: ");
