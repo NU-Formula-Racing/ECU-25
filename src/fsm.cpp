@@ -229,7 +229,7 @@ void print_fsm() {
   // Serial.print("BMS msg: ");
   // Serial.println(static_cast<int>(BMS_State));
 
-  // Serial.println("");
+  Serial.println("");
 
 }
 

@@ -236,7 +236,7 @@ void ThrottleBrake::print_throttle_info() {
     // Serial.print(" APPS2: ");
     // Serial.print(ThrottleBrake::APPS2_throttle);
     Serial.print(" Front Brake: ");
-    Serial.print(ThrottleBrake::front_brake);
+    Serial.print(ThrottleBrake::front_break_RAW);
     // Serial.print("brake pressed: ");
     // Serial.print(ThrottleBrake::brake_pressed);
     // Serial.print(" Rear Brake: ");
