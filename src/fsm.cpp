@@ -169,12 +169,18 @@ void process_state() {
   throttle_brake.update_sensor_values();
   switch(Drive_State) {
     case State::OFF:
+      if (tsactive_switch == TSActive::Active) { // consider adding another state here for when TSactive switch is flipped, we can only get to this state on the rising edge of TS switch
+        BMS_Command = BMSCommand::PrechargeAndCloseContactors;
+      }
+      else {
+        BMS_Command = BMSCommand::Shutdown;
+      }
       ready_to_drive = Ready_To_Drive_State::Neutral;
-      BMS_Command = BMSCommand::Shutdown;
+      // BMS_Command = BMSCommand::Shutdown;
       inverter.request_torque(0);
       break;
     case State::N:
-      BMS_Command = BMSCommand::NoAction;
+      BMS_Command = BMSCommand::PrechargeAndCloseContactors; // maybe make prechargeandclosecontactors or NoAction here
       inverter.request_torque(0);
       break;
     case State::DRIVE:
