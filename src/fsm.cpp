@@ -30,7 +30,7 @@ void fsm_init()
   Serial.begin(115200);
   
   // initialize CAN bus
-  drive_bus.Initialize(ESPCAN::BaudRate::kBaud1M);
+  drive_bus.Initialize(ESPCAN::BaudRate::kBaud500K);
 
   // initialize inverter class
   inverter.initialize();
