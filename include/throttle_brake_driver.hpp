@@ -7,23 +7,23 @@
 // change specific bounds after testing with sensors in pedalbox:
 enum class Bounds {
 
-    APPS1_RAW_MIN = 155,
-    APPS1_RAW_MAX = 4000,
-    APPS1_RAW_SPAN = APPS1_RAW_MAX - APPS1_RAW_MIN,
+    APPS1_ADC_MIN = 155,
+    APPS1_ADC_MAX = 4000,
+    APPS1_ADC_SPAN = APPS1_ADC_MAX - APPS1_ADC_MIN,
 
-    APPS2_RAW_MIN = 185,
-    APPS2_RAW_MAX = 4010,
-    APPS2_RAW_SPAN = APPS2_RAW_MAX - APPS2_RAW_MIN,
+    APPS2_ADC_MIN = 185,
+    APPS2_ADC_MAX = 4010,
+    APPS2_ADC_SPAN = APPS2_ADC_MAX - APPS2_ADC_MIN,
 
-    FRONT_BRAKE_RAW_MIN = 1456,
-    FRONT_BRAKE_RAW_MAX = 4095,
-    FRONT_BRAKE_RAW_SPAN = FRONT_BRAKE_RAW_MAX - FRONT_BRAKE_RAW_MIN,
+    FRONT_BRAKE_ADC_MIN = 1456,
+    FRONT_BRAKE_ADC_MAX = 4095,
+    FRONT_BRAKE_ADC_SPAN = FRONT_BRAKE_ADC_MAX - FRONT_BRAKE_ADC_MIN,
 
-    REAR_BRAKE_RAW_MIN = 1456,
-    REAR_BRAKE_RAW_MAX = 4095,
-    REAR_BRAKE_RAW_SPAN = REAR_BRAKE_RAW_MAX - REAR_BRAKE_RAW_MIN,
+    REAR_BRAKE_ADC_MIN = 1456,
+    REAR_BRAKE_ADC_MAX = 4095,
+    REAR_BRAKE_ADC_SPAN = REAR_BRAKE_ADC_MAX - REAR_BRAKE_ADC_MIN,
 
-    FRONT_BRAKE_RAW_PRESSED_THRESHOLD = 2000
+    FRONT_BRAKE_ADC_PRESSED_THRESHOLD = 2000
 
     // FIVE_PERCENT_THROTTLE = 1639,
     // TEN_PERCENT_THROTTLE = 3276,
@@ -70,15 +70,15 @@ class ThrottleBrake {
         VirtualTimer &APPSs_disagreement_implausibility_timer;
         VirtualTimer &brake_shorted_or_opened_implausibility_timer;
 
-        int16_t APPS1_RAW; // 12-bit ADC: 0-4095
-        int16_t APPS2_RAW; // 12-bit ADC: 0-4095
-        int16_t front_break_RAW; // 12-bit ADC: 0-4095
-        int16_t rear_break_RAW; // 12-bit ADC: 0-4095
+        int16_t APPS1_adc; // 12-bit ADC: 0-4095 chnge to _ADC
+        int16_t APPS2_adc; // 12-bit ADC: 0-4095
+        int16_t front_brake_adc; // 12-bit ADC: 0-4095
+        int16_t rear_brake_adc; // 12-bit ADC: 0-4095
 
-        int16_t APPS1_throttle; // throttle calculated from APPS1 and scaled 0-32767
-        int16_t APPS2_throttle; // throttle calculated from APPS2 and scaled 0-32767
-        int16_t front_brake; // front brake scaled 0-32767
-        int16_t rear_brake; // rear brake scaled 0-32767
+        int16_t APPS1_throttle_scaled; // throttle calculated from APPS1 and scaled 0-32767 change to _scaled
+        int16_t APPS2_throttle_scaled; // throttle calculated from APPS2 and scaled 0-32767
+        int16_t front_brake_scaled; // front brake scaled 0-32767
+        int16_t rear_brake_scaled; // rear brake scaled 0-32767
 
         bool APPSs_disagreement_implausibility_present;
         bool BPPC_implausibility_present;

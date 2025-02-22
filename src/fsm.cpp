@@ -232,7 +232,7 @@ void print_fsm() {
   Serial.print(" Throttle: ");
   Serial.print(throttle_brake.get_throttle());
   throttle_brake.print_throttle_info();
-  inverter.print_inverter_info();
+  // inverter.print_inverter_info();
 
   // Serial.print("BMS msg: ");
   // Serial.println(static_cast<int>(BMS_State));
