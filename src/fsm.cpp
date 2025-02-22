@@ -186,12 +186,13 @@ void process_state() {
     case State::DRIVE:
       // int32_t torque_req = calculate_torque(); // use this function to calculate torque based on LUTs and traction control when its time
       int32_t torque_req;
-      if (throttle_brake.is_implausibility_present()) {
-        torque_req = 0;
-      }
-      else {
-        torque_req = static_cast<int32_t>(throttle_brake.get_throttle());
-      }
+      // if (throttle_brake.is_implausibility_present()) {
+      //   torque_req = 0;
+      // }
+      // else {
+      //   torque_req = static_cast<int32_t>(throttle_brake.get_throttle());
+      // }
+      torque_req = static_cast<int32_t>(throttle_brake.get_throttle());
       inverter.request_torque(torque_req); 
       break;
   }
@@ -231,6 +232,7 @@ void print_fsm() {
   Serial.print(" Throttle: ");
   Serial.print(throttle_brake.get_throttle());
   throttle_brake.print_throttle_info();
+  inverter.print_inverter_info();
 
   // Serial.print("BMS msg: ");
   // Serial.println(static_cast<int>(BMS_State));
@@ -261,9 +263,9 @@ VirtualTimer brake_implausible_timer(100U, brake_implausible_timer_callback, Vir
 // add tx: 
 // APPS1, APPS2, front brake, rear brake, torque request will be handled in their respective .hpp files
 CANSignal<BMSState, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_State{}; // says 1 bit in DBC .. im just using 8
-CANSignal<float, 40, 8, CANTemplateConvertFloat(0.5), CANTemplateConvertFloat(0), false> BMS_SOC{}; // says starts at bit 40 in DBC, also says size is 8 bits even tho its a float
+// CANSignal<float, 40, 8, CANTemplateConvertFloat(0.5), CANTemplateConvertFloat(0), false> BMS_SOC{}; // says starts at bit 40 in DBC, also says size is 8 bits even tho its a float
 CANSignal<BMSCommand, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_Command{};
 CANSignal<State, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Drive_State{};
-CANRXMessage<2> BMS_Status{drive_bus, 0x175, BMS_State, BMS_SOC}; // these addresses might be wrong, check DBC
+CANRXMessage<1> BMS_Status{drive_bus, 0x175, BMS_State}; //  BMS_SOC these addresses might be wrong, check DBC
 CANTXMessage<1> ECU_BMS_Command_Message{drive_bus, 0x205, 1, 100, timers, BMS_Command};
 CANTXMessage<1> ECU_Drive_Status{drive_bus, 0x206, 1, 100, timers, Drive_State};

@@ -92,6 +92,6 @@ extern CANSignal<BMSState, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertF
 extern CANSignal<float, 40, 8, CANTemplateConvertFloat(0.5), CANTemplateConvertFloat(0), false> BMS_SOC; // says starts at bit 40 in DBC, also says size is 8 bits even tho its a float
 extern CANSignal<BMSCommand, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_Command;
 extern CANSignal<State, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Drive_State;
-extern CANRXMessage<2> BMS_Status;
+extern CANRXMessage<1> BMS_Status;
 extern CANTXMessage<1> ECU_BMS_Command_Message;
 extern CANTXMessage<1> ECU_Drive_Status;
