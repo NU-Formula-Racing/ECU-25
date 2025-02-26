@@ -15,7 +15,7 @@ enum class TSActive { Active = 0, Inactive = 1 };
 
 enum class Ready_To_Drive_State { Neutral = 1, Drive = 0 };
 
-enum class Brake_State { NotPressed, PressedInNeutral };
+enum class Brake_State { NotPressed = 0, PressedInNeutral = 1 };
 
 enum class State { OFF = 0, N = 1, DRIVE = 2 };
 
