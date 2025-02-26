@@ -5,14 +5,14 @@
 
 // use GPIO names
 enum class Pins : uint8_t {
-    APPS1_CS_PIN = 19,
-    APPS2_CS_PIN = 21,
-    FRONT_BRAKE_CS_PIN = 22,
-    REAR_BRAKE_CS_PIN = 23,
-    BRAKE_VALID_PIN = 32,
-    READY_TO_DRIVE_SWITCH = 26,
-    TS_ACTIVE_PIN = 27,
-    SPI_CLK = 25,
-    SPI_MISO = 18,
-    SPI_MOSI = 255 // not used, still need to give an input to SPI.begin() 
+  APPS1_CS_PIN = 19,
+  APPS2_CS_PIN = 21,
+  FRONT_BRAKE_CS_PIN = 22,
+  REAR_BRAKE_CS_PIN = 23,
+  BRAKE_VALID_PIN = 32,
+  READY_TO_DRIVE_SWITCH = 26,
+  TS_ACTIVE_PIN = 27,
+  SPI_CLK = 25,
+  SPI_MISO = 18,
+  SPI_MOSI = 255  // not used, still need to give an input to SPI.begin()
 };

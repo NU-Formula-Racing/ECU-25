@@ -1,12 +1,13 @@
+#include "fsm.hpp"
+
 #include <Arduino.h>
 
 #include "LUT.hpp"
-#include "inverter_driver.hpp"
 #include "esp_can.h"
+#include "inverter_driver.hpp"
+#include "pins.hpp"
 #include "throttle_brake_driver.hpp"
 #include "virtualTimer.h"
-#include "pins.hpp"
-#include "fsm.hpp"
 
 // initialize state variables
 TSActive tsactive_switch;
@@ -25,10 +26,9 @@ ThrottleBrake throttle_brake{drive_bus, timers, APPSs_disagree_timer, brake_impl
 // instantiate inverter
 Inverter inverter{drive_bus, timers};
 
-void fsm_init()
-{
+void fsm_init() {
   Serial.begin(115200);
-  
+
   // initialize CAN bus
   drive_bus.Initialize(ESPCAN::BaudRate::kBaud500K);
 
@@ -67,7 +67,8 @@ void fsm_init()
   initialize_dash_switches();
 }
 
-//// wrappers for send/read CAN functions: timers don't like if your callbacks are direct class member functions
+//// wrappers for send/read CAN functions: timers don't like if your callbacks are direct class
+/// member functions
 // send inverter wrapper
 void update_inverter() {
   inverter.read_inverter_CAN();
@@ -75,9 +76,7 @@ void update_inverter() {
 }
 
 // wrapper for CAN msgs sent/read every 10ms: inverter, fsm
-void tick_CAN() {
-  drive_bus.Tick();
-}
+void tick_CAN() { drive_bus.Tick(); }
 
 // read from ADCs, update internal throttle/brake values, and perform internal implausibility checks
 void refresh_throttle_brake() {
@@ -107,7 +106,8 @@ void ready_to_drive_callback() {
   }
 
   // if the ready to drive switch is flipped and the brake is pressed, set ready_to_drive to drive
-  if (digitalRead(static_cast<uint8_t>(Pins::READY_TO_DRIVE_SWITCH)) == LOW && throttle_brake.is_brake_pressed()) {
+  if (digitalRead(static_cast<uint8_t>(Pins::READY_TO_DRIVE_SWITCH)) == LOW &&
+      throttle_brake.is_brake_pressed()) {
     ready_to_drive = Ready_To_Drive_State::Drive;
   } else {
     ready_to_drive = Ready_To_Drive_State::Neutral;
@@ -118,7 +118,7 @@ void ready_to_drive_callback() {
 // currently, the switch is active low
 void tsactive_callback() {
   if (digitalRead((uint8_t)Pins::TS_ACTIVE_PIN) == LOW) {
-    tsactive_switch = TSActive::Active; 
+    tsactive_switch = TSActive::Active;
     BMS_Command = BMSCommand::PrechargeAndCloseContactors;
   } else {
     tsactive_switch = TSActive::Inactive;
@@ -126,24 +126,27 @@ void tsactive_callback() {
 }
 
 void initialize_dash_switches() {
-  // initialize Ready To Drive Switch -- use interrupts & pinMode 
+  // initialize Ready To Drive Switch -- use interrupts & pinMode
   pinMode(static_cast<uint8_t>(Pins::READY_TO_DRIVE_SWITCH), INPUT);
-  attachInterrupt(digitalPinToInterrupt(static_cast<uint8_t>(Pins::READY_TO_DRIVE_SWITCH)), ready_to_drive_callback, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(static_cast<uint8_t>(Pins::READY_TO_DRIVE_SWITCH)),
+                  ready_to_drive_callback, CHANGE);
 
   // initialize tsactive switch -- use interrupts & pinMode
   pinMode(static_cast<uint8_t>(Pins::TS_ACTIVE_PIN), INPUT);
-  attachInterrupt(digitalPinToInterrupt(static_cast<uint8_t>(Pins::TS_ACTIVE_PIN)), tsactive_callback, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(static_cast<uint8_t>(Pins::TS_ACTIVE_PIN)),
+                  tsactive_callback, CHANGE);
 }
 
-// this function will be used to change the state of the vehicle based on the current state and the state of the switches
+// this function will be used to change the state of the vehicle based on the current state and the
+// state of the switches
 void change_state() {
-  switch(Drive_State) {
+  switch (Drive_State) {
     case State::OFF:
       if (tsactive_switch == TSActive::Active && BMS_State == BMSState::kActive) {
         Drive_State = State::N;
       }
       break;
-    
+
     case State::N:
       if (ready_to_drive == Ready_To_Drive_State::Drive) {
         Drive_State = State::DRIVE;
@@ -167,12 +170,13 @@ void change_state() {
 // this function will be used to calculate torque based on LUTs and traction control when its time
 void process_state() {
   throttle_brake.update_sensor_values();
-  switch(Drive_State) {
+  switch (Drive_State) {
     case State::OFF:
-      if (tsactive_switch == TSActive::Active) { // consider adding another state here for when TSactive switch is flipped, we can only get to this state on the rising edge of TS switch
+      if (tsactive_switch == TSActive::Active) {  // consider adding another state here for when
+                                                  // TSactive switch is flipped, we can only get to
+                                                  // this state on the rising edge of TS switch
         BMS_Command = BMSCommand::PrechargeAndCloseContactors;
-      }
-      else {
+      } else {
         BMS_Command = BMSCommand::Shutdown;
       }
       ready_to_drive = Ready_To_Drive_State::Neutral;
@@ -180,11 +184,14 @@ void process_state() {
       inverter.request_torque(0);
       break;
     case State::N:
-      BMS_Command = BMSCommand::PrechargeAndCloseContactors; // maybe make prechargeandclosecontactors or NoAction here
+      BMS_Command =
+          BMSCommand::PrechargeAndCloseContactors;  // maybe make prechargeandclosecontactors or
+                                                    // NoAction here
       inverter.request_torque(0);
       break;
     case State::DRIVE:
-      // int32_t torque_req = calculate_torque(); // use this function to calculate torque based on LUTs and traction control when its time
+      // int32_t torque_req = calculate_torque(); // use this function to calculate torque based on
+      // LUTs and traction control when its time
       int32_t torque_req;
       // if (throttle_brake.is_implausibility_present()) {
       //   torque_req = 0;
@@ -193,7 +200,7 @@ void process_state() {
       //   torque_req = static_cast<int32_t>(throttle_brake.get_throttle());
       // }
       torque_req = static_cast<int32_t>(throttle_brake.get_throttle());
-      inverter.request_torque(torque_req); 
+      inverter.request_torque(torque_req);
       break;
   }
 }
@@ -238,7 +245,6 @@ void print_fsm() {
   // Serial.println(static_cast<int>(BMS_State));
 
   Serial.println("");
-
 }
 
 void print_all() {
@@ -255,17 +261,30 @@ void tick_timers() {
   timers.Tick(millis());
 }
 // implausibility timer definitions
-VirtualTimer APPSs_disagree_timer(100U, APPSs_disagreement_timer_callback, VirtualTimer::Type::kSingleUse); // this timer needs to call Throttle_Brake::set_is_APPSs_disagreement_implausibility_present_to_true()
-VirtualTimer brake_implausible_timer(100U, brake_implausible_timer_callback, VirtualTimer::Type::kSingleUse); // this timer needs to call Throttle_Brake::set_is_brake_shorted_or_opened_implausibility_present_to_true()
+VirtualTimer APPSs_disagree_timer(
+    100U, APPSs_disagreement_timer_callback,
+    VirtualTimer::Type::
+        kSingleUse);  // this timer needs to call
+                      // Throttle_Brake::set_is_APPSs_disagreement_implausibility_present_to_true()
+VirtualTimer brake_implausible_timer(
+    100U, brake_implausible_timer_callback,
+    VirtualTimer::Type::
+        kSingleUse);  // this timer needs to call
+                      // Throttle_Brake::set_is_brake_shorted_or_opened_implausibility_present_to_true()
 
 // CAN signals -- get new addresses from DBC
 // add rx: wheel speed
-// add tx: 
-// APPS1, APPS2, front brake, rear brake, torque request will be handled in their respective .hpp files
-CANSignal<BMSState, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_State{}; // says 1 bit in DBC .. im just using 8
-// CANSignal<float, 40, 8, CANTemplateConvertFloat(0.5), CANTemplateConvertFloat(0), false> BMS_SOC{}; // says starts at bit 40 in DBC, also says size is 8 bits even tho its a float
-CANSignal<BMSCommand, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BMS_Command{};
+// add tx:
+// APPS1, APPS2, front brake, rear brake, torque request will be handled in their respective .hpp
+// files
+CANSignal<BMSState, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    BMS_State{};  // says 1 bit in DBC .. im just using 8
+// CANSignal<float, 40, 8, CANTemplateConvertFloat(0.5), CANTemplateConvertFloat(0), false>
+// BMS_SOC{}; // says starts at bit 40 in DBC, also says size is 8 bits even tho its a float
+CANSignal<BMSCommand, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    BMS_Command{};
 CANSignal<State, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Drive_State{};
-CANRXMessage<1> BMS_Status{drive_bus, 0x175, BMS_State}; //  BMS_SOC these addresses might be wrong, check DBC
+CANRXMessage<1> BMS_Status{drive_bus, 0x175,
+                           BMS_State};  //  BMS_SOC these addresses might be wrong, check DBC
 CANTXMessage<1> ECU_BMS_Command_Message{drive_bus, 0x205, 1, 100, timers, BMS_Command};
 CANTXMessage<1> ECU_Drive_Status{drive_bus, 0x206, 1, 100, timers, Drive_State};

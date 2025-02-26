@@ -1,18 +1,13 @@
 #include <Arduino.h>
+
 #include "LUT.hpp"
-#include "inverter_driver.hpp"
-
 #include "esp_can.h"
-
+#include "fsm.hpp"
+#include "inverter_driver.hpp"
+#include "pins.hpp"
 #include "throttle_brake_driver.hpp"
 #include "virtualTimer.h"
-#include "pins.hpp"
-#include "fsm.hpp"
 
-void setup() {
-  fsm_init();
-}
+void setup() { fsm_init(); }
 
-void loop() {
-  tick_timers();
-}
+void loop() { tick_timers(); }
