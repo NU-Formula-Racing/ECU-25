@@ -271,11 +271,7 @@ VirtualTimer brake_implausible_timer(
         kSingleUse);  // this timer needs to call
                       // Throttle_Brake::set_is_brake_shorted_or_opened_implausibility_present_to_true()
 
-// CAN signals -- get new addresses from DBC
-// add rx: wheel speed
-// add tx:
-// APPS1, APPS2, front brake, rear brake, torque request will be handled in their respective .hpp
-// files
+// CAN signals and messages //
 CANSignal<BMSState, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     BMS_State{};  // says 1 bit in DBC .. im just using 8
 // CANSignal<float, 40, 8, CANTemplateConvertFloat(0.5), CANTemplateConvertFloat(0), false>
@@ -283,7 +279,6 @@ CANSignal<BMSState, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)
 CANSignal<BMSCommand, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     BMS_Command{};
 CANSignal<State, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Drive_State{};
-CANRXMessage<1> BMS_Status{drive_bus, 0x175,
-                           BMS_State};  //  BMS_SOC these addresses might be wrong, check DBC
+CANRXMessage<1> BMS_Status{drive_bus, 0x152, BMS_State};  //  BMS_SOC
 CANTXMessage<1> ECU_BMS_Command_Message{drive_bus, 0x205, 1, 100, timers, BMS_Command};
 CANTXMessage<1> ECU_Drive_Status{drive_bus, 0x206, 1, 100, timers, Drive_State};

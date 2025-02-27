@@ -9,7 +9,7 @@
 // enum definitions //
 enum class BMSState { kShutdown = 0, kPrecharge = 1, kActive = 2, kCharging = 3, kFault = 4 };
 
-enum class BMSCommand { NoAction = 0, PrechargeAndCloseContactors = 1, Shutdown = 2 };
+enum class BMSCommand { PrechargeAndCloseContactors = 0, Shutdown = 1 };
 
 enum class TSActive { Active = 0, Inactive = 1 };
 
