@@ -10,9 +10,9 @@ class Inverter {
   Inverter(ICAN& can_interface_, VirtualTimerGroup& timer_group)
       : can_interface(can_interface_), timers(timer_group) {};
   void initialize();
-  int32_t get_motor_rpm();
-  int16_t get_IGBT_temp();
-  int16_t get_motor_temp();
+  int32_t get_motor_rpm() const;
+  int16_t get_IGBT_temp() const;
+  int16_t get_motor_temp() const;
   void read_inverter_CAN();
   void send_inverter_CAN();
   void request_torque(

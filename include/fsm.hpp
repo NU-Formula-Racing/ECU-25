@@ -6,7 +6,7 @@
 #include "throttle_brake_driver.hpp"
 #include "virtualTimer.h"
 
-// enum definitions
+// enum definitions //
 enum class BMSState { kShutdown = 0, kPrecharge = 1, kActive = 2, kCharging = 3, kFault = 4 };
 
 enum class BMSCommand { NoAction = 0, PrechargeAndCloseContactors = 1, Shutdown = 2 };
@@ -25,13 +25,13 @@ extern ESPCAN drive_bus;
 // instantiate timer group
 extern VirtualTimerGroup timers;
 
-// instantiate throttle/brake timers
-extern VirtualTimer
-    APPSs_disagree_timer;  // this timer needs to call
-                           // Throttle_Brake::set_is_APPSs_disagreement_implausibility_present_to_true()
-extern VirtualTimer
-    brake_implausible_timer;  // this timer needs to call
-                              // Throttle_Brake::set_is_brake_shorted_or_opened_implausibility_present_to_true()
+// instantiate throttle/brake timers //
+// this timer needs to call
+// Throttle_Brake::set_is_APPSs_disagreement_implausibility_present_to_true()
+extern VirtualTimer APPSs_disagree_timer;
+// this timer needs to call
+// Throttle_Brake::set_is_brake_shorted_or_opened_implausibility_present_to_true()
+extern VirtualTimer brake_implausible_timer;
 
 // instantiate throttle/brake
 extern ThrottleBrake throttle_brake;
@@ -57,12 +57,13 @@ void print_fsm();
 void print_all();
 void tick_timers();
 
-// global state variables
-extern TSActive tsactive_switch;  // physical status of the tsactive dashboard switch
-extern Ready_To_Drive_State
-    ready_to_drive_switch;  // physical status of the ready to drive dashboard switch
-extern Ready_To_Drive_State ready_to_drive;  // goes to drive when the when the brake is held while
-                                             // the ready_to_drive switch is flipped
+// global state variables //
+// physical status of the tsactive dashboard switch
+extern TSActive tsactive_switch;
+// physical status of the ready to drive dashboard switch
+extern Ready_To_Drive_State ready_to_drive_switch;
+// goes to drive when the when the brake is held while the ready_to_drive switch is flipped
+extern Ready_To_Drive_State ready_to_drive;
 
 // CAN signals
 extern CANSignal<BMSState, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>

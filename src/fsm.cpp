@@ -184,15 +184,14 @@ void process_state() {
       inverter.request_torque(0);
       break;
     case State::N:
-      BMS_Command =
-          BMSCommand::PrechargeAndCloseContactors;  // maybe make prechargeandclosecontactors or
-                                                    // NoAction here
+      BMS_Command = BMSCommand::PrechargeAndCloseContactors;
       inverter.request_torque(0);
       break;
     case State::DRIVE:
+      BMS_Command = BMSCommand::PrechargeAndCloseContactors;
       // int32_t torque_req = calculate_torque(); // use this function to calculate torque based on
       // LUTs and traction control when its time
-      int32_t torque_req;
+      int32_t torque_req = 0;
       // if (throttle_brake.is_implausibility_present()) {
       //   torque_req = 0;
       // }
