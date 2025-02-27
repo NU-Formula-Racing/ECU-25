@@ -199,7 +199,7 @@ void process_state() {
       // else {
       //   torque_req = static_cast<int32_t>(throttle_brake.get_throttle());
       // }
-      torque_req = static_cast<int32_t>(throttle_brake.get_throttle());
+      torque_req = static_cast<int32_t>(throttle_brake.get_throttle() / 4);
       inverter.request_torque(torque_req);
       break;
   }
