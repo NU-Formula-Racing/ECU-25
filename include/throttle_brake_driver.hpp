@@ -7,12 +7,12 @@
 // change specific bounds after testing with sensors in pedalbox:
 enum class Bounds {
 
-  APPS1_ADC_MIN = 65,
-  APPS1_ADC_MAX = 2000,
+  APPS1_ADC_MIN = 75,
+  APPS1_ADC_MAX = 1980,
   APPS1_ADC_SPAN = APPS1_ADC_MAX - APPS1_ADC_MIN,
 
-  APPS2_ADC_MIN = 65,
-  APPS2_ADC_MAX = 2000,
+  APPS2_ADC_MIN = 75,
+  APPS2_ADC_MAX = 1980,
   APPS2_ADC_SPAN = APPS2_ADC_MAX - APPS2_ADC_MIN,
 
   FRONT_BRAKE_ADC_MIN = 1456,
@@ -23,7 +23,10 @@ enum class Bounds {
   REAR_BRAKE_ADC_MAX = 4095,
   REAR_BRAKE_ADC_SPAN = REAR_BRAKE_ADC_MAX - REAR_BRAKE_ADC_MIN,
 
-  FRONT_BRAKE_ADC_PRESSED_THRESHOLD = 900
+  FRONT_BRAKE_ADC_PRESSED_THRESHOLD = 900,
+
+  SHORTED_THRESHOLD = 50,
+  OPEN_THRESHOLD = 2035,
 
   // FIVE_PERCENT_THROTTLE = 1639,
   // TEN_PERCENT_THROTTLE = 3276,
@@ -42,12 +45,13 @@ class ThrottleBrake {
  public:
   ThrottleBrake(ICAN& can_interface_, VirtualTimerGroup& timer_group,
                 VirtualTimer& APPSs_disagreement_implausibility_timer_,
-                VirtualTimer& brake_shorted_or_opened_implausibility_timer_)
+                VirtualTimer& brake_shorted_or_opened_implausibility_timer_,
+                VirtualTimer& APPSs_invalid_implausibility_timer_)
       : can_interface(can_interface_),
         timers(timer_group),
         APPSs_disagreement_implausibility_timer(APPSs_disagreement_implausibility_timer_),
-        brake_shorted_or_opened_implausibility_timer(
-            brake_shorted_or_opened_implausibility_timer_) {};
+        brake_shorted_or_opened_implausibility_timer(brake_shorted_or_opened_implausibility_timer_),
+        APPSs_invalid_implausibility_timer(APPSs_invalid_implausibility_timer_) {};
 
   // init timers in initialize()
   // we want 1 single-use timer per implausibility check
@@ -59,6 +63,7 @@ class ThrottleBrake {
   int16_t get_throttle();       // return scaled throttle value
   void set_is_APPSs_disagreement_implausibility_present_to_true();       // callback
   void set_is_brake_shorted_or_opened_implausibility_present_to_true();  // callback
+  void set_APPSs_invalid_implausibility_present_to_true();               // callback
   void check_for_implausibilities();
   bool is_implausibility_present();
   bool is_brake_pressed();
@@ -71,6 +76,7 @@ class ThrottleBrake {
 
   VirtualTimer& APPSs_disagreement_implausibility_timer;
   VirtualTimer& brake_shorted_or_opened_implausibility_timer;
+  VirtualTimer& APPSs_invalid_implausibility_timer;
 
   int16_t APPS1_adc;        // 12-bit ADC: 0-4095 chnge to _ADC
   int16_t APPS2_adc;        // 12-bit ADC: 0-4095
@@ -86,6 +92,7 @@ class ThrottleBrake {
   bool APPSs_disagreement_implausibility_present;
   bool BPPC_implausibility_present;
   bool brake_shorted_or_opened_implausibility_present;
+  bool APPSs_invalid_implausibility_present;
 
   void read_from_SPI_ADCs();
 
@@ -98,7 +105,9 @@ class ThrottleBrake {
 
   void check_BPPC_implausibility();
   void check_brake_shorted_or_opened_implausibility();
+  void check_APPSs_valid_implausibility();
   void check_APPSs_disagreement_implausibility();
+  bool check_APPSs_validity();
 
   const uint32_t kTransmissionIDThrottle = 0x202;        // CAN msg address, get this from DBC
   const uint32_t kTransmissionIDBrake = 0x203;           // CAN msg address, get this from DBC

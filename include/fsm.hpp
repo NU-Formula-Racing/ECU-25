@@ -9,7 +9,7 @@
 // enum definitions
 enum class BMSState { kShutdown = 0, kPrecharge = 1, kActive = 2, kCharging = 3, kFault = 4 };
 
-enum class BMSCommand { NoAction = 0, PrechargeAndCloseContactors = 1, Shutdown = 2 };
+enum class BMSCommand { PrechargeAndCloseContactors = 0, Shutdown = 1 };
 
 enum class TSActive { Active = 0, Inactive = 1 };
 
@@ -33,6 +33,10 @@ extern VirtualTimer
     brake_implausible_timer;  // this timer needs to call
                               // Throttle_Brake::set_is_brake_shorted_or_opened_implausibility_present_to_true()
 
+extern VirtualTimer
+    APPSs_invalid_timer;  // this timer needs to call
+                          // Throttle_Brake::set_APPSs_invalid_implausibility_present_to_true()
+
 // instantiate throttle/brake
 extern ThrottleBrake throttle_brake;
 
@@ -51,6 +55,7 @@ void update_inverter();
 void send_throttle_brake_CAN_wrapper();
 void APPSs_disagreement_timer_callback();
 void brake_implausible_timer_callback();
+void APPSs_invalid_timer_callback();
 void refresh_throttle_brake();
 void tick_CAN();
 void print_fsm();

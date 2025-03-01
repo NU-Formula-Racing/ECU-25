@@ -21,7 +21,8 @@ ESPCAN drive_bus{};
 VirtualTimerGroup timers;
 
 // instantiate throttle/brake
-ThrottleBrake throttle_brake{drive_bus, timers, APPSs_disagree_timer, brake_implausible_timer};
+ThrottleBrake throttle_brake{drive_bus, timers, APPSs_disagree_timer, brake_implausible_timer,
+                             APPSs_invalid_timer};
 
 // instantiate inverter
 Inverter inverter{drive_bus, timers};
@@ -93,6 +94,11 @@ void APPSs_disagreement_timer_callback() {
 // wrapper for brake implausible timer function
 void brake_implausible_timer_callback() {
   throttle_brake.set_is_brake_shorted_or_opened_implausibility_present_to_true();
+}
+
+// wrapper for APPSs invalid timer function
+void APPSs_invalid_timer_callback() {
+  throttle_brake.set_APPSs_invalid_implausibility_present_to_true();
 }
 
 // call this function when the ready to drive switch is flipped
@@ -193,13 +199,11 @@ void process_state() {
       // int32_t torque_req = calculate_torque(); // use this function to calculate torque based on
       // LUTs and traction control when its time
       int32_t torque_req;
-      // if (throttle_brake.is_implausibility_present()) {
-      //   torque_req = 0;
-      // }
-      // else {
-      //   torque_req = static_cast<int32_t>(throttle_brake.get_throttle());
-      // }
-      torque_req = static_cast<int32_t>(throttle_brake.get_throttle() / 4);
+      if (throttle_brake.is_implausibility_present()) {
+        torque_req = 0;
+      } else {
+        torque_req = static_cast<int32_t>(throttle_brake.get_throttle() / 4);
+      }
       inverter.request_torque(torque_req);
       break;
   }
@@ -228,15 +232,15 @@ void print_fsm() {
   // Serial.println(static_cast<int>(BMS_State));
   // Serial.print("BMS Command: ");
   // Serial.println(static_cast<int>(BMS_Command));
-  Serial.print(" TS active switch: ");
-  Serial.print(static_cast<int>(tsactive_switch));
-  Serial.print(" is brake pressed: ");
+  // Serial.print(" TS active switch: ");
+  // Serial.print(static_cast<int>(tsactive_switch));
+  Serial.print(" brake_pressed: ");
   Serial.print(throttle_brake.is_brake_pressed());
-  Serial.print(" Ready to Drive: ");
-  Serial.print(static_cast<int>(ready_to_drive));
-  Serial.print(" Ready to Drive Switch: ");
-  Serial.print(static_cast<int>(ready_to_drive_switch));
-  Serial.print(" Throttle: ");
+  // Serial.print(" Ready to Drive: ");
+  // Serial.print(static_cast<int>(ready_to_drive));
+  // Serial.print(" Ready to Drive Switch: ");
+  // Serial.print(static_cast<int>(ready_to_drive_switch));
+  Serial.print(" Thrtl: ");
   Serial.print(throttle_brake.get_throttle());
   throttle_brake.print_throttle_info();
   // inverter.print_inverter_info();
@@ -271,6 +275,12 @@ VirtualTimer brake_implausible_timer(
     VirtualTimer::Type::
         kSingleUse);  // this timer needs to call
                       // Throttle_Brake::set_is_brake_shorted_or_opened_implausibility_present_to_true()
+
+VirtualTimer APPSs_invalid_timer(
+    100U, APPSs_invalid_timer_callback,
+    VirtualTimer::Type::
+        kSingleUse);  // this timer needs to call
+                      // Throttle_Brake::set_APPSs_invalid_implausibility_present_to_true()
 
 // CAN signals -- get new addresses from DBC
 // add rx: wheel speed
