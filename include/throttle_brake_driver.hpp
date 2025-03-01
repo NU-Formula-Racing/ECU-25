@@ -125,12 +125,28 @@ class ThrottleBrake {
   CANSignal<bool, 32, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
       Brake_Pressed{};
   CANSignal<bool, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
-      Implausibility_Present{};
+      CAN_Implausibility_Present{};
+  CANSignal<bool, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+      CAN_APPSs_Disagreement_Imp{};
+  CANSignal<bool, 16, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+      CAN_BPPC_Imp{};
+  CANSignal<bool, 24, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+      CAN_Brake_invalid_Imp{};
+  CANSignal<bool, 32, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+      CAN_APPSs_Invalid_Imp{};
   CANTXMessage<2> ECU_Throttle{can_interface,  kTransmissionIDThrottle, 4, 100, timers,
                                APPS1_Throttle, APPS2_Throttle};
   CANTXMessage<3> ECU_Brake{
       can_interface,       kTransmissionIDBrake, 5, 100, timers, Front_Brake_Pressure,
       Rear_Brake_Pressure, Brake_Pressed};
-  CANTXMessage<1> ECU_Implausibility{can_interface, kTransmissionIDImplausibility, 1, 100,
-                                     timers,        Implausibility_Present};
+  CANTXMessage<5> ECU_Implausibility{can_interface,
+                                     kTransmissionIDImplausibility,
+                                     5,
+                                     100,
+                                     timers,
+                                     CAN_Implausibility_Present,
+                                     CAN_APPSs_Disagreement_Imp,
+                                     CAN_BPPC_Imp,
+                                     CAN_Brake_invalid_Imp,
+                                     CAN_APPSs_Invalid_Imp};
 };

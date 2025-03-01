@@ -143,10 +143,10 @@ int16_t ThrottleBrake::get_throttle() { return ThrottleBrake::APPS1_throttle_sca
  * @return bool
  */
 bool ThrottleBrake::is_implausibility_present() {
-  return  // ThrottleBrake::APPSs_disagreement_implausibility_present ||
-      ThrottleBrake::brake_shorted_or_opened_implausibility_present ||
-      ThrottleBrake::BPPC_implausibility_present ||
-      ThrottleBrake::APPSs_invalid_implausibility_present;
+  return ThrottleBrake::APPSs_disagreement_implausibility_present ||
+         ThrottleBrake::brake_shorted_or_opened_implausibility_present ||
+         ThrottleBrake::BPPC_implausibility_present ||
+         ThrottleBrake::APPSs_invalid_implausibility_present;
 }
 
 void ThrottleBrake::set_is_APPSs_disagreement_implausibility_present_to_true() {
@@ -165,6 +165,7 @@ void ThrottleBrake::check_for_implausibilities() {
   ThrottleBrake::check_APPSs_disagreement_implausibility();
   ThrottleBrake::check_BPPC_implausibility();
   ThrottleBrake::check_brake_shorted_or_opened_implausibility();
+  ThrottleBrake::check_APPSs_valid_implausibility();
 }
 
 /**
@@ -178,6 +179,7 @@ void ThrottleBrake::check_brake_shorted_or_opened_implausibility() {
       ThrottleBrake::brake_shorted_or_opened_implausibility_timer.GetTimerState() ==
           VirtualTimer::State::kNotStarted) {
     ThrottleBrake::brake_shorted_or_opened_implausibility_timer.Start(millis());
+    Serial.println("Brake implausibility detected");
   } else if (digitalRead(static_cast<uint8_t>(Pins::BRAKE_VALID_PIN)) ==
                  static_cast<bool>(BrakeStatus::VALID) &&
              ThrottleBrake::brake_shorted_or_opened_implausibility_timer.GetTimerState() ==
@@ -246,6 +248,7 @@ void ThrottleBrake::check_APPSs_disagreement_implausibility() {
       ThrottleBrake::APPSs_disagreement_implausibility_timer.GetTimerState() ==
           VirtualTimer::State::kNotStarted) {
     ThrottleBrake::APPSs_disagreement_implausibility_timer.Start(millis());
+    Serial.println("APPSs disagreement implausibility detected");
 
   } else if (!(APPS_diff > 10.0 || APPS_diff < -10.0) &&
              ThrottleBrake::APPSs_disagreement_implausibility_timer.GetTimerState() ==
@@ -274,19 +277,17 @@ bool ThrottleBrake::is_brake_pressed() {
  * @return
  */
 void ThrottleBrake::check_BPPC_implausibility() {
-  float APPS1_percentage =
+  float APPS1_percentage = static_cast<float>(
       ((ThrottleBrake::APPS1_adc - static_cast<int32_t>(Bounds::APPS1_ADC_MIN)) * 100.0) /
-      static_cast<int32_t>(Bounds::APPS1_ADC_SPAN);
-  float APPS2_percentage =
-      ((static_cast<int32_t>(Bounds::APPS2_ADC_MAX) - ThrottleBrake::APPS2_adc) * 100.0) /
-      static_cast<int32_t>(Bounds::APPS2_ADC_SPAN);
-  float percentage_diff = APPS1_percentage - APPS2_percentage;
+      static_cast<int32_t>(Bounds::APPS1_ADC_SPAN));
   // Serial.print("percentage_diff: ");
   // Serial.println(percentage_diff);
-  if (ThrottleBrake::is_brake_pressed() && ((percentage_diff > 25.0) || percentage_diff < -25.0)) {
+  if (ThrottleBrake::is_brake_pressed() &&
+      ((APPS1_percentage > 25.0) || APPS1_percentage < -25.0)) {
     ThrottleBrake::BPPC_implausibility_present = true;
+    // Serial.println("BPPC implausibility detected");
   }
-  if (percentage_diff < 5.0 && percentage_diff > -5.0) {
+  if (APPS1_percentage < 5.0 && APPS1_percentage > -5.0) {
     ThrottleBrake::BPPC_implausibility_present = false;
   }
 }
@@ -302,7 +303,13 @@ void ThrottleBrake::update_throttle_brake_CAN_signals() {
   ThrottleBrake::Front_Brake_Pressure = ThrottleBrake::front_brake_scaled;
   ThrottleBrake::Rear_Brake_Pressure = ThrottleBrake::rear_brake_scaled;
   ThrottleBrake::Brake_Pressed = ThrottleBrake::brake_pressed;
-  ThrottleBrake::Implausibility_Present = ThrottleBrake::is_implausibility_present();
+  ThrottleBrake::CAN_Implausibility_Present = ThrottleBrake::is_implausibility_present();
+  ThrottleBrake::CAN_APPSs_Disagreement_Imp =
+      ThrottleBrake::APPSs_disagreement_implausibility_present;
+  ThrottleBrake::CAN_BPPC_Imp = ThrottleBrake::BPPC_implausibility_present;
+  ThrottleBrake::CAN_Brake_invalid_Imp =
+      ThrottleBrake::brake_shorted_or_opened_implausibility_present;
+  ThrottleBrake::CAN_APPSs_Invalid_Imp = ThrottleBrake::APPSs_invalid_implausibility_present;
 }
 
 void ThrottleBrake::print_throttle_info() {

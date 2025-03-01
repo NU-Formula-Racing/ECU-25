@@ -262,22 +262,23 @@ void tick_timers() {
   // Serial.println("tick timers");
   APPSs_disagree_timer.Tick(millis());
   brake_implausible_timer.Tick(millis());
+  APPSs_invalid_timer.Tick(millis());
   timers.Tick(millis());
 }
 // implausibility timer definitions
 VirtualTimer APPSs_disagree_timer(
-    100U, APPSs_disagreement_timer_callback,
+    85U, APPSs_disagreement_timer_callback,
     VirtualTimer::Type::
         kSingleUse);  // this timer needs to call
                       // Throttle_Brake::set_is_APPSs_disagreement_implausibility_present_to_true()
 VirtualTimer brake_implausible_timer(
-    100U, brake_implausible_timer_callback,
+    85U, brake_implausible_timer_callback,
     VirtualTimer::Type::
         kSingleUse);  // this timer needs to call
                       // Throttle_Brake::set_is_brake_shorted_or_opened_implausibility_present_to_true()
 
 VirtualTimer APPSs_invalid_timer(
-    100U, APPSs_invalid_timer_callback,
+    85U, APPSs_invalid_timer_callback,
     VirtualTimer::Type::
         kSingleUse);  // this timer needs to call
                       // Throttle_Brake::set_APPSs_invalid_implausibility_present_to_true()
