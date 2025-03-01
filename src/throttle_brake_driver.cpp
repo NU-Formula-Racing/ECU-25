@@ -44,23 +44,38 @@ void ThrottleBrake::read_from_SPI_ADCs() {
   digitalWrite(static_cast<uint8_t>(Pins::APPS1_CS_PIN), LOW);
 
   int16_t APPS1 = SPI.transfer16(0x0000);
-  ThrottleBrake::APPS1_adc = (APPS1 << 2) >> 4;
+  int16_t APPS1_signed = static_cast<int16_t>(APPS1 >> 3);
+  if (APPS1_signed & 0x0800) {
+    APPS1_signed |= 0xF000;
+  }
+  ThrottleBrake::APPS1_adc = APPS1_signed;
   digitalWrite(static_cast<uint8_t>(Pins::APPS1_CS_PIN), HIGH);
 
   digitalWrite(static_cast<uint8_t>(Pins::APPS2_CS_PIN), LOW);
   int16_t APPS2 = SPI.transfer16(0x0000);
-  ThrottleBrake::APPS2_adc = (APPS2 << 2) >> 4;
+  int16_t APPS2_signed = static_cast<int16_t>(APPS2 >> 3);
+  if (APPS2_signed & 0x0800) {
+    APPS2_signed |= 0xF000;
+  }
+  ThrottleBrake::APPS2_adc = APPS2_signed;
   digitalWrite(static_cast<uint8_t>(Pins::APPS2_CS_PIN), HIGH);
 
   digitalWrite(static_cast<uint8_t>(Pins::FRONT_BRAKE_CS_PIN), LOW);
   int16_t front = SPI.transfer16(0x0000);
-  ThrottleBrake::front_brake_adc = (front << 2) >> 4;
-
+  int16_t front_signed = static_cast<int16_t>(front >> 3);
+  if (front_signed & 0x0800) {
+    front_signed |= 0xF000;
+  }
+  ThrottleBrake::front_brake_adc = front_signed;
   digitalWrite(static_cast<uint8_t>(Pins::FRONT_BRAKE_CS_PIN), HIGH);
 
   digitalWrite(static_cast<uint8_t>(Pins::REAR_BRAKE_CS_PIN), LOW);
   int16_t rear = SPI.transfer16(0x0000);
-  ThrottleBrake::rear_brake_adc = (rear << 2) >> 4;
+  int16_t rear_signed = static_cast<int16_t>(rear >> 3);
+  if (rear_signed & 0x0800) {
+    rear_signed |= 0xF000;
+  }
+  ThrottleBrake::rear_brake_adc = rear_signed;
   digitalWrite(static_cast<uint8_t>(Pins::REAR_BRAKE_CS_PIN), HIGH);
 
   SPI.endTransaction();
