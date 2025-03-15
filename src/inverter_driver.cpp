@@ -19,21 +19,21 @@ void Inverter::initialize() {
  *
  * @return int32_t
  */
-int32_t Inverter::get_motor_rpm() { return Inverter::motor_rpm; }
+int32_t Inverter::get_motor_rpm() const { return Inverter::motor_rpm; }
 
 /**
  * @brief Get IGBT temperature
  *
  * @return int16_t
  */
-int16_t Inverter::get_IGBT_temp() { return Inverter::IGBT_temp; }
+int16_t Inverter::get_IGBT_temp() const { return Inverter::IGBT_temp; }
 
 /**
  * @brief Get motor temperature
  *
  * @return int16_t
  */
-int16_t Inverter::get_motor_temp() { return Inverter::motor_temp; }
+int16_t Inverter::get_motor_temp() const { return Inverter::motor_temp; }
 
 /**
  * @brief Read CAN messages from Inverter and set class variables accordingly

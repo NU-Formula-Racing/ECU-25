@@ -277,7 +277,7 @@ bool ThrottleBrake::is_brake_pressed() {
  * @return
  */
 void ThrottleBrake::check_BPPC_implausibility() {
-  float APPS1_percentage = static_cast<float>(
+  auto APPS1_percentage = static_cast<float>(
       ((ThrottleBrake::APPS1_adc - static_cast<int32_t>(Bounds::APPS1_ADC_MIN)) * 100.0) /
       static_cast<int32_t>(Bounds::APPS1_ADC_SPAN));
   // Serial.print("percentage_diff: ");

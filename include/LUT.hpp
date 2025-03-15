@@ -3,21 +3,20 @@
 #include <iostream>
 #include <map>
 
-// IGBT temp : milliAmp
-extern std::map<uint16_t, float> IGBTtemp2mAmp_LUT;
+// IGBT temp : Power limit modifier
+extern std::map<uint16_t, float> IGBT_Temp_LUT;
 
-// Battery temp : milliAmp
-extern std::map<uint16_t, float> batterytemp2mAmp_LUT;
+// Battery temp : Power limit modifier
+extern std::map<uint16_t, float> Battery_Temp_LUT;
 
-// Motor temp : milliAmp
-extern std::map<uint16_t, float> motortemp2mAmp_LUT;
+// Motor temp : Power limit modifier
+extern std::map<uint16_t, float> Motor_Temp_LUT;
 
-// Motor RPM : milliAmp
-extern std::map<uint16_t, float> motorRPM2mAmp_LUT;
+// Motor RPM : Power limit modifier
+extern std::map<uint16_t, float> Motor_RPM_LUT;
 
-// Throttle % : float (when accelerating: factor to multiply by min(other LUTS) -- this product is
-// the torque requested)
-extern std::map<uint16_t, float> throttlepercent2mAmp_LUT;
+// Throttle value : Scaled power limit modifier (235 * power limit modifier)
+extern std::map<uint16_t, float> Throttle_LUT;
 
 // Brake % : float (when braking: factor to multiply by min(other LUTS) -- this product is the
 // torque requested)
