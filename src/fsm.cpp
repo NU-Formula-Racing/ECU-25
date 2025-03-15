@@ -232,16 +232,16 @@ void print_fsm() {
   // Serial.println(static_cast<int>(BMS_State));
   // Serial.print("BMS Command: ");
   // Serial.println(static_cast<int>(BMS_Command));
-  // Serial.print(" TS active switch: ");
-  // Serial.print(static_cast<int>(tsactive_switch));
+  Serial.print(" TS active switch: ");
+  Serial.print(static_cast<int>(tsactive_switch));
   Serial.print(" brake_pressed: ");
   Serial.print(throttle_brake.is_brake_pressed());
-  // Serial.print(" Ready to Drive: ");
-  // Serial.print(static_cast<int>(ready_to_drive));
-  // Serial.print(" Ready to Drive Switch: ");
-  // Serial.print(static_cast<int>(ready_to_drive_switch));
+  Serial.print(" Ready to Drive: ");
+  Serial.print(static_cast<int>(ready_to_drive));
+  Serial.print(" Ready to Drive Switch: ");
+  Serial.print(static_cast<int>(ready_to_drive_switch));
   Serial.print(" Thrtl: ");
-  Serial.print(throttle_brake.get_throttle());
+  Serial.print(throttle_brake.get_throttle() / 4);
   throttle_brake.print_throttle_info();
   // inverter.print_inverter_info();
 
@@ -295,7 +295,7 @@ CANSignal<BMSState, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)
 CANSignal<BMSCommand, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     BMS_Command{};
 CANSignal<State, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Drive_State{};
-CANRXMessage<1> BMS_Status{drive_bus, 0x175,
+CANRXMessage<1> BMS_Status{drive_bus, 0x152,
                            BMS_State};  //  BMS_SOC these addresses might be wrong, check DBC
 CANTXMessage<1> ECU_BMS_Command_Message{drive_bus, 0x205, 1, 100, timers, BMS_Command};
 CANTXMessage<1> ECU_Drive_Status{drive_bus, 0x206, 1, 100, timers, Drive_State};
