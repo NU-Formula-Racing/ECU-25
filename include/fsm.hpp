@@ -9,6 +9,8 @@
 // enum definitions
 enum class BMSState { kShutdown = 0, kPrecharge = 1, kActive = 2, kCharging = 3, kFault = 4 };
 
+enum class BMSFault { kNoExtFault = 0, kExtFault = 1 };
+
 enum class BMSCommand { PrechargeAndCloseContactors = 0, Shutdown = 1 };
 
 enum class TSActive { Active = 0, Inactive = 1 };
@@ -74,10 +76,13 @@ extern CANSignal<BMSState, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertF
     BMS_State;  // says 1 bit in DBC .. im just using 8
 extern CANSignal<float, 40, 8, CANTemplateConvertFloat(0.5), CANTemplateConvertFloat(0), false>
     BMS_SOC;  // says starts at bit 40 in DBC, also says size is 8 bits even tho its a float
+extern CANSignal<BMSFault, 6, 1, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    External_Kill_Fault;
 extern CANSignal<BMSCommand, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     BMS_Command;
 extern CANSignal<State, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     Drive_State;
 extern CANRXMessage<1> BMS_Status;
+extern CANRXMessage<1> BMS_Faults;
 extern CANTXMessage<1> ECU_BMS_Command_Message;
 extern CANTXMessage<1> ECU_Drive_Status;

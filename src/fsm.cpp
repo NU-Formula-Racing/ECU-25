@@ -155,19 +155,23 @@ void initialize_dash_switches() {
 void change_state() {
   switch (Drive_State) {
     case State::OFF:
-      if (tsactive_switch == TSActive::Active && BMS_State == BMSState::kActive) {
+      if (tsactive_switch == TSActive::Active && BMS_State == BMSState::kActive &&
+          External_Kill_Fault == BMSFault::kNoExtFault) {
         Serial.println("transition from OFF->N");
         Drive_State = State::N;
       }
       break;
 
     case State::N:
-      if (ready_to_drive == Ready_To_Drive_State::Drive) {
+      if (ready_to_drive == Ready_To_Drive_State::Drive &&
+          External_Kill_Fault == BMSFault::kNoExtFault) {
         Serial.println("transition from N->DRIVE");
         Drive_State = State::DRIVE;
       }
-      if (tsactive_switch == TSActive::Inactive || BMS_State == BMSState::kFault) {
+      if (tsactive_switch == TSActive::Inactive || BMS_State == BMSState::kFault ||
+          External_Kill_Fault == BMSFault::kExtFault) {
         Serial.println("transition from N->OFF");
+        tsactive_switch = TSActive::Inactive;
         Drive_State = State::OFF;
       }
       break;
@@ -177,8 +181,10 @@ void change_state() {
         Serial.println("transition from DRIVE->N");
         Drive_State = State::N;
       }
-      if (tsactive_switch == TSActive::Inactive || BMS_State == BMSState::kFault) {
+      if (tsactive_switch == TSActive::Inactive || BMS_State == BMSState::kFault ||
+          External_Kill_Fault == BMSFault::kExtFault) {
         Serial.println("transition from DRIVE->OFF");
+        tsactive_switch = TSActive::Inactive;
         Drive_State = State::OFF;
       }
       break;
@@ -308,10 +314,12 @@ CANSignal<BMSState, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)
     BMS_State{};  // says 1 bit in DBC .. im just using 8
 // CANSignal<float, 40, 8, CANTemplateConvertFloat(0.5), CANTemplateConvertFloat(0), false>
 // BMS_SOC{}; // says starts at bit 40 in DBC, also says size is 8 bits even tho its a float
+CANSignal<BMSFault, 6, 1, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    External_Kill_Fault{};
 CANSignal<BMSCommand, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     BMS_Command{};
 CANSignal<State, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Drive_State{};
-CANRXMessage<1> BMS_Status{drive_bus, 0x152,
-                           BMS_State};  //  BMS_SOC these addresses might be wrong, check DBC
+CANRXMessage<1> BMS_Status{drive_bus, 0x152, BMS_State};
+CANRXMessage<1> BMS_Faults{drive_bus, 0x151, External_Kill_Fault};
 CANTXMessage<1> ECU_BMS_Command_Message{drive_bus, 0x205, 1, 100, timers, BMS_Command};
 CANTXMessage<1> ECU_Drive_Status{drive_bus, 0x206, 1, 100, timers, Drive_State};
