@@ -3,6 +3,7 @@
 #include <Arduino.h>
 
 #include "pins.hpp"
+#include "throttle_brake_driver.hpp"
 
 /**
  * @brief Initialize Inverter class
@@ -62,12 +63,12 @@ void Inverter::send_inverter_CAN() {
  * @return void
  */
 void Inverter::request_torque(int32_t torque_mA) {
-  if (torque_mA >= 0) {
+  if (throttle_brake.is_brake_pressed()) {
+    Inverter::requested_torque_throttle = 0;
+    Inverter::requested_torque_brake = throttle_brake.get_front_brake();
+  } else {
     Inverter::requested_torque_throttle = torque_mA;
     Inverter::requested_torque_brake = 0;
-  } else {
-    Inverter::requested_torque_brake = torque_mA;
-    Inverter::requested_torque_throttle = 0;
   }
 }
 

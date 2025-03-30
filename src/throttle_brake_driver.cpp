@@ -135,7 +135,14 @@ void ThrottleBrake::update_sensor_values() {
  *
  * @return int16_t
  */
-int16_t ThrottleBrake::get_throttle() { return ThrottleBrake::APPS1_throttle_scaled; };
+int16_t ThrottleBrake::get_throttle() const { return ThrottleBrake::APPS1_throttle_scaled; };
+
+/**
+ * @brief Returns front brake value, scaled 0-32767
+ *
+ * @return int16_t
+ */
+int16_t ThrottleBrake::get_front_brake() const { return ThrottleBrake::front_brake_scaled; };
 
 /**
  * @brief Returns true if any implausibility is present, false otherwise

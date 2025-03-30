@@ -28,7 +28,7 @@ ThrottleBrake throttle_brake{drive_bus, timers, APPSs_disagree_timer, brake_impl
                              APPSs_invalid_timer};
 
 // instantiate inverter
-Inverter inverter{drive_bus, timers};
+Inverter inverter{drive_bus, timers, throttle_brake};
 
 void fsm_init() {
   Serial.begin(115200);

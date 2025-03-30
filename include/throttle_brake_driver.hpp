@@ -58,9 +58,10 @@ class ThrottleBrake {
   // we'll have a callback function fires when the timer reaches its limit (ie. 100ms)
   // this callback will set a corresponding implausibility flag in a private struct containting all
   // the implausibilities
-  void initialize();            // initialize CS pins, SPI, and implausibility states
-  void update_sensor_values();  // read from SPI ADCs and update throttle/brake values
-  int16_t get_throttle();       // return scaled throttle value
+  void initialize();                // initialize CS pins, SPI, and implausibility states
+  void update_sensor_values();      // read from SPI ADCs and update throttle/brake values
+  int16_t get_throttle() const;     // return scaled throttle value
+  int16_t get_front_brake() const;  // return scaled front brake value
   void set_is_APPSs_disagreement_implausibility_present_to_true();       // callback
   void set_is_brake_shorted_or_opened_implausibility_present_to_true();  // callback
   void set_APPSs_invalid_implausibility_present_to_true();               // callback

@@ -4,24 +4,26 @@
 #include "esp_can.h"
 #endif
 #include "can_interface.h"
+#include "throttle_brake_driver.hpp"
 
 class Inverter {
  public:
-  Inverter(ICAN& can_interface_, VirtualTimerGroup& timer_group)
-      : can_interface(can_interface_), timers(timer_group) {};
+  Inverter(ICAN& can_interface_, VirtualTimerGroup& timer_group, ThrottleBrake& throttle_brake_)
+      : can_interface(can_interface_), timers(timer_group), throttle_brake(throttle_brake_) {};
   void initialize();
   int32_t get_motor_rpm() const;
   int16_t get_IGBT_temp() const;
   int16_t get_motor_temp() const;
   void read_inverter_CAN();
   void send_inverter_CAN();
-  void request_torque(
-      int32_t torque_mA);  // how do we want to do the torque request function -- send torque in mA
+  void request_torque(int32_t torque_mA);
   void print_inverter_info();
 
  private:
   ICAN& can_interface;
   VirtualTimerGroup& timers;
+  ThrottleBrake& throttle_brake;
+
   int32_t motor_rpm;
   int16_t IGBT_temp;
   int16_t motor_temp;
@@ -46,11 +48,6 @@ class Inverter {
 
   // rx: from inverter: motor temp, motor rpm, inverter/fet temp
   CANSignal<int16_t, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), true> RPM{};
-  // CANSignal<int16_t, 16, 32, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), true>
-  // Motor_Current{}; // dont need this for LUTs CANSignal<int16_t, 32, 48,
-  // CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), true> DC_Voltage{}; // dont need this
-  // for LUTs CANSignal<int16_t>, 48, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0),
-  // true> DC_Current{}; // dont need this for LUTs
   CANRXMessage<1> Inverter_Motor_Status{can_interface, kTransmissionIDInverterMotorStatus,
                                         RPM /*, Motor_Current, DC_Voltage, DC_Current*/};
   CANSignal<int16_t, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), true>
