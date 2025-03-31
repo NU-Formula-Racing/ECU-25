@@ -1,4 +1,5 @@
-#include <iostream>
+#include <cmath>
+// #include <iostream>
 #include <map>
 
 namespace LUT {
@@ -21,9 +22,12 @@ const std::map<int16_t, float> MotorTemp2Modifier_LUT{
 
 // Throttle value : Scaled power limit modifier (235 * power limit modifier)
 const std::map<int16_t, float> Throttle2Modifier_LUT{
-    {0, 0.0},    {5, 7.05},    {10, 21.15}, {15, 37.6},   {20, 54.05}, {25, 70.5},   {30, 86.95},
-    {35, 103.4}, {40, 119.85}, {45, 136.3}, {50, 152.75}, {55, 169.2}, {60, 183.3},  {65, 195.05},
-    {70, 206.8}, {75, 216.2},  {80, 223.5}, {85, 227.95}, {90, 230.3}, {95, 232.65}, {100, 235.0}};
+    {0, 0.0},   {5, 0.03},  {10, 0.09}, {15, 0.16}, {20, 0.23}, {25, 0.3},  {30, 0.37},
+    {35, 0.44}, {40, 0.51}, {45, 0.58}, {50, 0.65}, {55, 0.72}, {60, 0.78}, {65, 0.83},
+    {70, 0.88}, {75, 0.92}, {80, 0.95}, {85, 0.97}, {90, 0.98}, {95, 0.99}, {100, 1.0}};
+
+// Brake pressure : Power limit modifier
+// const std::map<int16_t, float> BrakePressure2Modifier_LUT{};
 
 // Motor temp : Pump duty cycle
 const std::map<int16_t, float> MotorTemp2PumpDutyCycle_LUT{
@@ -63,18 +67,25 @@ float lookup(int16_t key, const std::map<int16_t, float>& lut) {
   auto upper = it;
   auto lower = std::prev(it);
 
-  return lower->second +
-         (upper->second - lower->second) * (key - lower->first) / (upper->first - lower->first);
+  return lower->second + (upper->second - lower->second) * static_cast<float>(key - lower->first) /
+                             static_cast<float>(upper->first - lower->first);
 }
 
-float get_modifier(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp, int16_t throttle) {
+int16_t get_throttle_modifier(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp,
+                              int16_t throttle) {
   float igbt_mod = lookup(igbt_temp, IGBTTemp2Modifier_LUT);
   float batt_mod = lookup(batt_temp, BatteryTemp2Modifier_LUT);
   float motor_temp_mod = lookup(motor_temp, MotorTemp2Modifier_LUT);
   float throttle_mod = lookup(throttle, Throttle2Modifier_LUT);
 
-  return igbt_mod * batt_mod * motor_temp_mod * throttle_mod;
+  float mod_product = igbt_mod * batt_mod * motor_temp_mod * throttle_mod;
+
+  return 0;  // return scaled(mod_product, 0, kThrottleLUTScaledMax);
 }
+
+// int16_t get_brake_modifier(int16_t brake_pressure) {
+// float brake_mod = lookup(brake_pressure, BrakePressure2Modifier_LUT);
+//   return 0; // return scaled(brake_mod, 0, kCurrentLUTScaledMax);
 
 float get_pump_duty_cycle(int16_t motor_temp, int16_t igbt_temp, int16_t batt_temp) {
   float motor_dc = lookup(motor_temp, MotorTemp2PumpDutyCycle_LUT);

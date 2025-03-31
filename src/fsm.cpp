@@ -214,15 +214,20 @@ void process_state() {
       inverter.request_torque(0);
       break;
     case State::DRIVE:
-      // int32_t torque_req = calculate_torque(); // use this function to calculate torque based on
-      // LUTs and traction control when its time
       int32_t torque_req;
       if (throttle_brake.is_implausibility_present()) {
         torque_req = 0;
       } else {
+        // eventually:
+        // if (throttle_brake.is_brake_pressed()) {
+        //   torque_req = scale(LUT::get_brake_modifier(), 0, inverter.kRegenMax);
+        // } else {
+        //   torque_req = scale(LUT::get_throttle_modifier(), 0, inverter.kAccelMax);
+        // }
         torque_req = static_cast<int32_t>(throttle_brake.get_throttle() / 4);
       }
-      inverter.request_torque(torque_req);
+      inverter.request_torque(torque_req);  // eventually: get rid of input torque_req, calcs with
+                                            // LUTs will be handled internally
       break;
   }
 }

@@ -6,14 +6,15 @@
 #include "can_interface.h"
 #include "throttle_brake_driver.hpp"
 
+// Max current/torque we can request from Inverter (in A)
+// current:torque is ~1:1
+enum class TorqueReqLimit { kAccelMax = 80, kRegenMax = 80 };
+
 class Inverter {
  public:
   Inverter(ICAN& can_interface_, VirtualTimerGroup& timer_group, ThrottleBrake& throttle_brake_)
       : can_interface(can_interface_), timers(timer_group), throttle_brake(throttle_brake_) {};
   void initialize();
-  int32_t get_motor_rpm() const;
-  int16_t get_IGBT_temp() const;
-  int16_t get_motor_temp() const;
   void read_inverter_CAN();
   void send_inverter_CAN();
   void request_torque(int32_t torque_mA);
@@ -35,6 +36,10 @@ class Inverter {
   const uint16_t kTransmissionIDSetCurrentBrake = 0x201;      // CAN msg address, get this from DBC
   const uint16_t kTransmissionIDInverterMotorStatus = 0x280;  // CAN msg address, get this from DBC
   const uint16_t kTransmissionIDInverterTempStatus = 0x281;   // CAN msg address, get this from DBC
+
+  int32_t get_motor_rpm() const;
+  int16_t get_IGBT_temp() const;
+  int16_t get_motor_temp() const;
   // CAN signals & msgs
   // tx: Set_Current, Set_Current_Brake
   CANSignal<int32_t, 0, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), true>

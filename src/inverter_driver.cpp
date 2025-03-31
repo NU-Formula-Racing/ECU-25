@@ -65,7 +65,7 @@ void Inverter::send_inverter_CAN() {
 void Inverter::request_torque(int32_t torque_mA) {
   if (throttle_brake.is_brake_pressed()) {
     Inverter::requested_torque_throttle = 0;
-    Inverter::requested_torque_brake = throttle_brake.get_front_brake();
+    Inverter::requested_torque_brake = torque_mA;
   } else {
     Inverter::requested_torque_throttle = torque_mA;
     Inverter::requested_torque_brake = 0;

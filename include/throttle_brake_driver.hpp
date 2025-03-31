@@ -66,8 +66,8 @@ class ThrottleBrake {
   void set_is_brake_shorted_or_opened_implausibility_present_to_true();  // callback
   void set_APPSs_invalid_implausibility_present_to_true();               // callback
   void check_for_implausibilities();
-  bool is_implausibility_present();
-  bool is_brake_pressed();
+  bool is_implausibility_present() const;
+  bool is_brake_pressed() const;
   void update_throttle_brake_CAN_signals();
   void print_throttle_info();
 
@@ -108,7 +108,7 @@ class ThrottleBrake {
   void check_brake_shorted_or_opened_implausibility();
   void check_APPSs_valid_implausibility();
   void check_APPSs_disagreement_implausibility();
-  bool check_APPSs_validity();
+  bool check_APPSs_validity() const;
 
   const uint32_t kTransmissionIDThrottle = 0x202;        // CAN msg address, get this from DBC
   const uint32_t kTransmissionIDBrake = 0x203;           // CAN msg address, get this from DBC

@@ -149,7 +149,7 @@ int16_t ThrottleBrake::get_front_brake() const { return ThrottleBrake::front_bra
  *
  * @return bool
  */
-bool ThrottleBrake::is_implausibility_present() {
+bool ThrottleBrake::is_implausibility_present() const {
   return ThrottleBrake::APPSs_disagreement_implausibility_present ||
          ThrottleBrake::brake_shorted_or_opened_implausibility_present ||
          ThrottleBrake::BPPC_implausibility_present ||
@@ -204,7 +204,7 @@ void ThrottleBrake::check_brake_shorted_or_opened_implausibility() {
  *
  * @return bool
  */
-bool ThrottleBrake::check_APPSs_validity() {
+bool ThrottleBrake::check_APPSs_validity() const {
   return (ThrottleBrake::APPS1_adc >= static_cast<int16_t>(Bounds::SHORTED_THRESHOLD) &&
           ThrottleBrake::APPS1_adc <= static_cast<int16_t>(Bounds::OPEN_THRESHOLD) &&
           ThrottleBrake::APPS2_adc >= static_cast<int16_t>(Bounds::SHORTED_THRESHOLD) &&
@@ -270,7 +270,7 @@ void ThrottleBrake::check_APPSs_disagreement_implausibility() {
  *
  * @return bool
  */
-bool ThrottleBrake::is_brake_pressed() {
+bool ThrottleBrake::is_brake_pressed() const {
   // true: pressed
   // false: not pressed
   return ThrottleBrake::brake_pressed;
