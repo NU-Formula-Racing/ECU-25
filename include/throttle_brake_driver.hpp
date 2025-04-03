@@ -36,6 +36,9 @@ enum class Bounds {
 
 enum class BrakeStatus { VALID = 1, INVALID = 0 };
 
+// transfer function slope of sensor
+enum class SensorSlope { POSITIVE = 1, NEGATIVE = 0 };
+
 class ThrottleBrake {
   // functions we want accessible outside of this class (ie. called in main):
   // initialize(), get_APPS1(), is_brake_pressed(), is_implausibility_present(),
@@ -109,6 +112,9 @@ class ThrottleBrake {
   void check_APPSs_valid_implausibility();
   void check_APPSs_disagreement_implausibility();
   bool check_APPSs_validity() const;
+
+  int16_t scale_ADC_input(int16_t ADC_input, int16_t ADC_min, int16_t ADC_max, int16_t ADC_span,
+                          SensorSlope slope);
 
   const uint32_t kTransmissionIDThrottle = 0x202;        // CAN msg address, get this from DBC
   const uint32_t kTransmissionIDBrake = 0x203;           // CAN msg address, get this from DBC

@@ -91,36 +91,38 @@ int16_t ThrottleBrake::get_safe_RAW(int16_t RAW, int16_t projected_min, int16_t 
   }
 }
 
+int16_t ThrottleBrake::scale_ADC_input(int16_t ADC_input, int16_t ADC_min, int16_t ADC_max,
+                                       int16_t ADC_span, SensorSlope slope) {
+  int16_t safe_ADC = get_safe_RAW(ADC_input, ADC_min, ADC_max);
+  if (slope == SensorSlope::POSITIVE) {
+    return ((safe_ADC - ADC_min) * 32767) / ADC_span;
+  } else {
+    return ((ADC_max - safe_ADC) * 32767) / ADC_span;
+  }
+}
+
 void ThrottleBrake::update_sensor_values() {
   ThrottleBrake::read_from_SPI_ADCs();
 
-  int16_t safe_APPS1_adc =
-      get_safe_RAW(ThrottleBrake::APPS1_adc, static_cast<int16_t>(Bounds::APPS1_ADC_MIN),
-                   static_cast<int16_t>(Bounds::APPS1_ADC_MAX));
-  ThrottleBrake::APPS1_throttle_scaled =
-      ((safe_APPS1_adc - static_cast<int32_t>(Bounds::APPS1_ADC_MIN)) * 32767) /
-      static_cast<int32_t>(Bounds::APPS1_ADC_SPAN);
+  ThrottleBrake::APPS1_throttle_scaled = ThrottleBrake::scale_ADC_input(
+      ThrottleBrake::APPS1_adc, static_cast<int16_t>(Bounds::APPS1_ADC_MIN),
+      static_cast<int16_t>(Bounds::APPS1_ADC_MAX), static_cast<int16_t>(Bounds::APPS1_ADC_SPAN),
+      SensorSlope::POSITIVE);
 
-  int16_t safe_APPS2_ADC =
-      get_safe_RAW(ThrottleBrake::APPS2_adc, static_cast<int16_t>(Bounds::APPS2_ADC_MIN),
-                   static_cast<int16_t>(Bounds::APPS2_ADC_MAX));
-  ThrottleBrake::APPS2_throttle_scaled =
-      ((static_cast<int32_t>(Bounds::APPS2_ADC_MAX) - safe_APPS2_ADC) * 32767) /
-      static_cast<int32_t>(Bounds::APPS2_ADC_SPAN);
+  ThrottleBrake::APPS2_throttle_scaled = ThrottleBrake::scale_ADC_input(
+      ThrottleBrake::APPS2_adc, static_cast<int16_t>(Bounds::APPS2_ADC_MIN),
+      static_cast<int16_t>(Bounds::APPS2_ADC_MAX), static_cast<int16_t>(Bounds::APPS2_ADC_SPAN),
+      SensorSlope::NEGATIVE);
 
-  int16_t safe_front_brake_adc = get_safe_RAW(ThrottleBrake::front_brake_adc,
-                                              static_cast<int16_t>(Bounds::FRONT_BRAKE_ADC_MIN),
-                                              static_cast<int16_t>(Bounds::FRONT_BRAKE_ADC_MAX));
-  ThrottleBrake::front_brake_scaled =
-      ((safe_front_brake_adc - static_cast<int16_t>(Bounds::FRONT_BRAKE_ADC_MIN)) * 32767) /
-      static_cast<int16_t>(Bounds::FRONT_BRAKE_ADC_SPAN);
+  ThrottleBrake::front_brake_scaled = ThrottleBrake::scale_ADC_input(
+      ThrottleBrake::front_brake_adc, static_cast<int16_t>(Bounds::FRONT_BRAKE_ADC_MIN),
+      static_cast<int16_t>(Bounds::FRONT_BRAKE_ADC_MAX),
+      static_cast<int16_t>(Bounds::FRONT_BRAKE_ADC_SPAN), SensorSlope::POSITIVE);
 
-  int16_t safe_rear_brake_adc =
-      get_safe_RAW(ThrottleBrake::rear_brake_adc, static_cast<int16_t>(Bounds::REAR_BRAKE_ADC_MIN),
-                   static_cast<int16_t>(Bounds::REAR_BRAKE_ADC_MAX));
-  ThrottleBrake::rear_brake_scaled =
-      (safe_rear_brake_adc - static_cast<int16_t>(Bounds::REAR_BRAKE_ADC_MIN) * 32767) /
-      static_cast<int16_t>(Bounds::REAR_BRAKE_ADC_SPAN);
+  ThrottleBrake::rear_brake_scaled = ThrottleBrake::scale_ADC_input(
+      ThrottleBrake::rear_brake_adc, static_cast<int16_t>(Bounds::REAR_BRAKE_ADC_MIN),
+      static_cast<int16_t>(Bounds::REAR_BRAKE_ADC_MAX),
+      static_cast<int16_t>(Bounds::REAR_BRAKE_ADC_SPAN), SensorSlope::POSITIVE);
 
   if (ThrottleBrake::front_brake_adc >=
       static_cast<int16_t>(Bounds::FRONT_BRAKE_ADC_PRESSED_THRESHOLD)) {
