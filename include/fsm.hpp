@@ -59,6 +59,7 @@ void APPSs_disagreement_timer_callback();
 void brake_implausible_timer_callback();
 void APPSs_invalid_timer_callback();
 void refresh_throttle_brake();
+int32_t scale_torque_request(int16_t throttle);
 void tick_CAN();
 void print_fsm();
 void print_all();

@@ -150,6 +150,16 @@ void initialize_dash_switches() {
                   tsactive_callback, CHANGE);
 }
 
+int32_t scale_torque_request(int16_t throttle) {
+  // eventually:
+  // if (throttle_brake.is_brake_pressed()) {
+  //   torque_req = scale(LUT::get_brake_modifier(), 0, inverter.kRegenMax);
+  // } else {
+  //   torque_req = scale(LUT::get_throttle_modifier(), 0, inverter.kAccelMax);
+  // }
+  return static_cast<int32_t>(throttle_brake.get_throttle() / 4);
+}
+
 // this function will be used to change the state of the vehicle based on the current state and the
 // state of the switches
 void change_state() {
@@ -218,13 +228,7 @@ void process_state() {
       if (throttle_brake.is_implausibility_present()) {
         torque_req = 0;
       } else {
-        // eventually:
-        // if (throttle_brake.is_brake_pressed()) {
-        //   torque_req = scale(LUT::get_brake_modifier(), 0, inverter.kRegenMax);
-        // } else {
-        //   torque_req = scale(LUT::get_throttle_modifier(), 0, inverter.kAccelMax);
-        // }
-        torque_req = static_cast<int32_t>(throttle_brake.get_throttle() / 4);
+        torque_req = scale_torque_request(throttle_brake.get_throttle());
       }
       inverter.request_torque(torque_req);  // eventually: get rid of input torque_req, calcs with
                                             // LUTs will be handled internally
