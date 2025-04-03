@@ -220,7 +220,7 @@ void process_state() {
       if (throttle_brake.is_implausibility_present()) {
         torque_req = 0;
       } else {
-        torque_req = static_cast<int32_t>(throttle_brake.get_throttle() / 4);
+        torque_req = static_cast<int32_t>(throttle_brake.get_throttle() * 4);
       }
       inverter.request_torque(torque_req);
       break;
