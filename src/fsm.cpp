@@ -324,6 +324,40 @@ CANSignal<BMSFault, 6, 1, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)
 CANSignal<BMSCommand, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     BMS_Command{};
 CANSignal<State, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Drive_State{};
+CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BL_Speed{};
+CANSignal<float, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    BL_Displacement{};
+CANSignal<float, 32, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BL_Load{};
+CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BR_Speed{};
+CANSignal<float, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    BR_Displacement{};
+CANSignal<float, 32, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BR_Load{};
+CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> FR_Speed{};
+CANSignal<float, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    FR_Displacement{};
+CANSignal<float, 32, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> FR_Load{};
+CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> FL_Speed;
+CANSignal<float, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    FL_Displacement{};
+CANSignal<float, 32, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> FL_Load{};
+CANSignal<float, 0, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false>
+    MAX_Discharge_Current{};
+CANSignal<float, 12, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false>
+    MAX_Regen_Current{};
+CANSignal<float, 24, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0), false>
+    Battery_Voltage{};
+CANSignal<float, 40, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40.0), false>
+    Battery_Temperature{};
+CANSignal<float, 48, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0), false>
+    Battery_Current{};
+
+CANRXMessage<3> Daq_Wheel_Bl{drive_bus, 0x24B, BL_Speed, BL_Displacement, BL_Load};
+CANRXMessage<3> Daq_Wheel_BR{drive_bus, 0x24C, BR_Speed, BR_Displacement, BR_Load};
+CANRXMessage<3> Daq_Wheel_FR{drive_bus, 0x249, FR_Speed, FR_Displacement, FR_Load};
+CANRXMessage<3> Daq_Wheel_FL{drive_bus, 0x24A, FL_Speed, FL_Displacement, FL_Load};
+CANRXMessage<5> BMS_SOE{drive_bus,         0x150,           MAX_Discharge_Current,
+                        MAX_Regen_Current, Battery_Voltage, Battery_Temperature,
+                        Battery_Current};
 CANRXMessage<1> BMS_Status{drive_bus, 0x152, BMS_State};
 CANRXMessage<1> BMS_Faults{drive_bus, 0x151, External_Kill_Fault};
 CANTXMessage<1> ECU_BMS_Command_Message{drive_bus, 0x205, 1, 100, timers, BMS_Command};
