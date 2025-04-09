@@ -331,17 +331,17 @@ void ThrottleBrake::print_throttle_info() {
   // // Serial.print(ThrottleBrake::front_brake_adc);
   // Serial.print(" APPS_validity: ");
   // Serial.print(ThrottleBrake::check_APPSs_validity());
-  // Serial.print(" APPS1 ADC: ");
-  // Serial.print(ThrottleBrake::APPS1_ADC);
-  // Serial.print(" APPS2 ADC: ");
-  // Serial.print(ThrottleBrake::APPS2_ADC);
+  Serial.print(" APPS1 ADC: ");
+  Serial.print(ThrottleBrake::APPS1_adc);
+  Serial.print(" APPS2 ADC: ");
+  Serial.print(ThrottleBrake::APPS2_adc);
 
   // Serial.print(" APPS1: ");
   // Serial.print(ThrottleBrake::APPS1_throttle);
   // Serial.print(" APPS2: ");
   // Serial.print(ThrottleBrake::APPS2_throttle);
-  Serial.print(" Front Brake: ");
-  Serial.print(ThrottleBrake::front_brake_adc);
+  // Serial.print(" Front Brake: ");
+  // Serial.print(ThrottleBrake::front_brake_adc);
   // Serial.print(" brake pressed adc: ");
   // Serial.print(ThrottleBrake::brake_pressed);
   // Serial.print(" Rear Brake: ");
