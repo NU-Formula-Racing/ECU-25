@@ -4,7 +4,11 @@
 #include <map>
 
 namespace LUT {
-const int16_t kCurrentLUTScaledMax = 1000;
+
+// Max current/torque we can request from Inverter (in mA)
+// current:torque is ~1:1
+enum class TorqueReqLimit { kAccelMax = 80000, kRegenMax = 80000 };
+
 /* Power limit modifier LUTs */
 // IGBT temp : Power limit modifier
 extern const std::map<int16_t, float> IGBTTemp2Modifier_LUT;
@@ -37,10 +41,12 @@ extern const std::map<int16_t, float> CoolantTemp2FanDutyCycle_LUT;
 /* Functions */
 float lookup(int16_t key, const std::map<int16_t, float>& lut);
 
-int16_t get_throttle_modifier(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp,
-                              int16_t throttle);
+int32_t calculate_accel_torque(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp,
+                               int16_t throttle);
 
 // int16_t get_brake_modifier(int16_t brake_pressure);
+
+int32_t scale_torque(float torque, int32_t torque_max);
 
 float get_pump_duty_cycle(int16_t motor_temp, int16_t igbt_temp, int16_t batt_temp);
 

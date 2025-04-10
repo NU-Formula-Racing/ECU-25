@@ -2,6 +2,8 @@
 // #include <iostream>
 #include <map>
 
+#include "LUT.hpp"
+
 namespace LUT {
 // IGBT temp : Power limit modifier
 const std::map<int16_t, float> IGBTTemp2Modifier_LUT{
@@ -22,9 +24,10 @@ const std::map<int16_t, float> MotorTemp2Modifier_LUT{
 
 // Throttle value : Scaled power limit modifier (235 * power limit modifier)
 const std::map<int16_t, float> Throttle2Modifier_LUT{
-    {0, 0.0},   {5, 0.03},  {10, 0.09}, {15, 0.16}, {20, 0.23}, {25, 0.3},  {30, 0.37},
-    {35, 0.44}, {40, 0.51}, {45, 0.58}, {50, 0.65}, {55, 0.72}, {60, 0.78}, {65, 0.83},
-    {70, 0.88}, {75, 0.92}, {80, 0.95}, {85, 0.97}, {90, 0.98}, {95, 0.99}, {100, 1.0}};
+    {0, 0.0},     {102, 0.03},  {105, 0.09},  {307, 0.16},  {409, 0.23},  {512, 0.3},
+    {614, 0.37},  {716, 0.44},  {819, 0.51},  {921, 0.58},  {1024, 0.65}, {1126, 0.72},
+    {1228, 0.78}, {1331, 0.83}, {1433, 0.88}, {1535, 0.92}, {1638, 0.95}, {1740, 0.97},
+    {1842, 0.98}, {1945, 0.99}, {2047, 1.0}};
 
 // Brake pressure : Power limit modifier
 // const std::map<int16_t, float> BrakePressure2Modifier_LUT{};
@@ -71,8 +74,12 @@ float lookup(int16_t key, const std::map<int16_t, float>& lut) {
                              static_cast<float>(upper->first - lower->first);
 }
 
-int16_t get_throttle_modifier(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp,
-                              int16_t throttle) {
+int32_t scale_torque(float torque, int32_t torque_max) {
+  return static_cast<int32_t>(roundf(torque * static_cast<float>(torque_max)));
+}
+
+int32_t calculate_accel_torque(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp,
+                               int16_t throttle) {
   float igbt_mod = lookup(igbt_temp, IGBTTemp2Modifier_LUT);
   float batt_mod = lookup(batt_temp, BatteryTemp2Modifier_LUT);
   float motor_temp_mod = lookup(motor_temp, MotorTemp2Modifier_LUT);
@@ -80,7 +87,7 @@ int16_t get_throttle_modifier(int16_t igbt_temp, int16_t batt_temp, int16_t moto
 
   float mod_product = igbt_mod * batt_mod * motor_temp_mod * throttle_mod;
 
-  return 0;  // return scaled(mod_product, 0, kThrottleLUTScaledMax);
+  return LUT::scale_torque(mod_product, static_cast<int32_t>(LUT::TorqueReqLimit::kAccelMax));
 }
 
 // int16_t get_brake_modifier(int16_t brake_pressure) {

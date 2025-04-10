@@ -95,9 +95,9 @@ int16_t ThrottleBrake::scale_ADC_input(int16_t ADC_input, int16_t ADC_min, int16
                                        int16_t ADC_span, SensorSlope slope) {
   int16_t safe_ADC = get_safe_RAW(ADC_input, ADC_min, ADC_max);
   if (slope == SensorSlope::POSITIVE) {
-    return ((safe_ADC - ADC_min) * 32767) / ADC_span;
+    return ((safe_ADC - ADC_min) * static_cast<int16_t>(Bounds::SENSOR_SCALED_MAX)) / ADC_span;
   } else {
-    return ((ADC_max - safe_ADC) * 32767) / ADC_span;
+    return ((ADC_max - safe_ADC) * static_cast<int16_t>(Bounds::SENSOR_SCALED_MAX)) / ADC_span;
   }
 }
 
