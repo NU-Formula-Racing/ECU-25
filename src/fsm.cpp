@@ -59,7 +59,7 @@ void fsm_init() {
   timers.AddTimer(10, tick_CAN);
 
   // timer for print debugging msgs
-  timers.AddTimer(1000, print_fsm);
+  timers.AddTimer(10, print_fsm);
 
   // initialize state variables
   tsactive_switch = TSActive::Inactive;
@@ -259,7 +259,7 @@ void print_fsm() {
   Serial.print(" Ready to Drive Switch: ");
   Serial.print(static_cast<int>(ready_to_drive_switch));
   Serial.print(" Thrtl: ");
-  Serial.print(throttle_brake.get_throttle() * 4);
+  Serial.print(throttle_brake.get_throttle());
   throttle_brake.print_throttle_info();
   // Serial.print(" test tsactive: ");
   // Serial.print(test_ts_active_switch_interrupt);

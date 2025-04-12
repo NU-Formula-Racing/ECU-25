@@ -98,14 +98,14 @@ void ThrottleBrake::update_sensor_values() {
       get_safe_RAW(ThrottleBrake::APPS1_adc, static_cast<int16_t>(Bounds::APPS1_ADC_MIN),
                    static_cast<int16_t>(Bounds::APPS1_ADC_MAX));
   ThrottleBrake::APPS1_throttle_scaled =
-      ((safe_APPS1_adc - static_cast<int32_t>(Bounds::APPS1_ADC_MIN)) * 32767) /
+      ((static_cast<int32_t>(Bounds::APPS1_ADC_MAX) - safe_APPS1_adc) * 32767) /
       static_cast<int32_t>(Bounds::APPS1_ADC_SPAN);
 
   int16_t safe_APPS2_ADC =
       get_safe_RAW(ThrottleBrake::APPS2_adc, static_cast<int16_t>(Bounds::APPS2_ADC_MIN),
                    static_cast<int16_t>(Bounds::APPS2_ADC_MAX));
   ThrottleBrake::APPS2_throttle_scaled =
-      ((static_cast<int32_t>(Bounds::APPS2_ADC_MAX) - safe_APPS2_ADC) * 32767) /
+      ((safe_APPS2_ADC - static_cast<int32_t>(Bounds::APPS2_ADC_MIN)) * 32767) /
       static_cast<int32_t>(Bounds::APPS2_ADC_SPAN);
 
   int16_t safe_front_brake_adc = get_safe_RAW(ThrottleBrake::front_brake_adc,
