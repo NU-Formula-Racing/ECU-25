@@ -18,7 +18,8 @@ Ready_To_Drive_State ready_to_drive;
 Ready_To_Drive_State ready_to_drive_switch;
 
 // instantiate CAN bus
-ESPCAN drive_bus{};
+// ESPCAN drive_bus{};  // ESPCAN drive_bus{25U, GPIO_NUM_5, GPIO_NUM_4};
+ESPCAN drive_bus{25U, GPIO_NUM_5, GPIO_NUM_4};
 
 // instantiate timer group
 VirtualTimerGroup timers;
@@ -220,7 +221,7 @@ void process_state() {
       if (throttle_brake.is_implausibility_present()) {
         torque_req = 0;
       } else {
-        torque_req = static_cast<int32_t>(throttle_brake.get_throttle() * 38);
+        torque_req = static_cast<int32_t>(throttle_brake.get_throttle()) * 38;
       }
       inverter.request_torque(torque_req);
       break;
@@ -250,17 +251,18 @@ void print_fsm() {
   // Serial.println(static_cast<int>(BMS_State));
   // Serial.print("BMS Command: ");
   // Serial.println(static_cast<int>(BMS_Command));
-  Serial.print(" TS active switch: ");
-  Serial.print(static_cast<int>(tsactive_switch));
-  Serial.print(" brake_pressed: ");
-  Serial.print(throttle_brake.is_brake_pressed());
-  Serial.print(" Ready to Drive: ");
-  Serial.print(static_cast<int>(ready_to_drive));
-  Serial.print(" Ready to Drive Switch: ");
-  Serial.print(static_cast<int>(ready_to_drive_switch));
+  // Serial.print(" TS active switch: ");
+  // Serial.print(static_cast<int>(tsactive_switch));
+  // Serial.print(" brake_pressed: ");
+  // Serial.print(throttle_brake.is_brake_pressed());
+  // Serial.print(" Ready to Drive: ");
+  // Serial.print(static_cast<int>(ready_to_drive));
+  // Serial.print(" Ready to Drive Switch: ");
+  // Serial.print(static_cast<int>(ready_to_drive_switch));
   Serial.print(" Thrtl: ");
   Serial.print(throttle_brake.get_throttle() * 38);
   throttle_brake.print_throttle_info();
+  inverter.print_inverter_info();
   // Serial.print(" test tsactive: ");
   // Serial.print(test_ts_active_switch_interrupt);
   // Serial.print(" test ready to drive: ");
