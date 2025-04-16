@@ -29,9 +29,6 @@ ThrottleBrake throttle_brake{drive_bus, timers, APPSs_disagree_timer, brake_impl
 // instantiate inverter
 Inverter inverter{drive_bus, timers, throttle_brake};
 
-// instantiate torque calculator
-TorqueCalc torque_calc{};
-
 void fsm_init() {
   Serial.begin(115200);
 
@@ -226,19 +223,9 @@ void process_state() {
       inverter.request_torque(0);
       break;
     case State::DRIVE:
-      int32_t torque_req;
-      if (throttle_brake.is_implausibility_present()) {
-        torque_req = 0;
-      } else {
-        if (throttle_brake.is_brake_pressed()) {
-          // calculate regen torque
-        } else {
-          torque_req = torque_calc.calculate_accel_torque(
-              inverter.get_IGBT_temp(), Battery_Temperature, inverter.get_motor_rpm(),
-              throttle_brake.get_throttle());
-        }
-      }
-      inverter.request_torque(torque_req);
+      inverter.calculate_and_request_torque(inverter.get_IGBT_temp(), Battery_Temperature,
+                                            inverter.get_motor_temp(),
+                                            throttle_brake.get_throttle());
       break;
   }
 }

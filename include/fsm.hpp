@@ -46,9 +46,6 @@ extern ThrottleBrake throttle_brake;
 // declare inverter
 extern Inverter inverter;
 
-// instantiate torque calculator
-extern TorqueCalc torque_calc;
-
 // function forward initializations
 void fsm_init();
 void change_state();

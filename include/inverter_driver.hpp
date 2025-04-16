@@ -5,6 +5,7 @@
 #endif
 #include "can_interface.h"
 #include "throttle_brake_driver.hpp"
+#include "torque_calc.hpp"
 
 class Inverter {
  public:
@@ -13,7 +14,9 @@ class Inverter {
   void initialize();
   void read_inverter_CAN();
   void send_inverter_CAN();
-  void request_torque(int32_t torque_mA);
+  void calculate_and_request_torque(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp,
+                                    int16_t throttle);
+  void request_torque(int16_t torque_mA);
   void print_inverter_info();
 
   int32_t get_motor_rpm() const;
@@ -24,6 +27,7 @@ class Inverter {
   ICAN& can_interface;
   VirtualTimerGroup& timers;
   ThrottleBrake& throttle_brake;
+  TorqueCalc torque_calc{};
 
   int32_t motor_rpm;
   int16_t IGBT_temp;

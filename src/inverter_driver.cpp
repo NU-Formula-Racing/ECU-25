@@ -3,7 +3,7 @@
 #include <Arduino.h>
 
 #include "pins.hpp"
-#include "throttle_brake_driver.hpp"
+#include "torque_calc.hpp"
 
 /**
  * @brief Initialize Inverter class
@@ -62,7 +62,25 @@ void Inverter::send_inverter_CAN() {
  * @param torque_mA -- torque in milliAmps
  * @return void
  */
-void Inverter::request_torque(int32_t torque_mA) {
+void Inverter::calculate_and_request_torque(int16_t igbt_temp, int16_t batt_temp,
+                                            int16_t motor_temp, int16_t throttle) {
+  int32_t torque_mA;
+
+  if (throttle_brake.is_implausibility_present()) {
+    torque_mA = 0;
+  } else {
+    if (throttle_brake.is_brake_pressed()) {
+      // calculate regen torque
+      torque_mA = 0;  // for now
+    } else {
+      torque_mA =
+          Inverter::torque_calc.calculate_accel_torque(igbt_temp, batt_temp, motor_temp, throttle);
+    }
+  }
+  Inverter::request_torque(torque_mA);
+}
+
+void Inverter::request_torque(int16_t torque_mA) {
   if (throttle_brake.is_brake_pressed()) {
     Inverter::requested_torque_throttle = 0;
     Inverter::requested_torque_brake = torque_mA;
