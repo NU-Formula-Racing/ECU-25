@@ -80,7 +80,7 @@ void Inverter::calculate_and_request_torque(int16_t igbt_temp, int16_t batt_temp
   Inverter::request_torque(torque_mA);
 }
 
-void Inverter::request_torque(int16_t torque_mA) {
+void Inverter::request_torque(int32_t torque_mA) {
   if (throttle_brake.is_brake_pressed()) {
     Inverter::requested_torque_throttle = 0;
     Inverter::requested_torque_brake = torque_mA;

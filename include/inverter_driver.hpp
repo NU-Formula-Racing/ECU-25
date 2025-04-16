@@ -16,7 +16,7 @@ class Inverter {
   void send_inverter_CAN();
   void calculate_and_request_torque(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp,
                                     int16_t throttle);
-  void request_torque(int16_t torque_mA);
+  void request_torque(int32_t torque_mA);
   void print_inverter_info();
 
   int32_t get_motor_rpm() const;
