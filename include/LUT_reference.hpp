@@ -16,10 +16,10 @@ struct TorqueLUTs {
              std::map<int16_t, float> battery_temp2modifier,
              std::map<int16_t, float> motor_temp2modifier,
              std::map<int16_t, float> throttle2modifier)
-      : IGBTTemp2Modifier_LUT(igbt_temp2modifier),
-        BatteryTemp2Modifier_LUT(battery_temp2modifier),
-        MotorTemp2Modifier_LUT(motor_temp2modifier),
-        Throttle2Modifier_LUT(throttle2modifier) {}
+      : IGBTTemp2Modifier_LUT(Lookup(igbt_temp2modifier)),
+        BatteryTemp2Modifier_LUT(Lookup(battery_temp2modifier)),
+        MotorTemp2Modifier_LUT(Lookup(motor_temp2modifier)),
+        Throttle2Modifier_LUT(Lookup(throttle2modifier)) {}
 };
 
 struct CoolingLUTs {
@@ -32,10 +32,10 @@ struct CoolingLUTs {
               std::map<int16_t, float> igbt_temp2pump_duty_cycle,
               std::map<int16_t, float> battery_temp2pump_duty_cycle,
               std::map<int16_t, float> coolant_temp2fan_duty_cycle)
-      : MotorTemp2PumpDutyCycle_LUT(motor_temp2pump_duty_cycle),
-        IGBTTemp2PumpDutyCycle_LUT(igbt_temp2pump_duty_cycle),
-        BatteryTemp2PumpDutyCycle_LUT(battery_temp2pump_duty_cycle),
-        CoolantTemp2FanDutyCycle_LUT(coolant_temp2fan_duty_cycle) {}
+      : MotorTemp2PumpDutyCycle_LUT(Lookup(motor_temp2pump_duty_cycle)),
+        IGBTTemp2PumpDutyCycle_LUT(Lookup(igbt_temp2pump_duty_cycle)),
+        BatteryTemp2PumpDutyCycle_LUT(Lookup(battery_temp2pump_duty_cycle)),
+        CoolantTemp2FanDutyCycle_LUT(Lookup(coolant_temp2fan_duty_cycle)) {}
 };
 
 // IGBT temp : Power limit modifier

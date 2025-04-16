@@ -2,13 +2,6 @@
 
 #include <map>
 
-CoolingCalc::CoolingCalc() {
-  LUTs::CoolingLUTs coolingLUTs(
-      LUTs::IGBTTemp2PumpDutyCycle_LUT, LUTs::BatteryTemp2PumpDutyCycle_LUT,
-      LUTs::MotorTemp2PumpDutyCycle_LUT, LUTs::CoolantTemp2FanDutyCycle_LUT);
-  this->coolingLUTs = coolingLUTs;
-}
-
 float CoolingCalc::get_pump_duty_cycle(int16_t motor_temp, int16_t igbt_temp, int16_t batt_temp) {
   float motor_dc = coolingLUTs.MotorTemp2PumpDutyCycle_LUT.lookup_val(motor_temp);
   float igbt_dc = coolingLUTs.IGBTTemp2PumpDutyCycle_LUT.lookup_val(igbt_temp);

@@ -4,10 +4,10 @@
 
 class Lookup {
  public:
-  Lookup(const std::map<int16_t, float> table) : table(table) {}
+  Lookup(std::map<int16_t, float> table) : table(table) {}
 
-  float lookup_val(int16_t key) const;
+  float lookup_val(int16_t key);
 
  private:
-  const std::map<int16_t, float> table;
+  std::map<int16_t, float> table;
 };

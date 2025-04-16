@@ -4,6 +4,7 @@
 #include "esp_can.h"
 #include "inverter_driver.hpp"
 #include "throttle_brake_driver.hpp"
+#include "torque_calc.hpp"
 #include "virtualTimer.h"
 
 // enum definitions
@@ -21,13 +22,13 @@ enum class Brake_State { NotPressed = 0, PressedInNeutral = 1 };
 
 enum class State { OFF = 0, N = 1, DRIVE = 2 };
 
-// instantiate CAN bus
+// declare CAN bus
 extern ESPCAN drive_bus;
 
-// instantiate timer group
+// declare timer group
 extern VirtualTimerGroup timers;
 
-// instantiate throttle/brake timers
+// declare throttle/brake timers
 extern VirtualTimer
     APPSs_disagree_timer;  // this timer needs to call
                            // Throttle_Brake::set_is_APPSs_disagreement_implausibility_present_to_true()
@@ -39,11 +40,14 @@ extern VirtualTimer
     APPSs_invalid_timer;  // this timer needs to call
                           // Throttle_Brake::set_APPSs_invalid_implausibility_present_to_true()
 
-// instantiate throttle/brake
+// declare throttle/brake
 extern ThrottleBrake throttle_brake;
 
-// instantiate inverter
+// declare inverter
 extern Inverter inverter;
+
+// instantiate torque calculator
+extern TorqueCalc torque_calc;
 
 // function forward initializations
 void fsm_init();

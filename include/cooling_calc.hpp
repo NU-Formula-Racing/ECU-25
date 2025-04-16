@@ -6,7 +6,9 @@
 
 class CoolingCalc {
  public:
-  CoolingCalc();
+  CoolingCalc()
+      : coolingLUTs(LUTs::MotorTemp2PumpDutyCycle_LUT, LUTs::IGBTTemp2PumpDutyCycle_LUT,
+                    LUTs::BatteryTemp2PumpDutyCycle_LUT, LUTs::CoolantTemp2FanDutyCycle_LUT) {}
 
   // Get pump duty cycle based on motor, IGBT, and battery temperature
   float get_pump_duty_cycle(int16_t motor_temp, int16_t igbt_temp, int16_t batt_temp);

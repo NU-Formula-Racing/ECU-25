@@ -2,11 +2,7 @@
 
 #include <map>
 
-TorqueCalc::TorqueCalc() {
-  LUTs::TorqueLUTs torqueLUTs(LUTs::IGBTTemp2Modifier_LUT, LUTs::BatteryTemp2Modifier_LUT,
-                              LUTs::MotorTemp2Modifier_LUT, LUTs::Throttle2Modifier_LUT);
-  this->torqueLUTs = torqueLUTs;
-}
+#include "LUT_reference.hpp"
 
 int32_t TorqueCalc::scale_torque(float torque, int32_t torque_max) {
   return static_cast<int32_t>(roundf(torque * static_cast<float>(torque_max)));
