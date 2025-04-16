@@ -4,6 +4,7 @@
 #include <SPI.h>
 
 #include "pins.hpp"
+//
 
 void ThrottleBrake::initialize_CS_pin(uint8_t CS_pin) {
   pinMode(CS_pin, OUTPUT);
