@@ -1,6 +1,5 @@
 #include <Arduino.h>
 
-#include "LUT.hpp"
 #include "esp_can.h"
 #include "fsm.hpp"
 #include "inverter_driver.hpp"

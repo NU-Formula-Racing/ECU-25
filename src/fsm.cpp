@@ -2,7 +2,6 @@
 
 #include <Arduino.h>
 
-#include "LUT.hpp"
 #include "esp_can.h"
 #include "inverter_driver.hpp"
 #include "pins.hpp"

@@ -1,10 +1,43 @@
-#include <cmath>
-// #include <iostream>
+#pragma once
 #include <map>
 
-#include "LUT.hpp"
+#include "lookup.hpp"
 
-namespace LUT {
+namespace LUTs {
+
+struct TorqueLUTs {
+  Lookup IGBTTemp2Modifier_LUT;
+  Lookup BatteryTemp2Modifier_LUT;
+  Lookup MotorTemp2Modifier_LUT;
+  Lookup Throttle2Modifier_LUT;
+  // Lookup BrakePressure2Modifier_LUT;
+
+  TorqueLUTs(std::map<int16_t, float> igbt_temp2modifier,
+             std::map<int16_t, float> battery_temp2modifier,
+             std::map<int16_t, float> motor_temp2modifier,
+             std::map<int16_t, float> throttle2modifier)
+      : IGBTTemp2Modifier_LUT(igbt_temp2modifier),
+        BatteryTemp2Modifier_LUT(battery_temp2modifier),
+        MotorTemp2Modifier_LUT(motor_temp2modifier),
+        Throttle2Modifier_LUT(throttle2modifier) {}
+};
+
+struct CoolingLUTs {
+  Lookup MotorTemp2PumpDutyCycle_LUT;
+  Lookup IGBTTemp2PumpDutyCycle_LUT;
+  Lookup BatteryTemp2PumpDutyCycle_LUT;
+  Lookup CoolantTemp2FanDutyCycle_LUT;
+
+  CoolingLUTs(std::map<int16_t, float> motor_temp2pump_duty_cycle,
+              std::map<int16_t, float> igbt_temp2pump_duty_cycle,
+              std::map<int16_t, float> battery_temp2pump_duty_cycle,
+              std::map<int16_t, float> coolant_temp2fan_duty_cycle)
+      : MotorTemp2PumpDutyCycle_LUT(motor_temp2pump_duty_cycle),
+        IGBTTemp2PumpDutyCycle_LUT(igbt_temp2pump_duty_cycle),
+        BatteryTemp2PumpDutyCycle_LUT(battery_temp2pump_duty_cycle),
+        CoolantTemp2FanDutyCycle_LUT(coolant_temp2fan_duty_cycle) {}
+};
+
 // IGBT temp : Power limit modifier
 const std::map<int16_t, float> IGBTTemp2Modifier_LUT{
     {0, 1.0},    {10, 1.0},   {20, 1.0},   {30, 1.0}, {40, 1.0},  {50, 1.0},
@@ -52,58 +85,4 @@ const std::map<int16_t, float> CoolantTemp2FanDutyCycle_LUT{
     {0, 0.0},  {5, 0.0},  {10, 0.0}, {15, 0.0},  {20, 0.0}, {25, 0.05}, {30, 0.15},
     {35, 0.4}, {40, 0.7}, {45, 0.9}, {50, 0.97}, {55, 1.0}, {60, 1.0}};
 
-float lookup(int16_t key, const std::map<int16_t, float>& lut) {
-  auto it = lut.lower_bound(key);
-  // if key is smaller than the smallest key, return the first value
-  if (it == lut.begin()) {
-    return it->second;
-  }
-  // if key is larger than the largest key, return the last value
-  if (it == lut.end()) {
-    return std::prev(it)->second;
-  }
-  // if key is exactly found in the LUT, return its value
-  if (it->first == key) {
-    return it->second;
-  }
-  // if we're here, key is btwn 2 entries in the LUT, interpolate
-  auto upper = it;
-  auto lower = std::prev(it);
-
-  return lower->second + (upper->second - lower->second) * static_cast<float>(key - lower->first) /
-                             static_cast<float>(upper->first - lower->first);
-}
-
-int32_t scale_torque(float torque, int32_t torque_max) {
-  return static_cast<int32_t>(roundf(torque * static_cast<float>(torque_max)));
-}
-
-int32_t calculate_accel_torque(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp,
-                               int16_t throttle) {
-  float igbt_mod = lookup(igbt_temp, IGBTTemp2Modifier_LUT);
-  float batt_mod = lookup(batt_temp, BatteryTemp2Modifier_LUT);
-  float motor_temp_mod = lookup(motor_temp, MotorTemp2Modifier_LUT);
-  float throttle_mod = lookup(throttle, Throttle2Modifier_LUT);
-
-  float mod_product = igbt_mod * batt_mod * motor_temp_mod * throttle_mod;
-
-  return LUT::scale_torque(mod_product, static_cast<int32_t>(LUT::TorqueReqLimit::kAccelMax));
-}
-
-// int16_t get_brake_modifier(int16_t brake_pressure) {
-// float brake_mod = lookup(brake_pressure, BrakePressure2Modifier_LUT);
-//   return 0; // return scaled(brake_mod, 0, kCurrentLUTScaledMax);
-
-float get_pump_duty_cycle(int16_t motor_temp, int16_t igbt_temp, int16_t batt_temp) {
-  float motor_dc = lookup(motor_temp, MotorTemp2PumpDutyCycle_LUT);
-  float igbt_dc = lookup(igbt_temp, IGBTTemp2PumpDutyCycle_LUT);
-  float batt_dc = lookup(batt_temp, BatteryTemp2PumpDutyCycle_LUT);
-
-  return motor_dc * igbt_dc * batt_dc;
-}
-
-float get_fan_duty_cycle(int16_t coolant_temp) {
-  float coolant_dc = lookup(coolant_temp, CoolantTemp2FanDutyCycle_LUT);
-  return coolant_dc;
-}
-}  // namespace LUT
+}  // namespace LUTs
