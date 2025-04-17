@@ -14,9 +14,11 @@ class Inverter {
   void initialize();
   void read_inverter_CAN();
   void send_inverter_CAN();
-  void calculate_and_request_torque(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp,
-                                    int16_t throttle);
-  void request_torque(int32_t torque_mA);
+  void request_accel_torque(int32_t torque_mA);
+  void request_regen_torque(int32_t torque_mA);
+  int32_t calculate_accel_torque(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp,
+                                 int16_t throttle);
+  int32_t calculate_regen_torque();  // add more parameters as we get more LUTs
   void print_inverter_info();
 
   int32_t get_motor_rpm() const;

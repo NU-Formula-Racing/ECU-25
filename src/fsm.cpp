@@ -214,18 +214,30 @@ void process_state() {
       }
       ready_to_drive = Ready_To_Drive_State::Neutral;
       // BMS_Command = BMSCommand::Shutdown;
-      inverter.request_torque(0);
+      inverter.request_accel_torque(0);
       break;
     case State::N:
       BMS_Command =
           BMSCommand::PrechargeAndCloseContactors;  // maybe make prechargeandclosecontactors or
                                                     // NoAction here
-      inverter.request_torque(0);
+      inverter.request_accel_torque(0);
       break;
     case State::DRIVE:
-      inverter.calculate_and_request_torque(inverter.get_IGBT_temp(), Battery_Temperature,
-                                            inverter.get_motor_temp(),
-                                            throttle_brake.get_throttle());
+      if (throttle_brake.is_implausibility_present()) {
+        inverter.request_accel_torque(0);
+      } else {
+        if (throttle_brake.is_brake_pressed()) {
+          int32_t regen_torque =
+              inverter.calculate_regen_torque();  // we will add more parameters to this function as
+                                                  // we add regen LUTs to LUT_reference.hpp
+          inverter.request_regen_torque(regen_torque);
+        } else {
+          int32_t accel_torque = inverter.calculate_accel_torque(
+              inverter.get_IGBT_temp(), Battery_Temperature, inverter.get_motor_temp(),
+              throttle_brake.get_throttle());
+          inverter.request_accel_torque(accel_torque);
+        }
+      }
       break;
   }
 }

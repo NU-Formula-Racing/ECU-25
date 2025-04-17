@@ -57,37 +57,29 @@ void Inverter::send_inverter_CAN() {
   Inverter::Set_Current_Brake = Inverter::requested_torque_brake;
 }
 
+int32_t Inverter::calculate_accel_torque(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp,
+                                         int16_t throttle) {
+  return Inverter::torque_calc.calculate_accel_torque(igbt_temp, batt_temp, motor_temp, throttle);
+}
+
+// this function will have more parameters later
+int32_t Inverter::calculate_regen_torque() {
+  return Inverter::torque_calc.calculate_regen_torque();
+}
+
 /**
- * @brief Request torque from Inverter
+ * @brief Request acceleration torque from Inverter
  * @param torque_mA -- torque in milliAmps
  * @return void
  */
-void Inverter::calculate_and_request_torque(int16_t igbt_temp, int16_t batt_temp,
-                                            int16_t motor_temp, int16_t throttle) {
-  int32_t torque_mA;
-
-  if (throttle_brake.is_implausibility_present()) {
-    torque_mA = 0;
-  } else {
-    if (throttle_brake.is_brake_pressed()) {
-      // calculate regen torque
-      torque_mA = 0;  // for now
-    } else {
-      torque_mA =
-          Inverter::torque_calc.calculate_accel_torque(igbt_temp, batt_temp, motor_temp, throttle);
-    }
-  }
-  Inverter::request_torque(torque_mA);
+void Inverter::request_accel_torque(int32_t torque_mA) {
+  Inverter::requested_torque_throttle = torque_mA;
+  Inverter::requested_torque_brake = 0;
 }
 
-void Inverter::request_torque(int32_t torque_mA) {
-  if (throttle_brake.is_brake_pressed()) {
-    Inverter::requested_torque_throttle = 0;
-    Inverter::requested_torque_brake = torque_mA;
-  } else {
-    Inverter::requested_torque_throttle = torque_mA;
-    Inverter::requested_torque_brake = 0;
-  }
+void Inverter::request_regen_torque(int32_t torque_mA) {
+  Inverter::requested_torque_throttle = 0;
+  Inverter::requested_torque_brake = torque_mA;
 }
 
 void Inverter::print_inverter_info() {

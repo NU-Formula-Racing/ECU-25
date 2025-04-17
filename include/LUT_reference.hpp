@@ -62,7 +62,6 @@ const std::map<int16_t, float> Throttle2Modifier_LUT{
     {1228, 0.78}, {1331, 0.83}, {1433, 0.88}, {1535, 0.92}, {1638, 0.95}, {1740, 0.97},
     {1842, 0.98}, {1945, 0.99}, {2047, 1.0}};
 
-// Brake pressure : Power limit modifier
 // const std::map<int16_t, float> BrakePressure2Modifier_LUT{};
 
 // Motor temp : Pump duty cycle

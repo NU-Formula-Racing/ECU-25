@@ -13,6 +13,8 @@ class TorqueCalc {
   int32_t calculate_accel_torque(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp,
                                  int16_t throttle);
 
+  int32_t calculate_regen_torque();
+
  private:
   LUTs::TorqueLUTs torqueLUTs;
 

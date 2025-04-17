@@ -20,6 +20,9 @@ int32_t TorqueCalc::calculate_accel_torque(int16_t igbt_temp, int16_t batt_temp,
   return scale_torque(mod_product, static_cast<int32_t>(TorqueReqLimit::kAccelMax));
 }
 
+// add more parameters as we make more LUTS
+int32_t TorqueCalc::calculate_regen_torque() { return 0; }
+
 // int16_t get_brake_modifier(int16_t brake_pressure) {
 // float brake_mod = lookup(brake_pressure, BrakePressure2Modifier_LUT);
 //   return 0; // return scaled(brake_mod, 0, kCurrentLUTScaledMax);
