@@ -8,23 +8,36 @@ void CAN::initialize() {
 }
 
 void CAN::RXupdate() {
-  this->_RXdata.bmsstate = BMS_State{};
-  this->_RXdata.fault = External_Kill_Fault{};
+  _RXdata.bms_state = BMS_State;
+  _RXdata.bms_fault = External_Kill_Fault;
+  _RXdata.battery_temp = Battery_Temperature;
 
-  this->_RXdata.FL_speed = FL_Speed{};
-  this->_RXdata.FR_speed = FR_Speed{};
-  this->_RXdata.BL_speed = BL_Speed{};
-  this->_RXdata.BR_speed = BR_Speed{};
+  _RXdata.igbt_temp = IGBT_Temp;
+  _RXdata.motor_temp = Motor_Temp;
 
-  this->_RXdata.max_discharge_curr = MAX_Discharge_Current{};
-  this->_RXdata.max_regen_curr = MAX_Regen_Current{};
-  this->_RXdata.battery_vol = Battery_Voltage{};
-  this->_RXdata.battery_temp = Battery_Temperature{};
-  this->_RXdata.battery_curr = Battery_Current{};
+  _RXdata.FL_speed = FL_Speed;
+  _RXdata.FR_speed = FR_Speed;
+  _RXdata.BL_speed = BL_Speed;
+  _RXdata.BR_speed = BR_Speed;
 }
 
-void CAN::TXupdata() {
-  this->_TXdata.BMS_Command{} = command;  // tx
-  this->_TXdata.Drive_State{} = state;    // tx
-  this->_TXdata.
+void CAN::TXupdate() {
+  BMS_Command = _TXdata.bms_command;
+
+  Drive_State = _TXdata.drive_state;
+
+  Set_Current = _TXdata.set_current;
+  Set_Current_Brake = _TXdata.set_current_brake;
+
+  CAN_Implausibility_Present = _TXdata.implausibilities.any_implausibility_present;
+  CAN_APPSs_Disagreement_Imp = _TXdata.implausibilities.APPSs_disagreement_implausibility_present;
+  CAN_BPPC_Imp = _TXdata.implausibilities.BPPC_implausibility_present;
+  CAN_Brake_Invalid_Imp = _TXdata.implausibilities.brake_shorted_or_opened_implausibility_present;
+  CAN_APPSs_Invalid_Imp = _TXdata.implausibilities.APPSs_invalid_implausibility_present;
+
+  APPS1_Throttle = _TXdata.apps1_throttle;
+  APPS2_Throttle = _TXdata.apps2_throttle;
+  Front_Brake_Pressure = _TXdata.front_brake_pressure;
+  Rear_Brake_Pressure = _TXdata.rear_brake_pressure;
+  Brake_Pressed = _TXdata.brake_pressed;
 }

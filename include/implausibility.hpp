@@ -2,7 +2,7 @@
 #include "throttle.hpp"
 #include "virtualTimer.h"
 
-struct ImplausibilitiesPresent {
+struct ImplausibilitiesData {
   bool any_implausibility_present;
   bool APPSs_disagreement_implausibility_present;
   bool BPPC_implausibility_present;
@@ -28,7 +28,7 @@ class Implausibilities {
   // Brake
   Brake& _brake;
   // Struct to store implausibilities
-  ImplausibilitiesPresent _implausibilities;
+  ImplausibilitiesData _implausibilities;
 
   // Init timer group
   void init_implausibility_timers();
