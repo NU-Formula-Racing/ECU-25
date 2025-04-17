@@ -15,10 +15,10 @@ class Implausibilities {
   Implausibilities(VirtualTimerGroup& implausibility_group, Throttle& throttle, Brake& brake)
       : _implausibility_timers(implausibility_group), _throttle(throttle), _brake(brake) {};
 
+  // Struct to store implausibility data
+  ImplausibilitiesData implausibilities;
   // Check for implausibilities
   bool is_implausibility_present();
-  // Return a struct with each implausibility status -- use for making CAN TX msg
-  ImplausibilitiesPresent get_implausibility_statuses();
 
  private:
   // Timer group to store implausibility timers
@@ -27,8 +27,6 @@ class Implausibilities {
   Throttle& _throttle;
   // Brake
   Brake& _brake;
-  // Struct to store implausibilities
-  ImplausibilitiesData _implausibilities;
 
   // Init timer group
   void init_implausibility_timers();

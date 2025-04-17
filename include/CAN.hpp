@@ -37,7 +37,9 @@ struct CANTXData {
   bool brake_pressed;
 };
 
-// TODO: finish populating this enum with all the addresses, fix typos. check DBC for addresses
+// TODO: finish populating this enum with all the addresses
+// TODO: fix typos
+// TODO: check DBC for addresses
 enum class CANAddress {
   kBMSStatusID = 0x152,
   kBMSFaultsID = 0x151,
