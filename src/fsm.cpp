@@ -230,6 +230,7 @@ void process_state() {
       } else {
         if (throttle_brake.is_brake_pressed()) {
           // calculate regen torque
+          torque_req = 0;
         } else {
           torque_req =
               LUT::calculate_accel_torque(inverter.get_IGBT_temp(), Battery_Temperature,
