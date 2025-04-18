@@ -107,8 +107,9 @@ float get_pump_duty_cycle(int16_t motor_temp, int16_t igbt_temp, int16_t batt_te
 }
 
 float get_fan_duty_cycle(int16_t coolant_temp) {
-  float coolant_dc = lookup(
-      coolant_temp, CoolantTemp2FanDutyCycle_LUT);  // also get a wheelspeed : fan duty cycle LUT
+  float coolant_dc =
+      lookup(coolant_temp, CoolantTemp2FanDutyCycle_LUT);  // also get a wheelspeed : fan duty cycle
+                                                           // LUT. faster wheelspeed = slower fan
   return coolant_dc;
 }
 }  // namespace LUT
