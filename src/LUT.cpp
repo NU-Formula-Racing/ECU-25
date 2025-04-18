@@ -99,11 +99,16 @@ float get_pump_duty_cycle(int16_t motor_temp, int16_t igbt_temp, int16_t batt_te
   float igbt_dc = lookup(igbt_temp, IGBTTemp2PumpDutyCycle_LUT);
   float batt_dc = lookup(batt_temp, BatteryTemp2PumpDutyCycle_LUT);
 
-  return motor_dc * igbt_dc * batt_dc;
+  return motor_dc * igbt_dc * batt_dc;  // take max of all three, have 2 sets of LUTs: 1 from 0 to
+                                        // "panic temp", 1 from "panic temp" to max
+  // should be continuous between the modes
+  // PDM just needs a msg with 2 signals: pump duty cycle and fan duty cycle, both scaled from 0-255
+  // uint8_t
 }
 
 float get_fan_duty_cycle(int16_t coolant_temp) {
-  float coolant_dc = lookup(coolant_temp, CoolantTemp2FanDutyCycle_LUT);
+  float coolant_dc = lookup(
+      coolant_temp, CoolantTemp2FanDutyCycle_LUT);  // also get a wheelspeed : fan duty cycle LUT
   return coolant_dc;
 }
 }  // namespace LUT

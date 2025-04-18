@@ -228,14 +228,14 @@ void process_state() {
       if (throttle_brake.is_implausibility_present()) {
         torque_req = 0;
       } else {
-        if (throttle_brake.is_brake_pressed()) {
-          // calculate regen torque
-          torque_req = 0;
-        } else {
-          torque_req =
-              LUT::calculate_accel_torque(inverter.get_IGBT_temp(), Battery_Temperature,
-                                          inverter.get_motor_temp(), throttle_brake.get_throttle());
-        }
+        // if (throttle_brake.is_brake_pressed()) {
+        //   // calculate regen torque
+        //   torque_req = 0;
+        // } else {
+        torque_req =
+            LUT::calculate_accel_torque(inverter.get_IGBT_temp(), Battery_Temperature,
+                                        inverter.get_motor_temp(), throttle_brake.get_throttle());
+        // }
       }
       inverter.request_torque(torque_req);
       break;
