@@ -79,15 +79,19 @@ int32_t scale_torque(float torque, int32_t torque_max) {
 }
 
 int32_t calculate_accel_torque(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp,
-                               int16_t throttle) {
-  float igbt_mod = lookup(igbt_temp, IGBTTemp2Modifier_LUT);
-  float batt_mod = lookup(batt_temp, BatteryTemp2Modifier_LUT);
-  float motor_temp_mod = lookup(motor_temp, MotorTemp2Modifier_LUT);
-  float throttle_mod = lookup(throttle, Throttle2Modifier_LUT);
+                               int16_t throttle, LUTChoice choice) {
+  if (choice == LUTChoice::kLinear) {
+    return scale_torque(throttle, static_cast<int32_t>(LUT::TorqueReqLimit::kAccelMax));
+  } else {  // (choice == LUTChoice::kBenji)
+    float igbt_mod = lookup(igbt_temp, IGBTTemp2Modifier_LUT);
+    float batt_mod = lookup(batt_temp, BatteryTemp2Modifier_LUT);
+    float motor_temp_mod = lookup(motor_temp, MotorTemp2Modifier_LUT);
+    float throttle_mod = lookup(throttle, Throttle2Modifier_LUT);
 
-  float mod_product = igbt_mod * batt_mod * motor_temp_mod * throttle_mod;
+    float mod_product = igbt_mod * batt_mod * motor_temp_mod * throttle_mod;
 
-  return LUT::scale_torque(mod_product, static_cast<int32_t>(LUT::TorqueReqLimit::kAccelMax));
+    return LUT::scale_torque(mod_product, static_cast<int32_t>(LUT::TorqueReqLimit::kAccelMax));
+  }
 }
 
 // int16_t get_brake_modifier(int16_t brake_pressure) {

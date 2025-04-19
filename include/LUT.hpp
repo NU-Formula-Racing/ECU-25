@@ -9,6 +9,10 @@ namespace LUT {
 // current:torque is ~1:1
 enum class TorqueReqLimit { kAccelMax = 80000, kRegenMax = 80000 };
 
+enum class PWMLimit { kPumpMax = 255, kFanMax = 255 };
+
+enum class LUTChoice { kLinear = 0, kBenji = 1 };
+
 /* Power limit modifier LUTs */
 // IGBT temp : Power limit modifier
 extern const std::map<int16_t, float> IGBTTemp2Modifier_LUT;
@@ -42,7 +46,7 @@ extern const std::map<int16_t, float> CoolantTemp2FanDutyCycle_LUT;
 float lookup(int16_t key, const std::map<int16_t, float>& lut);
 
 int32_t calculate_accel_torque(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp,
-                               int16_t throttle);
+                               int16_t throttle, LUTChoice choice);
 
 // int16_t get_brake_modifier(int16_t brake_pressure);
 

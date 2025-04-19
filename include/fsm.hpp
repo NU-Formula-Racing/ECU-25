@@ -1,6 +1,7 @@
 #pragma once
 #include <Arduino.h>
 
+#include "LUT.hpp"
 #include "esp_can.h"
 #include "inverter_driver.hpp"
 #include "throttle_brake_driver.hpp"
@@ -118,6 +119,11 @@ extern CANSignal<float, 40, 8, CANTemplateConvertFloat(1), CANTemplateConvertFlo
 extern CANSignal<float, 48, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0), false>
     Battery_Current;
 
+extern CANSignal<LUT::LUTChoice, 0, 1, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0),
+                 false>
+    LUT_Choice;
+
+extern CANRXMessage<1> ECU_TEST_Throttle_Map_Choice;
 extern CANRXMessage<5> BMS_SOE;
 extern CANRXMessage<3> DAQ_Wheel_BL;
 extern CANRXMessage<3> DAQ_Wheel_BR;
