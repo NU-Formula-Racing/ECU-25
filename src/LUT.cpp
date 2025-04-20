@@ -79,7 +79,7 @@ int32_t scale_torque(float torque, int32_t torque_max) {
 }
 
 int32_t calculate_accel_torque(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp,
-                               int16_t throttle, LUTChoice choice) {
+                               int16_t throttle, LUTChoice choice = LUTChoice::kBenji) {
   if (choice == LUTChoice::kLinear) {
     float throttle_float = static_cast<float>(throttle) / 2047.0f;  // scale throttle to 0-1
     return scale_torque(throttle_float, static_cast<int32_t>(LUT::TorqueReqLimit::kAccelMax));
