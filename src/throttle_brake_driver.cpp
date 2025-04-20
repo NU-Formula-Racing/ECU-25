@@ -107,12 +107,12 @@ void ThrottleBrake::update_sensor_values() {
   ThrottleBrake::APPS1_throttle_scaled = ThrottleBrake::scale_ADC_input(
       ThrottleBrake::APPS1_adc, static_cast<int16_t>(Bounds::APPS1_ADC_MIN),
       static_cast<int16_t>(Bounds::APPS1_ADC_MAX), static_cast<int16_t>(Bounds::APPS1_ADC_SPAN),
-      SensorSlope::POSITIVE);
+      SensorSlope::NEGATIVE);
 
   ThrottleBrake::APPS2_throttle_scaled = ThrottleBrake::scale_ADC_input(
       ThrottleBrake::APPS2_adc, static_cast<int16_t>(Bounds::APPS2_ADC_MIN),
       static_cast<int16_t>(Bounds::APPS2_ADC_MAX), static_cast<int16_t>(Bounds::APPS2_ADC_SPAN),
-      SensorSlope::NEGATIVE);
+      SensorSlope::POSITIVE);
 
   ThrottleBrake::front_brake_scaled = ThrottleBrake::scale_ADC_input(
       ThrottleBrake::front_brake_adc, static_cast<int16_t>(Bounds::FRONT_BRAKE_ADC_MIN),
@@ -286,8 +286,8 @@ bool ThrottleBrake::is_brake_pressed() const {
  * @return
  */
 void ThrottleBrake::check_BPPC_implausibility() {
-  auto APPS1_percentage = static_cast<float>(
-      ((ThrottleBrake::APPS1_adc - static_cast<int32_t>(Bounds::APPS1_ADC_MIN)) * 100.0) /
+  float APPS1_percentage = static_cast<float>(
+      ((static_cast<int32_t>(Bounds::APPS1_ADC_MAX) - ThrottleBrake::APPS1_adc) * 100.0) /
       static_cast<int32_t>(Bounds::APPS1_ADC_SPAN));
   // Serial.print("percentage_diff: ");
   // Serial.println(percentage_diff);
@@ -322,16 +322,16 @@ void ThrottleBrake::update_throttle_brake_CAN_signals() {
 }
 
 void ThrottleBrake::print_throttle_info() {
-  // Serial.print(" imp_present: ");
-  // Serial.print(ThrottleBrake::is_implausibility_present());
-  // Serial.print(" APPS_valid_imp: ");
-  // Serial.print(ThrottleBrake::APPSs_invalid_implausibility_present);
-  // Serial.print(" APPS_dis_imp: ");
-  // Serial.print(ThrottleBrake::APPSs_disagreement_implausibility_present);
-  // Serial.print(" Brake_imp: ");
-  // Serial.print(ThrottleBrake::brake_shorted_or_opened_implausibility_present);
-  // Serial.print(" BPPC_imp: ");
-  // Serial.print(ThrottleBrake::BPPC_implausibility_present);
+  Serial.print(" imp_present: ");
+  Serial.print(ThrottleBrake::is_implausibility_present());
+  Serial.print(" APPS_valid_imp: ");
+  Serial.print(ThrottleBrake::APPSs_invalid_implausibility_present);
+  Serial.print(" APPS_dis_imp: ");
+  Serial.print(ThrottleBrake::APPSs_disagreement_implausibility_present);
+  Serial.print(" Brake_imp: ");
+  Serial.print(ThrottleBrake::brake_shorted_or_opened_implausibility_present);
+  Serial.print(" BPPC_imp: ");
+  Serial.print(ThrottleBrake::BPPC_implausibility_present);
   // Serial.print(" APPS1_ADC: ");
   // Serial.print(ThrottleBrake::APPS1_adc);
   // Serial.print(" APPS2_ADC: ");
@@ -340,15 +340,15 @@ void ThrottleBrake::print_throttle_info() {
   // // Serial.print(ThrottleBrake::front_brake_adc);
   // Serial.print(" APPS_validity: ");
   // Serial.print(ThrottleBrake::check_APPSs_validity());
-  // Serial.print(" APPS1 ADC: ");
-  // Serial.print(ThrottleBrake::APPS1_ADC);
-  // Serial.print(" APPS2 ADC: ");
-  // Serial.print(ThrottleBrake::APPS2_ADC);
+  Serial.print(" APPS1 ADC: ");
+  Serial.print(ThrottleBrake::APPS1_adc);
+  Serial.print(" APPS2 ADC: ");
+  Serial.print(ThrottleBrake::APPS2_adc);
 
-  // Serial.print(" APPS1: ");
-  // Serial.print(ThrottleBrake::APPS1_throttle);
-  // Serial.print(" APPS2: ");
-  // Serial.print(ThrottleBrake::APPS2_throttle);
+  Serial.print(" APPS1: ");
+  Serial.print(ThrottleBrake::APPS1_throttle_scaled);
+  Serial.print(" APPS2: ");
+  Serial.print(ThrottleBrake::APPS2_throttle_scaled);
   Serial.print(" Front Brake: ");
   Serial.print(ThrottleBrake::front_brake_adc);
   // Serial.print(" brake pressed adc: ");

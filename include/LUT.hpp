@@ -7,7 +7,7 @@ namespace LUT {
 
 // Max current/torque we can request from Inverter (in mA)
 // current:torque is ~1:1
-enum class TorqueReqLimit { kAccelMax = 80000, kRegenMax = 80000 };
+enum class TorqueReqLimit { kAccelMax = 235000, kRegenMax = 0 };
 
 enum class PWMLimit { kPumpMax = 255, kFanMax = 255 };
 
