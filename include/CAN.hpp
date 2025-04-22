@@ -37,19 +37,24 @@ struct CANTXData {
   bool brake_pressed;
 };
 
-// TODO: finish populating this enum with all the addresses
-// TODO: fix typos
-// TODO: check DBC for addresses
 enum class CANAddress {
   kBMSStatusID = 0x152,
   kBMSFaultsID = 0x151,
   kBMSSOEID = 0x150,
 
-  kInversterTempStatusID = kTransmissionIDInverterTempStatus,
+  kInverterTempStatusID = kTransmissionIDInverterTempStatus,
   kBackLeftID = 0x24B,
   kBackRightID = 0x24C,
-  kFrontLeftID = 0x24A,
-  KFrontRigthID = 0x249
+  kFrontLeftID = 0x249,
+  kFrontRigthID = 0x24A,
+
+  kBMSCommandID = 0x205,
+  kECUDriveStatusID = 0x206,
+  kECUSetCurrentID = 0x200,
+  kECUSetCurrentBrakeID = 0x201,
+  kECUImplausibilityID = 0x204,
+  kECUThrottleID = 0x202,
+  kECUBrakeID = 0x203
 
 };
 
@@ -96,7 +101,7 @@ class CAN {
   CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> FR_Speed{};
   CANRXMessage<1> Daq_Wheel_FR{_drive_bus, 0x249, FR_Speed};
 
-  CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> FL_Speed;
+  CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> FL_Speed{};
   CANRXMessage<1> Daq_Wheel_FL{_drive_bus, 0x24A, FL_Speed};
 
   //// TX
@@ -158,4 +163,4 @@ class CAN {
   CANTXMessage<3> ECU_Brake{
       _drive_bus,          kTransmissionIDBrake, 5, 100, CAN_timers, Front_Brake_Pressure,
       Rear_Brake_Pressure, Brake_Pressed};
-}
+};
