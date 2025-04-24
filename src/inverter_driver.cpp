@@ -13,6 +13,8 @@
 void Inverter::initialize() {
   Inverter::requested_torque_brake = 0;
   Inverter::requested_torque_throttle = 0;
+  Inverter::IGBT_temp = 150;
+  Inverter::motor_temp = 120;
 }
 
 /**

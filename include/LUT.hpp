@@ -46,7 +46,7 @@ extern const std::map<int16_t, float> CoolantTemp2FanDutyCycle_LUT;
 float lookup(int16_t key, const std::map<int16_t, float>& lut);
 
 int32_t calculate_accel_torque(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp,
-                               int16_t throttle, LUTChoice choice);
+                               int16_t throttle, LUTChoice choice = LUTChoice::kBenji);
 
 // int16_t get_brake_modifier(int16_t brake_pressure);
 
