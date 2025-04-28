@@ -55,6 +55,7 @@ void ready_to_drive_callback();
 void tsactive_callback();
 void initialize_dash_switches();
 void update_inverter();
+void active_aero_wrapper();
 void send_throttle_brake_CAN_wrapper();
 void APPSs_disagreement_timer_callback();
 void brake_implausible_timer_callback();
