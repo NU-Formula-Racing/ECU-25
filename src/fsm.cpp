@@ -59,7 +59,7 @@ void fsm_init() {
   timers.AddTimer(10, tick_CAN);
 
   // timer for print debugging msgs
-  timers.AddTimer(1000, print_fsm);
+  timers.AddTimer(10, print_fsm);
 
   // initialize state variables
   tsactive_switch = TSActive::Inactive;
