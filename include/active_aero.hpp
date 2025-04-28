@@ -27,14 +27,14 @@ class ActiveAero {
   ActiveAero(ICAN& can_interface_, VirtualTimerGroup& timer_group)
       : can_interface(can_interface_), timers(timer_group) {};
 
-  void update_active_aero(int32_t set_current, bool brake_pressed);
+  void update_active_aero(int32_t set_current, float max_current, bool brake_pressed);
 
  private:
   void update_can();
 
   ActiveAeroState state_ = ActiveAeroState::kClosed;
-  ActiveAeroEnabled enabled_ = ActiveAeroEnabled::kEnabled;  // RX msg from dash, enabled by default
-  int16_t position_;                                         // TX to back daq
+  ActiveAeroEnabled enabled_ = ActiveAeroEnabled::kEnabled;
+  int16_t position_;
 
   VirtualTimerGroup& timers;
 

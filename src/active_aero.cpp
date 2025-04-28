@@ -1,6 +1,6 @@
 #include "active_aero.hpp"
 
-void ActiveAero::update_active_aero(int32_t set_current, bool brake_pressed) {
+void ActiveAero::update_active_aero(int32_t set_current, float max_current, bool brake_pressed) {
   // update CAN signals
   update_can();
 
@@ -9,7 +9,7 @@ void ActiveAero::update_active_aero(int32_t set_current, bool brake_pressed) {
   // only do all this if enabled and in drive
   if (enabled_ == ActiveAeroEnabled::kEnabled) {
     float current_percent =
-        (static_cast<float>(set_current) / 235000.0f) * 100.0f;  // scale to 0-100%
+        (static_cast<float>(set_current) / max_current) * 100.0f;  // scale to 0-100%
 
     if (!brake_pressed && (current_percent > 25.0)) {
       position_ = static_cast<int16_t>(ActiveAeroPosition::kOpen);

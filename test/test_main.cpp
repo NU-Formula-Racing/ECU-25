@@ -21,11 +21,11 @@ void test_zero_throttle_others_random() {
 
 void test_throttle_with_reasonable_temps() {
   TEST_ASSERT_EQUAL(LUT::calculate_accel_torque(98, 33, 3, 2000),
-                    (int32_t)(0.9953921568627451 * 80000));
+                    (int32_t)(0.9953921568627451 * 235000));
 }
 
 void test_with_interpolation_for_all_LUTs() {
-  int32_t torque = (int32_t)roundf(0.65 * 0.2 * 0.975 * 0.5381372549019607 * 80000.0);
+  int32_t torque = (int32_t)roundf(0.65 * 0.2 * 0.975 * 0.5381372549019607 * 235000.0);
   TEST_ASSERT_EQUAL(LUT::calculate_accel_torque(122, 56, 75, 860), torque);
 }
 
@@ -68,7 +68,7 @@ void test_calc_accel_midpoints(void) {
      Throttle 900 → 0.515 (linearly between 819→0.51 and 921→0.58)
   */
   float ref_mod = 1 * 0.85 * 0.96 * 0.5655882352941176;
-  int32_t ref = LUT::scale_torque(ref_mod, 80000);
+  int32_t ref = LUT::scale_torque(ref_mod, 235000);
   TEST_ASSERT_EQUAL_INT32(ref, LUT::calculate_accel_torque(85, 48, 78, 900));
 }
 

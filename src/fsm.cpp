@@ -58,7 +58,7 @@ void fsm_init() {
   // refresh throttle/brake values and check for implausibilities
   timers.AddTimer(10, refresh_throttle_brake);
 
-  timers.AddTimer(100, active_aero_wrapper);
+  timers.AddTimer(10, active_aero_wrapper);
 
   // 10 ms timer for CAN messages
   timers.AddTimer(10, tick_CAN);
@@ -111,7 +111,9 @@ void APPSs_invalid_timer_callback() {
 
 // active aero wrapper
 void active_aero_wrapper() {
-  active_aero.update_active_aero(inverter.get_set_current(), throttle_brake.is_brake_pressed());
+  active_aero.update_active_aero(inverter.get_set_current(),
+                                 static_cast<float>(LUT::TorqueReqLimit::kAccelMax),
+                                 throttle_brake.is_brake_pressed());
 }
 
 // call this function when the ready to drive switch is flipped
