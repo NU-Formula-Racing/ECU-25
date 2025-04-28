@@ -91,36 +91,38 @@ int16_t ThrottleBrake::get_safe_RAW(int16_t RAW, int16_t projected_min, int16_t 
   }
 }
 
+int16_t ThrottleBrake::scale_ADC_input(int16_t ADC_input, int16_t ADC_min, int16_t ADC_max,
+                                       int16_t ADC_span, SensorSlope slope) {
+  int16_t safe_ADC = get_safe_RAW(ADC_input, ADC_min, ADC_max);
+  if (slope == SensorSlope::POSITIVE) {
+    return ((safe_ADC - ADC_min) * static_cast<int16_t>(Bounds::SENSOR_SCALED_MAX)) / ADC_span;
+  } else {
+    return ((ADC_max - safe_ADC) * static_cast<int16_t>(Bounds::SENSOR_SCALED_MAX)) / ADC_span;
+  }
+}
+
 void ThrottleBrake::update_sensor_values() {
   ThrottleBrake::read_from_SPI_ADCs();
 
-  int16_t safe_APPS1_adc =
-      get_safe_RAW(ThrottleBrake::APPS1_adc, static_cast<int16_t>(Bounds::APPS1_ADC_MIN),
-                   static_cast<int16_t>(Bounds::APPS1_ADC_MAX));
-  ThrottleBrake::APPS1_throttle_scaled =
-      ((static_cast<int32_t>(Bounds::APPS1_ADC_MAX) - safe_APPS1_adc) * 2048) /
-      static_cast<int32_t>(Bounds::APPS1_ADC_SPAN);
+  ThrottleBrake::APPS1_throttle_scaled = ThrottleBrake::scale_ADC_input(
+      ThrottleBrake::APPS1_adc, static_cast<int16_t>(Bounds::APPS1_ADC_MIN),
+      static_cast<int16_t>(Bounds::APPS1_ADC_MAX), static_cast<int16_t>(Bounds::APPS1_ADC_SPAN),
+      SensorSlope::NEGATIVE);
 
-  int16_t safe_APPS2_ADC =
-      get_safe_RAW(ThrottleBrake::APPS2_adc, static_cast<int16_t>(Bounds::APPS2_ADC_MIN),
-                   static_cast<int16_t>(Bounds::APPS2_ADC_MAX));
-  ThrottleBrake::APPS2_throttle_scaled =
-      ((safe_APPS2_ADC - static_cast<int32_t>(Bounds::APPS2_ADC_MIN)) * 2048) /
-      static_cast<int32_t>(Bounds::APPS2_ADC_SPAN);
+  ThrottleBrake::APPS2_throttle_scaled = ThrottleBrake::scale_ADC_input(
+      ThrottleBrake::APPS2_adc, static_cast<int16_t>(Bounds::APPS2_ADC_MIN),
+      static_cast<int16_t>(Bounds::APPS2_ADC_MAX), static_cast<int16_t>(Bounds::APPS2_ADC_SPAN),
+      SensorSlope::POSITIVE);
 
-  int16_t safe_front_brake_adc = get_safe_RAW(ThrottleBrake::front_brake_adc,
-                                              static_cast<int16_t>(Bounds::FRONT_BRAKE_ADC_MIN),
-                                              static_cast<int16_t>(Bounds::FRONT_BRAKE_ADC_MAX));
-  ThrottleBrake::front_brake_scaled =
-      ((safe_front_brake_adc - static_cast<int16_t>(Bounds::FRONT_BRAKE_ADC_MIN)) * 32767) /
-      static_cast<int16_t>(Bounds::FRONT_BRAKE_ADC_SPAN);
+  ThrottleBrake::front_brake_scaled = ThrottleBrake::scale_ADC_input(
+      ThrottleBrake::front_brake_adc, static_cast<int16_t>(Bounds::FRONT_BRAKE_ADC_MIN),
+      static_cast<int16_t>(Bounds::FRONT_BRAKE_ADC_MAX),
+      static_cast<int16_t>(Bounds::FRONT_BRAKE_ADC_SPAN), SensorSlope::POSITIVE);
 
-  int16_t safe_rear_brake_adc =
-      get_safe_RAW(ThrottleBrake::rear_brake_adc, static_cast<int16_t>(Bounds::REAR_BRAKE_ADC_MIN),
-                   static_cast<int16_t>(Bounds::REAR_BRAKE_ADC_MAX));
-  ThrottleBrake::rear_brake_scaled =
-      (safe_rear_brake_adc - static_cast<int16_t>(Bounds::REAR_BRAKE_ADC_MIN) * 32767) /
-      static_cast<int16_t>(Bounds::REAR_BRAKE_ADC_SPAN);
+  ThrottleBrake::rear_brake_scaled = ThrottleBrake::scale_ADC_input(
+      ThrottleBrake::rear_brake_adc, static_cast<int16_t>(Bounds::REAR_BRAKE_ADC_MIN),
+      static_cast<int16_t>(Bounds::REAR_BRAKE_ADC_MAX),
+      static_cast<int16_t>(Bounds::REAR_BRAKE_ADC_SPAN), SensorSlope::POSITIVE);
 
   if (ThrottleBrake::front_brake_adc >=
       static_cast<int16_t>(Bounds::FRONT_BRAKE_ADC_PRESSED_THRESHOLD)) {
@@ -135,14 +137,21 @@ void ThrottleBrake::update_sensor_values() {
  *
  * @return int16_t
  */
-int16_t ThrottleBrake::get_throttle() { return ThrottleBrake::APPS1_throttle_scaled; };
+int16_t ThrottleBrake::get_throttle() const { return ThrottleBrake::APPS1_throttle_scaled; };
+
+/**
+ * @brief Returns front brake value, scaled 0-32767
+ *
+ * @return int16_t
+ */
+int16_t ThrottleBrake::get_front_brake() const { return ThrottleBrake::front_brake_scaled; };
 
 /**
  * @brief Returns true if any implausibility is present, false otherwise
  *
  * @return bool
  */
-bool ThrottleBrake::is_implausibility_present() {
+bool ThrottleBrake::is_implausibility_present() const {
   return ThrottleBrake::APPSs_disagreement_implausibility_present ||
          ThrottleBrake::brake_shorted_or_opened_implausibility_present ||
          ThrottleBrake::BPPC_implausibility_present ||
@@ -197,7 +206,7 @@ void ThrottleBrake::check_brake_shorted_or_opened_implausibility() {
  *
  * @return bool
  */
-bool ThrottleBrake::check_APPSs_validity() {
+bool ThrottleBrake::check_APPSs_validity() const {
   return (ThrottleBrake::APPS1_adc >= static_cast<int16_t>(Bounds::SHORTED_THRESHOLD) &&
           ThrottleBrake::APPS1_adc <= static_cast<int16_t>(Bounds::OPEN_THRESHOLD) &&
           ThrottleBrake::APPS2_adc >= static_cast<int16_t>(Bounds::SHORTED_THRESHOLD) &&
@@ -263,7 +272,7 @@ void ThrottleBrake::check_APPSs_disagreement_implausibility() {
  *
  * @return bool
  */
-bool ThrottleBrake::is_brake_pressed() {
+bool ThrottleBrake::is_brake_pressed() const {
   // true: pressed
   // false: not pressed
   return ThrottleBrake::brake_pressed;
@@ -335,16 +344,24 @@ void ThrottleBrake::print_throttle_info() {
   Serial.print(ThrottleBrake::APPS1_adc);
   Serial.print(" APPS2 ADC: ");
   Serial.print(ThrottleBrake::APPS2_adc);
-  Serial.print(" APPS1 Voltage: ");
-  Serial.print((ThrottleBrake::APPS1_adc * 5.0) / 2047.0);
-  Serial.print(" APPS2 Voltage: ");
-  Serial.print((ThrottleBrake::APPS2_adc * 5.0) / 2047.0);
+
+  Serial.print(" APPS1: ");
+  Serial.print(ThrottleBrake::APPS1_throttle_scaled);
+  Serial.print(" APPS2: ");
+  Serial.print(ThrottleBrake::APPS2_throttle_scaled);
+  Serial.print(" Front Brake: ");
+  Serial.print(ThrottleBrake::front_brake_adc);
+//   Serial.print(" APPS1 Voltage: ");
+//   Serial.print((ThrottleBrake::APPS1_adc * 5.0) / 2047.0);
+//   Serial.print(" APPS2 Voltage: ");
+//   Serial.print((ThrottleBrake::APPS2_adc * 5.0) / 2047.0);
   // Serial.print(" APPS1: ");
   // Serial.print(ThrottleBrake::APPS1_throttle);
   // Serial.print(" APPS2: ");
   // Serial.print(ThrottleBrake::APPS2_throttle);
   // Serial.print(" Front Brake: ");
   // Serial.print(ThrottleBrake::front_brake_adc);
+
   // Serial.print(" brake pressed adc: ");
   // Serial.print(ThrottleBrake::brake_pressed);
   // Serial.print(" Rear Brake: ");

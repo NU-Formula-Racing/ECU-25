@@ -7,12 +7,13 @@
 // change specific bounds after testing with sensors in pedalbox:
 enum class Bounds {
 
-  APPS1_ADC_MIN = 270,  // decreasing APPS, we account for this behavior in update_sensor_values()
-  APPS1_ADC_MAX = 985,  // decreases from MAX to MIN as pedal is pressed
+  APPS1_ADC_MIN = 240,
+  APPS1_ADC_MAX = 980,
   APPS1_ADC_SPAN = APPS1_ADC_MAX - APPS1_ADC_MIN,
 
-  APPS2_ADC_MIN = 1100,  // increases from MIN to MAX as pedal is pressed
-  APPS2_ADC_MAX = 1830,
+  APPS2_ADC_MIN = 1140,
+  APPS2_ADC_MAX = 1865,
+
   APPS2_ADC_SPAN = APPS2_ADC_MAX - APPS2_ADC_MIN,
 
   FRONT_BRAKE_ADC_MIN = 1456,
@@ -27,6 +28,7 @@ enum class Bounds {
 
   SHORTED_THRESHOLD = 50,
   OPEN_THRESHOLD = 2035,
+  SENSOR_SCALED_MAX = 2047,
 
   // FIVE_PERCENT_THROTTLE = 1639,
   // TEN_PERCENT_THROTTLE = 3276,
@@ -35,6 +37,9 @@ enum class Bounds {
 };
 
 enum class BrakeStatus { VALID = 1, INVALID = 0 };
+
+// transfer function slope of sensor
+enum class SensorSlope { POSITIVE = 1, NEGATIVE = 0 };
 
 class ThrottleBrake {
   // functions we want accessible outside of this class (ie. called in main):
@@ -58,15 +63,16 @@ class ThrottleBrake {
   // we'll have a callback function fires when the timer reaches its limit (ie. 100ms)
   // this callback will set a corresponding implausibility flag in a private struct containting all
   // the implausibilities
-  void initialize();            // initialize CS pins, SPI, and implausibility states
-  void update_sensor_values();  // read from SPI ADCs and update throttle/brake values
-  int16_t get_throttle();       // return scaled throttle value
+  void initialize();                // initialize CS pins, SPI, and implausibility states
+  void update_sensor_values();      // read from SPI ADCs and update throttle/brake values
+  int16_t get_throttle() const;     // return scaled throttle value
+  int16_t get_front_brake() const;  // return scaled front brake value
   void set_is_APPSs_disagreement_implausibility_present_to_true();       // callback
   void set_is_brake_shorted_or_opened_implausibility_present_to_true();  // callback
   void set_APPSs_invalid_implausibility_present_to_true();               // callback
   void check_for_implausibilities();
-  bool is_implausibility_present();
-  bool is_brake_pressed();
+  bool is_implausibility_present() const;
+  bool is_brake_pressed() const;
   void update_throttle_brake_CAN_signals();
   void print_throttle_info();
 
@@ -107,7 +113,10 @@ class ThrottleBrake {
   void check_brake_shorted_or_opened_implausibility();
   void check_APPSs_valid_implausibility();
   void check_APPSs_disagreement_implausibility();
-  bool check_APPSs_validity();
+  bool check_APPSs_validity() const;
+
+  int16_t scale_ADC_input(int16_t ADC_input, int16_t ADC_min, int16_t ADC_max, int16_t ADC_span,
+                          SensorSlope slope);
 
   const uint32_t kTransmissionIDThrottle = 0x202;        // CAN msg address, get this from DBC
   const uint32_t kTransmissionIDBrake = 0x203;           // CAN msg address, get this from DBC

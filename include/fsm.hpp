@@ -1,6 +1,7 @@
 #pragma once
 #include <Arduino.h>
 
+#include "LUT.hpp"
 #include "esp_can.h"
 #include "inverter_driver.hpp"
 #include "throttle_brake_driver.hpp"
@@ -59,6 +60,7 @@ void APPSs_disagreement_timer_callback();
 void brake_implausible_timer_callback();
 void APPSs_invalid_timer_callback();
 void refresh_throttle_brake();
+int32_t scale_torque_request(int16_t throttle);
 void tick_CAN();
 void print_fsm();
 void print_all();
@@ -82,6 +84,51 @@ extern CANSignal<BMSCommand, 0, 8, CANTemplateConvertFloat(1), CANTemplateConver
     BMS_Command;
 extern CANSignal<State, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     Drive_State;
+extern CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    BL_Speed;
+extern CANSignal<float, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    BL_Displacement;
+extern CANSignal<float, 32, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    BL_Load;
+extern CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    BR_Speed;
+extern CANSignal<float, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    BR_Displacement;
+extern CANSignal<float, 32, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    BR_Load;
+extern CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    FR_Speed;
+extern CANSignal<float, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    FR_Displacement;
+extern CANSignal<float, 32, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    FR_Load;
+extern CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    FL_Speed;
+extern CANSignal<float, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    FL_Displacement;
+extern CANSignal<float, 32, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    FL_Load;
+extern CANSignal<float, 0, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false>
+    MAX_Discharge_Current;
+extern CANSignal<float, 12, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false>
+    MAX_Regen_Current;
+extern CANSignal<float, 24, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0), false>
+    Battery_Voltage;
+extern CANSignal<float, 40, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40.0), false>
+    Battery_Temperature;
+extern CANSignal<float, 48, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0), false>
+    Battery_Current;
+
+extern CANSignal<LUT::LUTChoice, 0, 1, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0),
+                 false>
+    LUT_Choice;
+
+extern CANRXMessage<1> ECU_TEST_Throttle_Map_Choice;
+extern CANRXMessage<5> BMS_SOE;
+extern CANRXMessage<3> DAQ_Wheel_BL;
+extern CANRXMessage<3> DAQ_Wheel_BR;
+extern CANRXMessage<3> DAQ_Wheel_FR;
+extern CANRXMessage<3> DAQ_Wheel_FL;
 extern CANRXMessage<1> BMS_Status;
 extern CANRXMessage<1> BMS_Faults;
 extern CANTXMessage<1> ECU_BMS_Command_Message;

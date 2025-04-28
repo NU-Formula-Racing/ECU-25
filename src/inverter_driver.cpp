@@ -3,6 +3,7 @@
 #include <Arduino.h>
 
 #include "pins.hpp"
+#include "throttle_brake_driver.hpp"
 
 /**
  * @brief Initialize Inverter class
@@ -12,6 +13,8 @@
 void Inverter::initialize() {
   Inverter::requested_torque_brake = 0;
   Inverter::requested_torque_throttle = 0;
+  Inverter::IGBT_temp = 150;
+  Inverter::motor_temp = 120;
 }
 
 /**
@@ -19,21 +22,21 @@ void Inverter::initialize() {
  *
  * @return int32_t
  */
-int32_t Inverter::get_motor_rpm() { return Inverter::motor_rpm; }
+int32_t Inverter::get_motor_rpm() const { return Inverter::motor_rpm; }
 
 /**
  * @brief Get IGBT temperature
  *
  * @return int16_t
  */
-int16_t Inverter::get_IGBT_temp() { return Inverter::IGBT_temp; }
+int16_t Inverter::get_IGBT_temp() const { return Inverter::IGBT_temp; }
 
 /**
  * @brief Get motor temperature
  *
  * @return int16_t
  */
-int16_t Inverter::get_motor_temp() { return Inverter::motor_temp; }
+int16_t Inverter::get_motor_temp() const { return Inverter::motor_temp; }
 
 /**
  * @brief Read CAN messages from Inverter and set class variables accordingly
@@ -62,18 +65,18 @@ void Inverter::send_inverter_CAN() {
  * @return void
  */
 void Inverter::request_torque(int32_t torque_mA) {
-  if (torque_mA >= 0) {
-    Inverter::requested_torque_throttle = torque_mA;
-    Inverter::requested_torque_brake = 0;
-  } else {
-    Inverter::requested_torque_brake = torque_mA;
-    Inverter::requested_torque_throttle = 0;
-  }
+  // if (throttle_brake.is_brake_pressed()) {
+  //   Inverter::requested_torque_throttle = 0;
+  //   Inverter::requested_torque_brake = torque_mA;
+  // } else {
+  Inverter::requested_torque_throttle = torque_mA;
+  Inverter::requested_torque_brake = 0;
+  // }
 }
 
 void Inverter::print_inverter_info() {
-  Serial.print(" Set_Current: ");
+  Serial.print(" Set_Cur: ");
   Serial.print(Inverter::requested_torque_throttle);
-  // Serial.print(" Set_Current_Brake: ");
-  // Serial.print(Inverter::requested_torque_brake);
+  Serial.print(" Set_Cur_Br: ");
+  Serial.print(Inverter::requested_torque_brake);
 }

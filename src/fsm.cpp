@@ -18,8 +18,7 @@ Ready_To_Drive_State ready_to_drive;
 Ready_To_Drive_State ready_to_drive_switch;
 
 // instantiate CAN bus
-// ESPCAN drive_bus{};  // ESPCAN drive_bus{25U, GPIO_NUM_5, GPIO_NUM_4};
-ESPCAN drive_bus{25U, GPIO_NUM_5, GPIO_NUM_4};
+ESPCAN drive_bus{100U, GPIO_NUM_5, GPIO_NUM_4};
 
 // instantiate timer group
 VirtualTimerGroup timers;
@@ -29,7 +28,7 @@ ThrottleBrake throttle_brake{drive_bus, timers, APPSs_disagree_timer, brake_impl
                              APPSs_invalid_timer};
 
 // instantiate inverter
-Inverter inverter{drive_bus, timers};
+Inverter inverter{drive_bus, timers, throttle_brake};
 
 void fsm_init() {
   Serial.begin(115200);
@@ -151,6 +150,16 @@ void initialize_dash_switches() {
                   tsactive_callback, CHANGE);
 }
 
+int32_t scale_torque_request(int16_t throttle) {
+  // eventually:
+  // if (throttle_brake.is_brake_pressed()) {
+  //   torque_req = scale(LUT::get_brake_modifier(), 0, inverter.kRegenMax);
+  // } else {
+  //   torque_req = scale(LUT::get_throttle_modifier(), 0, inverter.kAccelMax);
+  // }
+  return static_cast<int32_t>(throttle_brake.get_throttle() / 4);
+}
+
 // this function will be used to change the state of the vehicle based on the current state and the
 // state of the switches
 void change_state() {
@@ -215,13 +224,18 @@ void process_state() {
       inverter.request_torque(0);
       break;
     case State::DRIVE:
-      // int32_t torque_req = calculate_torque(); // use this function to calculate torque based on
-      // LUTs and traction control when its time
       int32_t torque_req;
       if (throttle_brake.is_implausibility_present()) {
         torque_req = 0;
       } else {
-        torque_req = static_cast<int32_t>(throttle_brake.get_throttle()) * 38;
+        // if (throttle_brake.is_brake_pressed()) {
+        //   // calculate regen torque
+        //   torque_req = 0;
+        // } else {
+        torque_req = LUT::calculate_accel_torque(inverter.get_IGBT_temp(), Battery_Temperature,
+                                                 inverter.get_motor_temp(),
+                                                 throttle_brake.get_throttle(), LUT_Choice);
+        // }
       }
       inverter.request_torque(torque_req);
       break;
@@ -259,8 +273,8 @@ void print_fsm() {
   // Serial.print(static_cast<int>(ready_to_drive));
   // Serial.print(" Ready to Drive Switch: ");
   // Serial.print(static_cast<int>(ready_to_drive_switch));
-  Serial.print(" Thrtl: ");
-  Serial.print(throttle_brake.get_throttle() * 38);
+  // Serial.print(" Thrtl: ");
+  // Serial.print(throttle_brake.get_throttle() / 4);
   throttle_brake.print_throttle_info();
   inverter.print_inverter_info();
   // Serial.print(" test tsactive: ");
@@ -321,6 +335,44 @@ CANSignal<BMSFault, 6, 1, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0)
 CANSignal<BMSCommand, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     BMS_Command{};
 CANSignal<State, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> Drive_State{};
+CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BL_Speed{};
+CANSignal<float, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    BL_Displacement{};
+CANSignal<float, 32, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BL_Load{};
+CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BR_Speed{};
+CANSignal<float, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    BR_Displacement{};
+CANSignal<float, 32, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> BR_Load{};
+CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> FR_Speed{};
+CANSignal<float, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    FR_Displacement{};
+CANSignal<float, 32, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> FR_Load{};
+CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> FL_Speed;
+CANSignal<float, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    FL_Displacement{};
+CANSignal<float, 32, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false> FL_Load{};
+CANSignal<float, 0, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false>
+    MAX_Discharge_Current{};
+CANSignal<float, 12, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false>
+    MAX_Regen_Current{};
+CANSignal<float, 24, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0), false>
+    Battery_Voltage{};
+CANSignal<float, 40, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40.0), false>
+    Battery_Temperature{};
+CANSignal<float, 48, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(0), false>
+    Battery_Current{};
+
+CANSignal<LUT::LUTChoice, 0, 1, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    LUT_Choice{};
+
+CANRXMessage<1> ECU_TEST_Throttle_Map_Choice{drive_bus, 0x207, LUT_Choice};
+CANRXMessage<3> Daq_Wheel_Bl{drive_bus, 0x24B, BL_Speed, BL_Displacement, BL_Load};
+CANRXMessage<3> Daq_Wheel_BR{drive_bus, 0x24C, BR_Speed, BR_Displacement, BR_Load};
+CANRXMessage<3> Daq_Wheel_FR{drive_bus, 0x249, FR_Speed, FR_Displacement, FR_Load};
+CANRXMessage<3> Daq_Wheel_FL{drive_bus, 0x24A, FL_Speed, FL_Displacement, FL_Load};
+CANRXMessage<5> BMS_SOE{drive_bus,         0x150,           MAX_Discharge_Current,
+                        MAX_Regen_Current, Battery_Voltage, Battery_Temperature,
+                        Battery_Current};
 CANRXMessage<1> BMS_Status{drive_bus, 0x152, BMS_State};
 CANRXMessage<1> BMS_Faults{drive_bus, 0x151, External_Kill_Fault};
 CANTXMessage<1> ECU_BMS_Command_Message{drive_bus, 0x205, 1, 100, timers, BMS_Command};
