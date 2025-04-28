@@ -3,6 +3,7 @@
 #include <Arduino.h>
 
 #include "LUT.hpp"
+#include "active_aero.hpp"
 #include "esp_can.h"
 #include "inverter_driver.hpp"
 #include "pins.hpp"
@@ -30,6 +31,8 @@ ThrottleBrake throttle_brake{drive_bus, timers, APPSs_disagree_timer, brake_impl
 // instantiate inverter
 Inverter inverter{drive_bus, timers, throttle_brake};
 
+ActiveAero active_aero{drive_bus, timers};
+
 void fsm_init() {
   Serial.begin(115200);
 
@@ -54,6 +57,8 @@ void fsm_init() {
 
   // refresh throttle/brake values and check for implausibilities
   timers.AddTimer(10, refresh_throttle_brake);
+
+  timers.AddTimer(100, active_aero_wrapper);
 
   // 10 ms timer for CAN messages
   timers.AddTimer(10, tick_CAN);
@@ -104,6 +109,11 @@ void APPSs_invalid_timer_callback() {
   throttle_brake.set_APPSs_invalid_implausibility_present_to_true();
 }
 
+// active aero wrapper
+void active_aero_wrapper() {
+  active_aero.update_active_aero(inverter.get_set_current(), throttle_brake.is_brake_pressed());
+}
+
 // call this function when the ready to drive switch is flipped
 // currently, the switch is active low
 void ready_to_drive_callback() {
@@ -148,16 +158,6 @@ void initialize_dash_switches() {
   pinMode(static_cast<uint8_t>(Pins::TS_ACTIVE_PIN), INPUT);
   attachInterrupt(digitalPinToInterrupt(static_cast<uint8_t>(Pins::TS_ACTIVE_PIN)),
                   tsactive_callback, CHANGE);
-}
-
-int32_t scale_torque_request(int16_t throttle) {
-  // eventually:
-  // if (throttle_brake.is_brake_pressed()) {
-  //   torque_req = scale(LUT::get_brake_modifier(), 0, inverter.kRegenMax);
-  // } else {
-  //   torque_req = scale(LUT::get_throttle_modifier(), 0, inverter.kAccelMax);
-  // }
-  return static_cast<int32_t>(throttle_brake.get_throttle() / 4);
 }
 
 // this function will be used to change the state of the vehicle based on the current state and the

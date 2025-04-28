@@ -39,6 +39,12 @@ int16_t Inverter::get_IGBT_temp() const { return Inverter::IGBT_temp; }
 int16_t Inverter::get_motor_temp() const { return Inverter::motor_temp; }
 
 /**
+ * @brief Get set current
+ *
+ * @return int32_t
+ */
+int32_t Inverter::get_set_current() const { return Inverter::requested_torque_throttle; }
+/**
  * @brief Read CAN messages from Inverter and set class variables accordingly
  *
  * @return void

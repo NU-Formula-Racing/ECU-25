@@ -19,6 +19,7 @@ class Inverter {
   int32_t get_motor_rpm() const;
   int16_t get_IGBT_temp() const;
   int16_t get_motor_temp() const;
+  int32_t get_set_current() const;
 
  private:
   ICAN& can_interface;
@@ -31,7 +32,6 @@ class Inverter {
   int32_t requested_torque_throttle;
   int32_t requested_torque_brake;
 
-  const uint16_t torque_limit = 32767;
   const uint16_t kTransmissionIDSetCurrent = 0x200;           // CAN msg address, get this from DBC
   const uint16_t kTransmissionIDSetCurrentBrake = 0x201;      // CAN msg address, get this from DBC
   const uint16_t kTransmissionIDInverterMotorStatus = 0x280;  // CAN msg address, get this from DBC
