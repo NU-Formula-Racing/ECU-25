@@ -10,7 +10,7 @@
 #include "virtualTimer.h"
 
 volatile int test_ts_active_switch_interrupt = 1;       // 1 OFF, 0 N
-volatile int test_ready_to_drive_switch_interrupt = 1;  // 1 N, 0 D
+volatile int test_ready_to_drive_switch_interrupt = 1;  // 1 N, 0 D,
 
 // initialize state variables
 TSActive tsactive_switch;
