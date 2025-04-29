@@ -40,12 +40,13 @@ class ActiveAero {
 
   // CAN
   ICAN& can_interface;
-  CANSignal<ActiveAeroState, 1, 1, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+
+  CANSignal<ActiveAeroState, 0, 1, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
       Active_Aero_State{};
-  CANSignal<int16_t, 2, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+  CANSignal<int16_t, 1, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
       Active_Aero_Position{};
-  CANTXMessage<2> ECU_Active_Aero{can_interface,       0x208, 4, 100, timers, Active_Aero_State,
-                                  Active_Aero_Position};
+  CANTXMessage<2> ECU_Active_Aero_Command{
+      can_interface, 0x208, 4, 100, timers, Active_Aero_State, Active_Aero_Position};
 
   CANSignal<ActiveAeroEnabled, 0, 1, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
       Active_Aero_Enabled{};
