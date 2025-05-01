@@ -81,34 +81,41 @@ extern CANSignal<float, 40, 8, CANTemplateConvertFloat(0.5), CANTemplateConvertF
     BMS_SOC;  // says starts at bit 40 in DBC, also says size is 8 bits even tho its a float
 extern CANSignal<BMSFault, 6, 1, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     External_Kill_Fault;
+
 extern CANSignal<BMSCommand, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     BMS_Command;
+
 extern CANSignal<State, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     Drive_State;
+
 extern CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     BL_Speed;
 extern CANSignal<float, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     BL_Displacement;
 extern CANSignal<float, 32, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     BL_Load;
+
 extern CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     BR_Speed;
 extern CANSignal<float, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     BR_Displacement;
 extern CANSignal<float, 32, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     BR_Load;
+
 extern CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     FR_Speed;
 extern CANSignal<float, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     FR_Displacement;
 extern CANSignal<float, 32, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     FR_Load;
+
 extern CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     FL_Speed;
 extern CANSignal<float, 16, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     FL_Displacement;
 extern CANSignal<float, 32, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     FL_Load;
+
 extern CANSignal<float, 0, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false>
     MAX_Discharge_Current;
 extern CANSignal<float, 12, 12, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false>
@@ -124,6 +131,11 @@ extern CANSignal<LUT::LUTChoice, 0, 1, CANTemplateConvertFloat(1), CANTemplateCo
                  false>
     LUT_Choice;
 
+extern CANSignal<uint8_t, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    Pump_Duty_Cycle;
+extern CANSignal<uint8_t, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    Fan_Duty_Cycle;
+
 extern CANRXMessage<1> ECU_TEST_Throttle_Map_Choice;
 extern CANRXMessage<5> BMS_SOE;
 extern CANRXMessage<3> DAQ_Wheel_BL;
@@ -134,3 +146,4 @@ extern CANRXMessage<1> BMS_Status;
 extern CANRXMessage<1> BMS_Faults;
 extern CANTXMessage<1> ECU_BMS_Command_Message;
 extern CANTXMessage<1> ECU_Drive_Status;
+extern CANTXMessage<2> ECU_Pump_Fan_Command;

@@ -78,6 +78,10 @@ int32_t scale_torque(float torque, int32_t torque_max) {
   return static_cast<int32_t>(roundf(torque * static_cast<float>(torque_max)));
 }
 
+uint8_t scale_duty_cycle(float dc, uint8_t dc_max) {
+  return static_cast<uint8_t>(roundf(dc * static_cast<float>(dc_max)));
+}
+
 int32_t calculate_accel_torque(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp,
                                int16_t throttle, LUTChoice choice) {
   if (choice == LUTChoice::kLinear) {
@@ -99,22 +103,26 @@ int32_t calculate_accel_torque(int16_t igbt_temp, int16_t batt_temp, int16_t mot
 // float brake_mod = lookup(brake_pressure, BrakePressure2Modifier_LUT);
 //   return 0; // return scaled(brake_mod, 0, kCurrentLUTScaledMax);
 
-float get_pump_duty_cycle(int16_t motor_temp, int16_t igbt_temp, int16_t batt_temp) {
+uint8_t calculate_pump_duty_cycle(int16_t motor_temp, int16_t igbt_temp, int16_t batt_temp) {
   float motor_dc = lookup(motor_temp, MotorTemp2PumpDutyCycle_LUT);
   float igbt_dc = lookup(igbt_temp, IGBTTemp2PumpDutyCycle_LUT);
   float batt_dc = lookup(batt_temp, BatteryTemp2PumpDutyCycle_LUT);
 
-  return motor_dc * igbt_dc * batt_dc;  // take max of all three, have 2 sets of LUTs: 1 from 0 to
-                                        // "panic temp", 1 from "panic temp" to max
+  float dc_float = std::max(motor_dc, igbt_dc, batt_dc);
+
+  return scale_duty_cycle(dc_float, static_cast<uint8_t>(PWMLimit::kPumpMax));
+  // take max of all three, have 2 sets of LUTs: 1 from 0
+  // to "panic temp", 1 from "panic temp" to max
   // should be continuous between the modes
   // PDM just needs a msg with 2 signals: pump duty cycle and fan duty cycle, both scaled from 0-255
   // uint8_t
 }
 
-float get_fan_duty_cycle(int16_t coolant_temp) {
-  float coolant_dc =
-      lookup(coolant_temp, CoolantTemp2FanDutyCycle_LUT);  // also get a wheelspeed : fan duty cycle
-                                                           // LUT. faster wheelspeed = slower fan
-  return coolant_dc;
+uint8_t calculate_fan_duty_cycle(int16_t coolant_temp) {
+  float coolant_dc = lookup(coolant_temp, CoolantTemp2FanDutyCycle_LUT);
+
+  // also get a wheelspeed : fan duty cycle LUT. faster wheelspeed = slower fan
+
+  return scale_duty_cycle(coolant_dc, static_cast<uint8_t>(PWMLimit::kFanMax));
 }
 }  // namespace LUT

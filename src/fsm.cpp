@@ -60,6 +60,8 @@ void fsm_init() {
 
   timers.AddTimer(10, active_aero_wrapper);
 
+  timers.AddTimer(10, update_pump_fan);
+
   // 10 ms timer for CAN messages
   timers.AddTimer(10, tick_CAN);
 
@@ -114,6 +116,12 @@ void active_aero_wrapper() {
   active_aero.update_active_aero(inverter.get_set_current(),
                                  static_cast<float>(LUT::TorqueReqLimit::kAccelMax),
                                  throttle_brake.is_brake_pressed());
+}
+
+void update_pump_fan() {
+  Pump_Duty_Cycle = LUT::calculate_pump_duty_cycle(inverter.get_motor_temp(),
+                                                   inverter.get_IGBT_temp(), Battery_Temperature);
+  Fan_Duty_Cycle = LUT::calculate_fan_duty_cycle(Coolant_Temperature);
 }
 
 // call this function when the ready to drive switch is flipped
@@ -367,6 +375,11 @@ CANSignal<float, 48, 16, CANTemplateConvertFloat(0.01), CANTemplateConvertFloat(
 CANSignal<LUT::LUTChoice, 0, 1, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     LUT_Choice{};
 
+CANSignal<uint8_t, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    Pump_Duty_Cycle{};
+CANSignal<uint8_t, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+    Fan_Duty_Cycle{};
+
 CANRXMessage<1> ECU_TEST_Throttle_Map_Choice{drive_bus, 0x207, LUT_Choice};
 CANRXMessage<3> Daq_Wheel_Bl{drive_bus, 0x24B, BL_Speed, BL_Displacement, BL_Load};
 CANRXMessage<3> Daq_Wheel_BR{drive_bus, 0x24C, BR_Speed, BR_Displacement, BR_Load};
@@ -379,3 +392,5 @@ CANRXMessage<1> BMS_Status{drive_bus, 0x152, BMS_State};
 CANRXMessage<1> BMS_Faults{drive_bus, 0x151, External_Kill_Fault};
 CANTXMessage<1> ECU_BMS_Command_Message{drive_bus, 0x205, 1, 100, timers, BMS_Command};
 CANTXMessage<1> ECU_Drive_Status{drive_bus, 0x206, 1, 100, timers, Drive_State};
+CANTXMessage<2> ECU_Pump_Fan_Command{drive_bus,       0x209,         2, 100, timers,
+                                     Pump_Duty_Cycle, Fan_Duty_Cycle};

@@ -52,8 +52,10 @@ int32_t calculate_accel_torque(int16_t igbt_temp, int16_t batt_temp, int16_t mot
 
 int32_t scale_torque(float torque, int32_t torque_max);
 
-float get_pump_duty_cycle(int16_t motor_temp, int16_t igbt_temp, int16_t batt_temp);
+uint8_t scale_duty_cycle(float dc, uint8_t dc_max);
 
-float get_fan_duty_cycle(int16_t coolant_temp);
+uint8_t calculate_pump_duty_cycle(int16_t motor_temp, int16_t igbt_temp, int16_t batt_temp);
+
+uint8_t calculate_fan_duty_cycle(int16_t coolant_temp);
 
 }  // namespace LUT
