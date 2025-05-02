@@ -22,15 +22,12 @@ const std::map<int16_t, float> MotorTemp2Modifier_LUT{
     {0, 1.0},  {10, 1.0},  {20, 1.0},  {30, 1.0},  {40, 1.0},   {50, 1.0}, {60, 1.0},
     {70, 1.0}, {80, 0.95}, {90, 0.75}, {100, 0.2}, {110, 0.05}, {120, 0.0}};
 
-// Throttle value : Scaled power limit modifier (235 * power limit modifier)
+// Throttle value : power limit modifier
 const std::map<int16_t, float> Throttle2Modifier_LUT{
     {0, 0.0},     {102, 0.03},  {205, 0.09},  {307, 0.16},  {409, 0.23},  {512, 0.3},
     {614, 0.37},  {716, 0.44},  {819, 0.51},  {921, 0.58},  {1024, 0.65}, {1126, 0.72},
     {1228, 0.78}, {1331, 0.83}, {1433, 0.88}, {1535, 0.92}, {1638, 0.95}, {1740, 0.97},
     {1842, 0.98}, {1945, 0.99}, {2047, 1.0}};
-
-// Brake pressure : Power limit modifier
-// const std::map<int16_t, float> BrakePressure2Modifier_LUT{};
 
 // Motor temp : Pump duty cycle
 const std::map<int16_t, float> MotorTemp2PumpDutyCycle_LUT{
@@ -99,16 +96,12 @@ int32_t calculate_accel_torque(int16_t igbt_temp, int16_t batt_temp, int16_t mot
   }
 }
 
-// int16_t get_brake_modifier(int16_t brake_pressure) {
-// float brake_mod = lookup(brake_pressure, BrakePressure2Modifier_LUT);
-//   return 0; // return scaled(brake_mod, 0, kCurrentLUTScaledMax);
-
 uint8_t calculate_pump_duty_cycle(int16_t motor_temp, int16_t igbt_temp, int16_t batt_temp) {
   float motor_dc = lookup(motor_temp, MotorTemp2PumpDutyCycle_LUT);
   float igbt_dc = lookup(igbt_temp, IGBTTemp2PumpDutyCycle_LUT);
   float batt_dc = lookup(batt_temp, BatteryTemp2PumpDutyCycle_LUT);
 
-  float dc_float = std::max(motor_dc, igbt_dc, batt_dc);
+  float dc_float = std::max(std::max(motor_dc, igbt_dc), batt_dc);
 
   return scale_duty_cycle(dc_float, static_cast<uint8_t>(PWMLimit::kPumpMax));
   // take max of all three, have 2 sets of LUTs: 1 from 0
