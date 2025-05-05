@@ -10,7 +10,7 @@
 #include "virtualTimer.h"
 
 volatile int test_ts_active_switch_interrupt = 1;       // 1 OFF, 0 N
-volatile int test_ready_to_drive_switch_interrupt = 1;  // 1 N, 0 D
+volatile int test_ready_to_drive_switch_interrupt = 1;  // 1 N, 0 D,
 
 // initialize state variables
 TSActive tsactive_switch;
@@ -59,7 +59,7 @@ void fsm_init() {
   timers.AddTimer(10, tick_CAN);
 
   // timer for print debugging msgs
-  timers.AddTimer(10, print_fsm);
+  timers.AddTimer(100, print_fsm);
 
   // initialize state variables
   tsactive_switch = TSActive::Inactive;
