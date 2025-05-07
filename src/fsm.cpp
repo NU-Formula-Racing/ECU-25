@@ -242,9 +242,9 @@ void process_state() {
         //   // calculate regen torque
         //   torque_req = 0;
         // } else {
-        torque_req = LUT::calculate_accel_torque(inverter.get_IGBT_temp(), Battery_Temperature,
-                                                 inverter.get_motor_temp(),
-                                                 throttle_brake.get_throttle(), LUT_Choice);
+        torque_req =
+            LUT::calculate_accel_torque(inverter.get_IGBT_temp(), Battery_Temperature,
+                                        inverter.get_motor_temp(), throttle_brake.get_throttle());
         // }
       }
       inverter.request_torque(torque_req);
@@ -354,9 +354,6 @@ CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), 
 CANSignal<float, 40, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40.0), false>
     Battery_Temperature{};
 
-CANSignal<LUT::LUTChoice, 0, 1, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
-    LUT_Choice{};
-
 CANSignal<uint8_t, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     Pump_Duty_Cycle{};
 CANSignal<uint8_t, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
@@ -365,7 +362,6 @@ CANSignal<uint8_t, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0),
 CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     Before_Motor_Temperature{};
 
-CANRXMessage<1> ECU_TEST_Throttle_Map_Choice{drive_bus, 0x207, LUT_Choice};
 CANRXMessage<1> Daq_Wheel_Bl{drive_bus, 0x24B, BL_Speed};
 CANRXMessage<1> Daq_Wheel_BR{drive_bus, 0x24C, BR_Speed};
 CANRXMessage<1> Daq_Wheel_FR{drive_bus, 0x249, FR_Speed};

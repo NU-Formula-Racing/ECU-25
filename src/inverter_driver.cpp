@@ -70,6 +70,7 @@ void Inverter::send_inverter_CAN() {
  * @param torque_mA -- torque in milliAmps
  * @return void
  */
+// TODO: use pair as input, populate class members accordingly
 void Inverter::request_torque(int32_t torque_mA) {
   // if (throttle_brake.is_brake_pressed()) {
   //   Inverter::requested_torque_throttle = 0;

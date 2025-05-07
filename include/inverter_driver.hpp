@@ -37,8 +37,6 @@ class Inverter {
   const uint16_t kTransmissionIDInverterMotorStatus = 0x280;  // CAN msg address, get this from DBC
   const uint16_t kTransmissionIDInverterTempStatus = 0x281;   // CAN msg address, get this from DBC
 
-  // CAN signals & msgs
-  // tx: Set_Current, Set_Current_Brake
   CANSignal<int32_t, 0, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), true>
       Set_Current{};
   CANTXMessage<1> ECU_Set_Current{can_interface, kTransmissionIDSetCurrent, 4, 10, timers,

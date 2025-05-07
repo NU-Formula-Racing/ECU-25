@@ -32,9 +32,9 @@ class ActiveAero {
  private:
   void update_can();
 
-  ActiveAeroState state_ = ActiveAeroState::kClosed;
-  ActiveAeroEnabled enabled_ = ActiveAeroEnabled::kEnabled;
-  int16_t position_;
+  ActiveAeroState state = ActiveAeroState::kClosed;
+  ActiveAeroEnabled enabled = ActiveAeroEnabled::kEnabled;
+  int16_t position;
 
   VirtualTimerGroup& timers;
 

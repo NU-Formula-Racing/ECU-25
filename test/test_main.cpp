@@ -46,18 +46,18 @@ void test_calc_accel_above_range_clamps(void) {
   TEST_ASSERT_EQUAL_INT32(0, LUT::calculate_accel_torque(250, 250, 250, 6000));
 }
 
-// 3. scale_torque must round‑to‑nearest (up)
-void test_scale_torque_rounds_up(void) {
+// 3. scale must round‑to‑nearest (up)
+void test_scale_rounds_up(void) {
   float m = 0.33334f;        // 26 667.2 mA raw
   int32_t expected = 26667;  // roundf → 26667
-  TEST_ASSERT_EQUAL_INT32(expected, LUT::scale_torque(m, 80000));
+  TEST_ASSERT_EQUAL_INT32(expected, LUT::scale(m, 80000));
 }
 
-// 4. scale_torque must round‑to‑nearest (down / ties to even IEEE‑style)
-void test_scale_torque_rounds_down(void) {
+// 4. scale must round‑to‑nearest (down / ties to even IEEE‑style)
+void test_scale_rounds_down(void) {
   float m = 0.333332f;       // 26 666.56 mA raw
   int32_t expected = 26667;  // still rounds to 26667 with roundf
-  TEST_ASSERT_EQUAL_INT32(expected, LUT::scale_torque(m, 80000));
+  TEST_ASSERT_EQUAL_INT32(expected, LUT::scale(m, 80000));
 }
 
 // 5. Interpolation sanity for all four LUTs mid‑range
@@ -68,7 +68,7 @@ void test_calc_accel_midpoints(void) {
      Throttle 900 → 0.515 (linearly between 819→0.51 and 921→0.58)
   */
   float ref_mod = 1 * 0.85 * 0.96 * 0.5655882352941176;
-  int32_t ref = LUT::scale_torque(ref_mod, 235000);
+  int32_t ref = LUT::scale(ref_mod, 235000);
   TEST_ASSERT_EQUAL_INT32(ref, LUT::calculate_accel_torque(85, 48, 78, 900));
 }
 
@@ -100,8 +100,8 @@ int runUnityTests(void) {
   RUN_TEST(test_with_interpolation_for_all_LUTs);
   RUN_TEST(test_calc_accel_below_range_clamps);
   RUN_TEST(test_calc_accel_above_range_clamps);
-  RUN_TEST(test_scale_torque_rounds_up);
-  RUN_TEST(test_scale_torque_rounds_down);
+  RUN_TEST(test_scale_rounds_up);
+  RUN_TEST(test_scale_rounds_down);
   RUN_TEST(test_calc_accel_midpoints);
   RUN_TEST(test_lookup_exact_hit);
   RUN_TEST(test_lookup_interpolated_igbt);

@@ -100,10 +100,6 @@ extern CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFlo
 extern CANSignal<float, 40, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(-40.0), false>
     Battery_Temperature;
 
-extern CANSignal<LUT::LUTChoice, 0, 1, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0),
-                 false>
-    LUT_Choice;
-
 extern CANSignal<uint8_t, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     Pump_Duty_Cycle;
 extern CANSignal<uint8_t, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
@@ -112,7 +108,6 @@ extern CANSignal<uint8_t, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFl
 extern CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     Before_Motor_Temperature;
 
-extern CANRXMessage<1> ECU_TEST_Throttle_Map_Choice;
 extern CANRXMessage<1> BMS_SOE;
 extern CANRXMessage<1> DAQ_Wheel_BL;
 extern CANRXMessage<1> DAQ_Wheel_BR;

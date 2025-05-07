@@ -22,6 +22,9 @@ const std::map<int16_t, float> MotorTemp2Modifier_LUT{
     {0, 1.0},  {10, 1.0},  {20, 1.0},  {30, 1.0},  {40, 1.0},   {50, 1.0}, {60, 1.0},
     {70, 1.0}, {80, 0.95}, {90, 0.75}, {100, 0.2}, {110, 0.05}, {120, 0.0}};
 
+// Motor RPM : throttle %
+const std::map<int16_t, float> RPM2Throttle_LUT{{0, 0.0}, {1, 1.0}};
+
 // Throttle value : power limit modifier
 const std::map<int16_t, float> Throttle2Modifier_LUT{
     {0, 0.0},     {102, 0.03},  {205, 0.09},  {307, 0.16},  {409, 0.23},  {512, 0.3},
@@ -71,29 +74,31 @@ float lookup(int16_t key, const std::map<int16_t, float>& lut) {
                              static_cast<float>(upper->first - lower->first);
 }
 
-int32_t scale_torque(float torque, int32_t torque_max) {
-  return static_cast<int32_t>(roundf(torque * static_cast<float>(torque_max)));
+template <typename IntT>
+IntT scale(float value, IntT max) {
+  return static_cast<IntT>(roundf(value * static_cast<float>(max)));
 }
 
-uint8_t scale_duty_cycle(float dc, uint8_t dc_max) {
-  return static_cast<uint8_t>(roundf(dc * static_cast<float>(dc_max)));
+int16_t get_throttle_difference(int16_t real_throttle, int16_t throttle_max, int16_t motor_rpm) {
+  float throttle_calc_float = lookup(motor_rpm, RPM2Throttle_LUT);
+  int16_t throttle_calc = scale(throttle_calc_float, static_cast<int16_t>(throttle_max));
+
+  return real_throttle - throttle_calc;
 }
+
+// <set_current, set_current_brake>
+std::pair<int32_t, int32_t> calculate_torque() {}
 
 int32_t calculate_accel_torque(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp,
-                               int16_t throttle, LUTChoice choice) {
-  if (choice == LUTChoice::kLinear) {
-    float throttle_float = static_cast<float>(throttle) / 2047.0f;  // scale throttle to 0-1
-    return scale_torque(throttle_float, static_cast<int32_t>(LUT::TorqueReqLimit::kAccelMax));
-  } else {  // (choice == LUTChoice::kBenji)
-    float igbt_mod = lookup(igbt_temp, IGBTTemp2Modifier_LUT);
-    float batt_mod = lookup(batt_temp, BatteryTemp2Modifier_LUT);
-    float motor_temp_mod = lookup(motor_temp, MotorTemp2Modifier_LUT);
-    float throttle_mod = lookup(throttle, Throttle2Modifier_LUT);
+                               int16_t throttle) {
+  float igbt_mod = lookup(igbt_temp, IGBTTemp2Modifier_LUT);
+  float batt_mod = lookup(batt_temp, BatteryTemp2Modifier_LUT);
+  float motor_temp_mod = lookup(motor_temp, MotorTemp2Modifier_LUT);
+  float throttle_mod = lookup(throttle, Throttle2Modifier_LUT);
 
-    float mod_product = igbt_mod * batt_mod * motor_temp_mod * throttle_mod;
+  float mod_product = igbt_mod * batt_mod * motor_temp_mod * throttle_mod;
 
-    return LUT::scale_torque(mod_product, static_cast<int32_t>(LUT::TorqueReqLimit::kAccelMax));
-  }
+  return LUT::scale(mod_product, static_cast<int32_t>(LUT::TorqueReqLimit::kAccelMax));
 }
 
 uint8_t calculate_pump_duty_cycle(int16_t motor_temp, int16_t igbt_temp, int16_t batt_temp) {
@@ -103,7 +108,7 @@ uint8_t calculate_pump_duty_cycle(int16_t motor_temp, int16_t igbt_temp, int16_t
 
   float dc_float = std::max(std::max(motor_dc, igbt_dc), batt_dc);
 
-  return scale_duty_cycle(dc_float, static_cast<uint8_t>(PWMLimit::kPumpMax));
+  return scale(dc_float, static_cast<uint8_t>(PWMLimit::kPumpMax));
   // take max of all three, have 2 sets of LUTs: 1 from 0
   // to "panic temp", 1 from "panic temp" to max
   // should be continuous between the modes
@@ -111,11 +116,11 @@ uint8_t calculate_pump_duty_cycle(int16_t motor_temp, int16_t igbt_temp, int16_t
   // uint8_t
 }
 
-uint8_t calculate_fan_duty_cycle(int16_t coolant_temp) {
-  float coolant_dc = lookup(coolant_temp, CoolantTemp2FanDutyCycle_LUT);
+uint8_t calculate_fan_duty_cycle(float coolant_temp) {
+  int16_t coolant_temp_int = static_cast<int16_t>(roundf(coolant_temp));
 
-  // also get a wheelspeed : fan duty cycle LUT. faster wheelspeed = slower fan
+  float coolant_dc = lookup(coolant_temp_int, CoolantTemp2FanDutyCycle_LUT);
 
-  return scale_duty_cycle(coolant_dc, static_cast<uint8_t>(PWMLimit::kFanMax));
+  return scale(coolant_dc, static_cast<uint8_t>(PWMLimit::kFanMax));
 }
 }  // namespace LUT
