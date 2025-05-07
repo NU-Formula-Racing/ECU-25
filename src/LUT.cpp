@@ -25,12 +25,16 @@ const std::map<int16_t, float> MotorTemp2Modifier_LUT{
 // Motor RPM : throttle %
 const std::map<int16_t, float> RPM2Throttle_LUT{{0, 0.0}, {1, 1.0}};
 
-// Throttle value : power limit modifier
-const std::map<int16_t, float> Throttle2Modifier_LUT{
+// Throttle value : power limit modifier (Accel)
+const std::map<int16_t, float> AccelThrottle2Modifier_LUT{
     {0, 0.0},     {102, 0.03},  {205, 0.09},  {307, 0.16},  {409, 0.23},  {512, 0.3},
     {614, 0.37},  {716, 0.44},  {819, 0.51},  {921, 0.58},  {1024, 0.65}, {1126, 0.72},
     {1228, 0.78}, {1331, 0.83}, {1433, 0.88}, {1535, 0.92}, {1638, 0.95}, {1740, 0.97},
     {1842, 0.98}, {1945, 0.99}, {2047, 1.0}};
+
+// Throttle value : power limit modifier (Regen)
+const std::map<int16_t, float> RegenThrottle2Modifier_LUT{
+    {0, 0.0}};
 
 // Motor temp : Pump duty cycle
 const std::map<int16_t, float> MotorTemp2PumpDutyCycle_LUT{
@@ -87,14 +91,26 @@ int16_t get_throttle_difference(int16_t real_throttle, int16_t throttle_max, int
 }
 
 // <set_current, set_current_brake>
-std::pair<int32_t, int32_t> calculate_torque() {}
+std::pair<int32_t, int32_t> calculate_torque(int16_t throttle_difference) {
+  std::pair<int32_t, int32_t> torque_pair = {0, 0};
+
+  if (throttle_difference > 0) { // accel
+
+  }
+  else if (throttle_difference < 0) { // regen
+
+  }
+  else { // no torque
+
+    }
+}
 
 int32_t calculate_accel_torque(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp,
                                int16_t throttle) {
   float igbt_mod = lookup(igbt_temp, IGBTTemp2Modifier_LUT);
   float batt_mod = lookup(batt_temp, BatteryTemp2Modifier_LUT);
   float motor_temp_mod = lookup(motor_temp, MotorTemp2Modifier_LUT);
-  float throttle_mod = lookup(throttle, Throttle2Modifier_LUT);
+  float throttle_mod = lookup(throttle, AccelThrottle2Modifier_LUT);
 
   float mod_product = igbt_mod * batt_mod * motor_temp_mod * throttle_mod;
 

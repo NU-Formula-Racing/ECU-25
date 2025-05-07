@@ -24,8 +24,11 @@ extern const std::map<int16_t, float> MotorTemp2Modifier_LUT;
 // Motor RPM : throttle %
 extern const std::map<int16_t, float> RPM2Throttle_LUT;
 
-// Throttle value : power limit modifier
-extern const std::map<int16_t, float> Throttle2Modifier_LUT;
+// Throttle value : power limit modifier (Accel)
+extern const std::map<int16_t, float> AccelThrottle2Modifier_LUT;
+
+// Throttle value : power limit modifier (Regen)
+extern const std::map<int16_t, float> RegenThrottle2Modifier_LUT;
 
 /* Cooling LUTs */
 // Motor temp : Pump duty cycle
@@ -46,6 +49,8 @@ template <typename IntT>
 IntT scale(float value, IntT max);
 
 int16_t get_throttle_difference(int16_t real_throttle, int16_t throttle_max, int16_t motor_rpm);
+
+std::pair<int32_t, int32_t> calculate_torque(int16_t throttle_difference);
 
 int32_t calculate_accel_torque(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp,
                                int16_t throttle);
