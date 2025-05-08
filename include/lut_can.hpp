@@ -1,6 +1,8 @@
 #pragma once
 #ifndef LUT_CAN
 #define LUT_CAN
+#include <map>
+
 #include "can_interface.h"
 #include "esp_can.h"
 #include "virtualTimer.h"
@@ -28,9 +30,15 @@ class LUTCan {
  public:
   LUTCan(ICAN& can_interface, VirtualTimerGroup& timers)
       : can_bus(can_interface), timers(timers) {};
-  RXLUT getLUTFromCAN();
+
+  std::map<int16_t, float> getLUT();
+  FileStatus LUTCANStatus();
 
  private:
+  void processCAN();
+
+  RXLUT rxLUT;
+
   ICAN& can_bus;
   VirtualTimerGroup& timers;
 
