@@ -67,18 +67,12 @@ void Inverter::send_inverter_CAN() {
 
 /**
  * @brief Request torque from Inverter
- * @param torque_mA -- torque in milliAmps
+ * @param torque_reqs -- <accel, regen> torque in milliAmps
  * @return void
  */
-// TODO: use pair as input, populate class members accordingly
-void Inverter::request_torque(int32_t torque_mA) {
-  // if (throttle_brake.is_brake_pressed()) {
-  //   Inverter::requested_torque_throttle = 0;
-  //   Inverter::requested_torque_brake = torque_mA;
-  // } else {
-  Inverter::requested_torque_throttle = torque_mA;
-  Inverter::requested_torque_brake = 0;
-  // }
+void Inverter::request_torque(std::pair<int32_t, int32_t> torque_reqs) {
+  Inverter::requested_torque_throttle = torque_reqs.first;
+  Inverter::requested_torque_brake = torque_reqs.second;
 }
 
 void Inverter::print_inverter_info() {

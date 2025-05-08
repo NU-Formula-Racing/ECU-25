@@ -7,7 +7,7 @@ namespace LUT {
 
 // Max current/torque we can request from Inverter (in mA)
 // current:torque is ~1:1
-enum class TorqueReqLimit { kAccelMax = 235000, kRegenMax = 0 };
+enum class TorqueReqLimit { kAccelMax = 235000, kRegenMax = 235000 };
 
 enum class PWMLimit { kPumpMax = 255, kFanMax = 255 };
 
@@ -50,10 +50,15 @@ IntT scale(float value, IntT max);
 
 int16_t get_throttle_difference(int16_t real_throttle, int16_t throttle_max, int16_t motor_rpm);
 
-std::pair<int32_t, int32_t> calculate_torque(int16_t throttle_difference);
+// returns <accel_mod, regen_mod>
+std::pair<float, float> get_torque_mods(int16_t real_throttle, int16_t throttle_max,
+                                        int16_t motor_rpm, bool brake_pressed);
 
-int32_t calculate_accel_torque(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp,
-                               int16_t throttle);
+float calculate_temp_mod(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp);
+
+// returns <accel_torque, regen_torque>
+std::pair<int32_t, int32_t> calculate_torque_reqs(float temp_mod,
+                                                  std::pair<float, float> torque_mods);
 
 uint8_t calculate_pump_duty_cycle(int16_t motor_temp, int16_t igbt_temp, int16_t batt_temp);
 

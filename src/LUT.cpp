@@ -23,7 +23,10 @@ const std::map<int16_t, float> MotorTemp2Modifier_LUT{
     {70, 1.0}, {80, 0.95}, {90, 0.75}, {100, 0.2}, {110, 0.05}, {120, 0.0}};
 
 // Motor RPM : throttle %
-const std::map<int16_t, float> RPM2Throttle_LUT{{0, 0.0}, {1, 1.0}};
+const std::map<int16_t, float> RPM2Throttle_LUT{
+    {0, 0.0},      {200, 0.0},    {400, 0.07},   {600, 0.12},  {800, 0.16},
+    {1000, 0.19},  {1200, 0.21},  {1400, 0.22},  {1600, 0.23}, {1800, 0.235},
+    {2000, 0.239}, {2200, 0.244}, {2400, 0.247}, {2600, 0.25}, {10000, 0.25}};
 
 // Throttle value : power limit modifier (Accel)
 const std::map<int16_t, float> AccelThrottle2Modifier_LUT{
@@ -34,7 +37,10 @@ const std::map<int16_t, float> AccelThrottle2Modifier_LUT{
 
 // Throttle value : power limit modifier (Regen)
 const std::map<int16_t, float> RegenThrottle2Modifier_LUT{
-    {0, 0.0}};
+    {0, 0.0},     {102, 0.01},  {205, 0.02},  {307, 0.03},  {409, 0.04},  {512, 0.05},
+    {614, 0.07},  {716, 0.11},  {819, 0.17},  {921, 0.24},  {1024, 0.32}, {1126, 0.43},
+    {1228, 0.54}, {1331, 0.65}, {1433, 0.77}, {1535, 0.85}, {1638, 0.91}, {1740, 0.95},
+    {1842, 0.97}, {1945, 0.99}, {2047, 1.0}};
 
 // Motor temp : Pump duty cycle
 const std::map<int16_t, float> MotorTemp2PumpDutyCycle_LUT{
@@ -90,31 +96,47 @@ int16_t get_throttle_difference(int16_t real_throttle, int16_t throttle_max, int
   return real_throttle - throttle_calc;
 }
 
-// <set_current, set_current_brake>
-std::pair<int32_t, int32_t> calculate_torque(int16_t throttle_difference) {
-  std::pair<int32_t, int32_t> torque_pair = {0, 0};
+// <accel_mod, regen_mod>
+std::pair<float, float> get_torque_mods(int16_t real_throttle, int16_t throttle_max,
+                                        int16_t motor_rpm, bool brake_pressed) {
+  int16_t throttle_diff = get_throttle_difference(real_throttle, throttle_max, motor_rpm);
 
-  if (throttle_difference > 0) { // accel
+  float accel_mod = 0.0f;
+  float regen_mod = 0.0f;
 
+  if (throttle_diff > 0 && !brake_pressed) {
+    accel_mod = lookup(throttle_diff, AccelThrottle2Modifier_LUT);
+    regen_mod = 0.0f;
+  } else if (throttle_diff < 0 && !brake_pressed) {
+    accel_mod = 0.0f;
+    regen_mod = lookup(-throttle_diff, RegenThrottle2Modifier_LUT);
+  } else {
+    accel_mod = 0.0f;
+    regen_mod = 0.0f;
   }
-  else if (throttle_difference < 0) { // regen
 
-  }
-  else { // no torque
-
-    }
+  return std::make_pair(accel_mod, regen_mod);
 }
 
-int32_t calculate_accel_torque(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp,
-                               int16_t throttle) {
+float calculate_temp_mod(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp) {
   float igbt_mod = lookup(igbt_temp, IGBTTemp2Modifier_LUT);
   float batt_mod = lookup(batt_temp, BatteryTemp2Modifier_LUT);
   float motor_temp_mod = lookup(motor_temp, MotorTemp2Modifier_LUT);
-  float throttle_mod = lookup(throttle, AccelThrottle2Modifier_LUT);
 
-  float mod_product = igbt_mod * batt_mod * motor_temp_mod * throttle_mod;
+  return igbt_mod * batt_mod * motor_temp_mod;
+}
 
-  return LUT::scale(mod_product, static_cast<int32_t>(LUT::TorqueReqLimit::kAccelMax));
+std::pair<int32_t, int32_t> calculate_torque_reqs(float temp_mod,
+                                                  std::pair<float, float> torque_mods) {
+  float accel_mod_product = temp_mod * torque_mods.first;
+  float regen_mod_product = temp_mod * torque_mods.second;
+
+  int32_t accel_torque =
+      LUT::scale(accel_mod_product, static_cast<int32_t>(LUT::TorqueReqLimit::kAccelMax));
+  int32_t regen_torque =
+      LUT::scale(regen_mod_product, static_cast<int32_t>(LUT::TorqueReqLimit::kRegenMax));
+
+  return std::make_pair(accel_torque, regen_torque);
 }
 
 uint8_t calculate_pump_duty_cycle(int16_t motor_temp, int16_t igbt_temp, int16_t batt_temp) {

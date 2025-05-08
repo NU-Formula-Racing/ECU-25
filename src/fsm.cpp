@@ -225,29 +225,28 @@ void process_state() {
       }
       ready_to_drive = Ready_To_Drive_State::Neutral;
       // BMS_Command = BMSCommand::Shutdown;
-      inverter.request_torque(0);
+      inverter.request_torque({0, 0});
       break;
     case State::N:
       BMS_Command =
           BMSCommand::PrechargeAndCloseContactors;  // maybe make prechargeandclosecontactors or
                                                     // NoAction here
-      inverter.request_torque(0);
+      inverter.request_torque({0, 0});
       break;
     case State::DRIVE:
-      int32_t torque_req;
+      std::pair<int32_t, int32_t> torque_reqs;
       if (throttle_brake.is_implausibility_present()) {
-        torque_req = 0;
+        torque_reqs = {0, 0};
       } else {
-        // if (throttle_brake.is_brake_pressed()) {
-        //   // calculate regen torque
-        //   torque_req = 0;
-        // } else {
-        torque_req =
-            LUT::calculate_accel_torque(inverter.get_IGBT_temp(), Battery_Temperature,
-                                        inverter.get_motor_temp(), throttle_brake.get_throttle());
-        // }
+        std::pair<float, float> torque_mods = LUT::get_torque_mods(
+            throttle_brake.get_throttle(), static_cast<int16_t>(Bounds::SENSOR_SCALED_MAX),
+            inverter.get_motor_rpm(), throttle_brake.is_brake_pressed());
+        float temp_mod = LUT::calculate_temp_mod(inverter.get_IGBT_temp(), Battery_Temperature,
+                                                 inverter.get_motor_temp());
+
+        torque_reqs = LUT::calculate_torque_reqs(temp_mod, torque_mods);
       }
-      inverter.request_torque(torque_req);
+      inverter.request_torque(torque_reqs);
       break;
   }
 }

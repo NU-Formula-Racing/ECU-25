@@ -13,7 +13,7 @@ class Inverter {
   void initialize();
   void read_inverter_CAN();
   void send_inverter_CAN();
-  void request_torque(int32_t torque_mA);
+  void request_torque(std::pair<int32_t, int32_t> torque_reqs);
   void print_inverter_info();
 
   int32_t get_motor_rpm() const;
