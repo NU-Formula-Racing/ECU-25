@@ -1,20 +1,6 @@
 #include "lut_can.hpp"
 
-std::map<int16_t, float> LUTCan::getLUT() {
-  processCAN();
-  std::map<int16_t, float> m;
-  for (int i = 0; i < this->rxLUT.numPairs; i++) {
-    m.insert({rxLUT.xVals.at(i), rxLUT.yVals.at(i)});
-  }
-  return m;
-};
-
-FileStatus LUTCan::LUTCANStatus() {
-  processCAN();
-  return this->rxLUT.fileStatus;
-}
-
-void LUTCan::processCAN() {
+RXLUT LUTCan::processCAN() {
   std::vector<int16_t> xPairs;
   std::vector<float> yPairs;
 
@@ -87,7 +73,11 @@ void LUTCan::processCAN() {
   lut.interpType = static_cast<InterpType>(static_cast<uint8_t>(this->interp_type));
   lut.LUTId = static_cast<uint8_t>(this->lut_id);
   lut.numPairs = static_cast<uint8_t>(this->num_lut_pairs);
-  lut.xVals = xPairs;
-  lut.yVals = yPairs;
-  this->rxLUT = lut;
+  std::map<int16_t, float> m;
+  for (int i = 0; i < lut.numPairs; i++) {
+    m.insert({xPairs.at(i), yPairs.at(i)});
+  }
+
+  lut.lut = m;
+  return lut;
 };

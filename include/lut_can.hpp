@@ -22,8 +22,7 @@ struct RXLUT {
   uint8_t numPairs;
   InterpType interpType;
   uint8_t LUTId;
-  std::vector<int16_t> xVals;
-  std::vector<float> yVals;
+  std::map<int16_t, float> lut;
 };
 
 class LUTCan {
@@ -31,14 +30,13 @@ class LUTCan {
   LUTCan(ICAN& can_interface, VirtualTimerGroup& timers)
       : can_bus(can_interface), timers(timers) {};
 
+  RXLUT processCAN();
   std::map<int16_t, float> getLUT();
-  FileStatus LUTCANStatus();
+  FileStatus getFileStatus();
+  InterpType getInterpType();
+  uint8_t getLUTid();
 
  private:
-  void processCAN();
-
-  RXLUT rxLUT;
-
   ICAN& can_bus;
   VirtualTimerGroup& timers;
 

@@ -18,7 +18,7 @@ class Lookup {
 
   enum class PWMLimit { kPumpMax = 255, kFanMax = 255 };
 
-  void initializeCANLUTs();
+  void updateCANLUTs();
 
   float lookup(int16_t key, const std::map<int16_t, float>& lut);
 

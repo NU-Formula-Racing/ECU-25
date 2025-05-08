@@ -4,9 +4,10 @@
 
 #include "LUT.hpp"
 
-void Lookup::initializeCANLUTs() {
-  if (lut_can.LUTCANStatus() == FileStatus::FILE_PRESENT_AND_VALID) {
-    this->AccelThrottle2Modifier_LUT = lut_can.getLUT();
+void Lookup::updateCANLUTs() {
+  RXLUT rxLUT = lut_can.processCAN();
+  if (rxLUT.fileStatus == FileStatus::FILE_PRESENT_AND_VALID) {
+    AccelThrottle2Modifier_LUT = rxLUT.lut;
   }
 }
 

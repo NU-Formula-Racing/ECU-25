@@ -62,7 +62,7 @@ void fsm_init() {
 
   timers.AddTimer(10, active_aero_wrapper);
 
-  timers.AddTimer(10, update_pump_fan);
+  timers.AddTimer(10, update_lut_can);
 
   // 10 ms timer for CAN messages
   timers.AddTimer(10, tick_CAN);
@@ -78,9 +78,6 @@ void fsm_init() {
 
   // initialize dash switches
   initialize_dash_switches();
-
-  // start reading LUTs over CAN
-  lookup.initializeCANLUTs();
 }
 
 //// wrappers for send/read CAN functions: timers don't like if your callbacks are direct class
@@ -123,10 +120,11 @@ void active_aero_wrapper() {
                                  throttle_brake.is_brake_pressed());
 }
 
-void update_pump_fan() {
+void update_lut_can() {
   Pump_Duty_Cycle = lookup.calculate_pump_duty_cycle(inverter.get_motor_temp(),
                                                      inverter.get_IGBT_temp(), Battery_Temperature);
   Fan_Duty_Cycle = lookup.calculate_fan_duty_cycle(Before_Motor_Temperature);
+  lookup.updateCANLUTs();
 }
 
 // call this function when the ready to drive switch is flipped
