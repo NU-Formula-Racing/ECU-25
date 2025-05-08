@@ -72,11 +72,13 @@ class Lookup {
       {2000, 0.239}, {2200, 0.244}, {2400, 0.247}, {2600, 0.25}, {10000, 0.25}};
 
   // Throttle value : power limit modifier (Accel)
-  std::map<int16_t, float> AccelThrottle2Modifier_LUT{
+  const std::map<int16_t, float> DefaultAccelThrottle2Modifier_LUT{
       {0, 0.0},     {102, 0.03},  {205, 0.09},  {307, 0.16},  {409, 0.23},  {512, 0.3},
       {614, 0.37},  {716, 0.44},  {819, 0.51},  {921, 0.58},  {1024, 0.65}, {1126, 0.72},
       {1228, 0.78}, {1331, 0.83}, {1433, 0.88}, {1535, 0.92}, {1638, 0.95}, {1740, 0.97},
       {1842, 0.98}, {1945, 0.99}, {2047, 1.0}};
+
+  std::map<int16_t, float> AccelThrottle2Modifier_LUT = DefaultAccelThrottle2Modifier_LUT;
 
   // Throttle value : power limit modifier (Regen)
   const std::map<int16_t, float> RegenThrottle2Modifier_LUT{

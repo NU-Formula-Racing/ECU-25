@@ -8,6 +8,10 @@ void Lookup::updateCANLUTs() {
   RXLUT rxLUT = lut_can.processCAN();
   if (rxLUT.fileStatus == FileStatus::FILE_PRESENT_AND_VALID) {
     AccelThrottle2Modifier_LUT = rxLUT.lut;
+    lut_can.setLUTIDResponse(rxLUT.LUTId);
+  } else {
+    lut_can.setLUTIDResponse(0);
+    AccelThrottle2Modifier_LUT = DefaultAccelThrottle2Modifier_LUT;
   }
 }
 

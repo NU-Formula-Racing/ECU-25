@@ -35,10 +35,14 @@ class LUTCan {
   FileStatus getFileStatus();
   InterpType getInterpType();
   uint8_t getLUTid();
+  void setLUTIDResponse(uint8_t id);
 
  private:
   ICAN& can_bus;
   VirtualTimerGroup& timers;
+
+  MakeUnsignedCANSignal(uint8_t, 0, 8, 1, 0) accel_lut_id_response {};
+  CANTXMessage<1> ecu_lut_response{can_bus, 0x20A, 1, 100, accel_lut_id_response};
 
   MakeUnsignedCANSignal(uint8_t, 0, 8, 1.0, 0.0) file_status {};
   MakeUnsignedCANSignal(uint8_t, 8, 8, 1.0, 0.0) num_lut_pairs {};

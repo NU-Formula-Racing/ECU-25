@@ -1,5 +1,7 @@
 #include "lut_can.hpp"
 
+void LUTCan::setLUTIDResponse(uint8_t id) { accel_lut_id_response = id; }
+
 RXLUT LUTCan::processCAN() {
   std::vector<int16_t> xPairs;
   std::vector<float> yPairs;
