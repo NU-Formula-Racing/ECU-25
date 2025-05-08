@@ -4,6 +4,12 @@
 
 #include "LUT.hpp"
 
+void Lookup::initializeCANLUTs() {
+  if (lut_can.LUTCANStatus() == FileStatus::FILE_PRESENT_AND_VALID) {
+    this->AccelThrottle2Modifier_LUT = lut_can.getLUT();
+  }
+}
+
 float Lookup::lookup(int16_t key, const std::map<int16_t, float>& lut) {
   auto it = lut.lower_bound(key);
   // if key is smaller than the smallest key, return the first value
@@ -75,9 +81,9 @@ std::pair<int32_t, int32_t> Lookup::calculate_torque_reqs(float temp_mod,
   float regen_mod_product = temp_mod * torque_mods.second;
 
   int32_t accel_torque =
-      Lookup::scale(accel_mod_product, static_cast<int32_t>(Lookup::TorqueReqLimit::kAccelMax));
+      scale(accel_mod_product, static_cast<int32_t>(Lookup::TorqueReqLimit::kAccelMax));
   int32_t regen_torque =
-      Lookup::scale(regen_mod_product, static_cast<int32_t>(Lookup::TorqueReqLimit::kRegenMax));
+      scale(regen_mod_product, static_cast<int32_t>(Lookup::TorqueReqLimit::kRegenMax));
 
   return std::make_pair(accel_torque, regen_torque);
 }

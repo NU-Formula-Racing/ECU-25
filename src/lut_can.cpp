@@ -1,6 +1,7 @@
 #include "lut_can.hpp"
 
 std::map<int16_t, float> LUTCan::getLUT() {
+  processCAN();
   std::map<int16_t, float> m;
   for (int i = 0; i < this->rxLUT.numPairs; i++) {
     m.insert({rxLUT.xVals.at(i), rxLUT.yVals.at(i)});
@@ -8,7 +9,10 @@ std::map<int16_t, float> LUTCan::getLUT() {
   return m;
 };
 
-FileStatus LUTCan::LUTCANStatus() { return this->rxLUT.fileStatus; }
+FileStatus LUTCan::LUTCANStatus() {
+  processCAN();
+  return this->rxLUT.fileStatus;
+}
 
 void LUTCan::processCAN() {
   std::vector<int16_t> xPairs;

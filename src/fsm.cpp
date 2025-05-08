@@ -78,6 +78,9 @@ void fsm_init() {
 
   // initialize dash switches
   initialize_dash_switches();
+
+  // start reading LUTs over CAN
+  lookup.initializeCANLUTs();
 }
 
 //// wrappers for send/read CAN functions: timers don't like if your callbacks are direct class

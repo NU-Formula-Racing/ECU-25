@@ -5,6 +5,7 @@
 
 #include "can_interface.h"
 #include "esp_can.h"
+#include "lut_can.hpp"
 #include "virtualTimer.h"
 
 class Lookup {
@@ -16,6 +17,8 @@ class Lookup {
   enum class TorqueReqLimit { kAccelMax = 235000, kRegenMax = 235000 };
 
   enum class PWMLimit { kPumpMax = 255, kFanMax = 255 };
+
+  void initializeCANLUTs();
 
   float lookup(int16_t key, const std::map<int16_t, float>& lut);
 
@@ -42,6 +45,8 @@ class Lookup {
   ICAN& can_interface;
   VirtualTimerGroup& timers;
 
+  LUTCan lut_can{can_interface, timers};
+
   /* Power limit modifier LUTs */
   // IGBT temp : Power limit modifier
   const std::map<int16_t, float> IGBTTemp2Modifier_LUT{
@@ -67,7 +72,7 @@ class Lookup {
       {2000, 0.239}, {2200, 0.244}, {2400, 0.247}, {2600, 0.25}, {10000, 0.25}};
 
   // Throttle value : power limit modifier (Accel)
-  const std::map<int16_t, float> AccelThrottle2Modifier_LUT{
+  std::map<int16_t, float> AccelThrottle2Modifier_LUT{
       {0, 0.0},     {102, 0.03},  {205, 0.09},  {307, 0.16},  {409, 0.23},  {512, 0.3},
       {614, 0.37},  {716, 0.44},  {819, 0.51},  {921, 0.58},  {1024, 0.65}, {1126, 0.72},
       {1228, 0.78}, {1331, 0.83}, {1433, 0.88}, {1535, 0.92}, {1638, 0.95}, {1740, 0.97},
