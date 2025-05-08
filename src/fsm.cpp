@@ -33,6 +33,8 @@ Inverter inverter{drive_bus, timers, throttle_brake};
 
 ActiveAero active_aero{drive_bus, timers};
 
+Lookup lookup{drive_bus, timers};
+
 void fsm_init() {
   Serial.begin(115200);
 
@@ -114,14 +116,14 @@ void APPSs_invalid_timer_callback() {
 // active aero wrapper
 void active_aero_wrapper() {
   active_aero.update_active_aero(inverter.get_set_current(),
-                                 static_cast<float>(LUT::TorqueReqLimit::kAccelMax),
+                                 static_cast<float>(Lookup::TorqueReqLimit::kAccelMax),
                                  throttle_brake.is_brake_pressed());
 }
 
 void update_pump_fan() {
-  Pump_Duty_Cycle = LUT::calculate_pump_duty_cycle(inverter.get_motor_temp(),
-                                                   inverter.get_IGBT_temp(), Battery_Temperature);
-  Fan_Duty_Cycle = LUT::calculate_fan_duty_cycle(Before_Motor_Temperature);
+  Pump_Duty_Cycle = lookup.calculate_pump_duty_cycle(inverter.get_motor_temp(),
+                                                     inverter.get_IGBT_temp(), Battery_Temperature);
+  Fan_Duty_Cycle = lookup.calculate_fan_duty_cycle(Before_Motor_Temperature);
 }
 
 // call this function when the ready to drive switch is flipped
@@ -238,13 +240,13 @@ void process_state() {
       if (throttle_brake.is_implausibility_present()) {
         torque_reqs = {0, 0};
       } else {
-        std::pair<float, float> torque_mods = LUT::get_torque_mods(
+        std::pair<float, float> torque_mods = lookup.get_torque_mods(
             throttle_brake.get_throttle(), static_cast<int16_t>(Bounds::SENSOR_SCALED_MAX),
             inverter.get_motor_rpm(), throttle_brake.is_brake_pressed());
-        float temp_mod = LUT::calculate_temp_mod(inverter.get_IGBT_temp(), Battery_Temperature,
-                                                 inverter.get_motor_temp());
+        float temp_mod = lookup.calculate_temp_mod(inverter.get_IGBT_temp(), Battery_Temperature,
+                                                   inverter.get_motor_temp());
 
-        torque_reqs = LUT::calculate_torque_reqs(temp_mod, torque_mods);
+        torque_reqs = lookup.calculate_torque_reqs(temp_mod, torque_mods);
       }
       inverter.request_torque(torque_reqs);
       break;

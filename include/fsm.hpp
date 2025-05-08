@@ -46,6 +46,9 @@ extern ThrottleBrake throttle_brake;
 // instantiate inverter
 extern Inverter inverter;
 
+// instantiate Lookup object
+extern Lookup lookup;
+
 // function forward initializations
 void fsm_init();
 void change_state();
