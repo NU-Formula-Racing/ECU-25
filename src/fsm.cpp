@@ -60,9 +60,9 @@ void fsm_init() {
   // refresh throttle/brake values and check for implausibilities
   timers.AddTimer(10, refresh_throttle_brake);
 
-  timers.AddTimer(10, active_aero_wrapper);
+  timers.AddTimer(100, active_aero_wrapper);
 
-  timers.AddTimer(1000, update_lut_can);
+  timers.AddTimer(100, update_lut_can);
 
   // 10 ms timer for CAN messages
   timers.AddTimer(10, tick_CAN);

@@ -42,7 +42,7 @@ class LUTCan {
   VirtualTimerGroup& timers;
 
   MakeUnsignedCANSignal(uint8_t, 0, 8, 1, 0) accel_lut_id_response {};
-  CANTXMessage<1> ecu_lut_response{can_bus, 0x20A, 1, 100, accel_lut_id_response};
+  CANTXMessage<1> ecu_lut_response{can_bus, 0x20A, 1, 100, timers, accel_lut_id_response};
 
   MakeUnsignedCANSignal(uint8_t, 0, 8, 1.0, 0.0) file_status {};
   MakeUnsignedCANSignal(uint8_t, 8, 8, 1.0, 0.0) num_lut_pairs {};

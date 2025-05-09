@@ -79,18 +79,18 @@ RXLUT LUTCan::processCAN() {
   for (int i = 0; i < lut.numPairs; i++) {
     m.insert({xPairs.at(i), yPairs.at(i)});
   }
-  Serial.print("lut xpair 5: ");
-  Serial.println(xPairs.at(5));
-  Serial.print("lut ypair 5: ");
-  Serial.println(yPairs.at(5));
-  Serial.print("lut id: ");
-  Serial.println(lut.LUTId);
-  Serial.print("lut num pairs: ");
-  Serial.println(lut.numPairs);
-  Serial.print("lut file status: ");
-  Serial.println(static_cast<uint8_t>(lut.fileStatus));
-  Serial.print("lut interp type: ");
-  Serial.println(static_cast<uint8_t>(lut.interpType));
+  // Serial.print("lut xpair 5: ");
+  // Serial.println(xPairs.at(5));
+  // Serial.print("lut ypair 5: ");
+  // Serial.println(yPairs.at(5));
+  // Serial.print("lut id: ");
+  // Serial.println(lut.LUTId);
+  // Serial.print("lut num pairs: ");
+  // Serial.println(lut.numPairs);
+  // Serial.print("lut file status: ");
+  // Serial.println(static_cast<uint8_t>(lut.fileStatus));
+  // Serial.print("lut interp type: ");
+  // Serial.println(static_cast<uint8_t>(lut.interpType));
 
   lut.lut = m;
   return lut;
