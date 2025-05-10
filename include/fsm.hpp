@@ -108,7 +108,7 @@ extern CANSignal<uint8_t, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFl
 extern CANSignal<uint8_t, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     Fan_Duty_Cycle;
 
-extern CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+extern CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false>
     Before_Motor_Temperature;
 
 extern CANRXMessage<1> BMS_SOE;

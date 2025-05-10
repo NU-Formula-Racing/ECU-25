@@ -107,4 +107,4 @@ class Lookup {
   const std::map<int16_t, float> CoolantTemp2FanDutyCycle_LUT{
       {0, 0.0},  {5, 0.0},  {10, 0.0}, {15, 0.0},  {20, 0.0}, {25, 0.05}, {30, 0.15},
       {35, 0.4}, {40, 0.7}, {45, 0.9}, {50, 0.97}, {55, 1.0}, {60, 1.0}};
-};  // namespace LUT
+};

@@ -1,8 +1,7 @@
-#include <cmath>
-// #include <iostream>
-#include <map>
-
 #include "LUT.hpp"
+
+#include <cmath>
+#include <map>
 
 void Lookup::updateCANLUTs() {
   RXLUT rxLUT = lut_can.processCAN();

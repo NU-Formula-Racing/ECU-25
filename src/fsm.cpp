@@ -361,7 +361,7 @@ CANSignal<uint8_t, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0),
 CANSignal<uint8_t, 8, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
     Fan_Duty_Cycle{};
 
-CANSignal<float, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+CANSignal<float, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), false>
     Before_Motor_Temperature{};
 
 CANRXMessage<1> Daq_Wheel_Bl{drive_bus, 0x24B, BL_Speed};
