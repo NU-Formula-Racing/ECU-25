@@ -58,9 +58,9 @@ class Lookup {
   };
 
   CANData can_data{
-      .torque_status{TorqueStatusType::kZero},
-      .temp_limiting_statuses{TempLimitingType::kNotLimiting, TempLimitingType::kNotLimiting,
-                              TempLimitingType::kNotLimiting}};
+      .torque_status = TorqueStatusType::kZero,
+      .temp_limiting_statuses = {TempLimitingType::kNotLimiting, TempLimitingType::kNotLimiting,
+                                 TempLimitingType::kNotLimiting}};
 
   Lookup::TempLimitingType is_temp_limiting(float temp_mod);
 

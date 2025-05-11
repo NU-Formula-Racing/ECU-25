@@ -51,21 +51,15 @@ extern Lookup lookup;
 
 // function forward initializations
 void fsm_init();
+void update();
 void change_state();
 void process_state();
-void change_brake_state();
 void ready_to_drive_callback();
 void tsactive_callback();
 void initialize_dash_switches();
-void update_inverter();
-void active_aero_wrapper();
-void update_lut_can();
-void send_throttle_brake_CAN_wrapper();
 void APPSs_disagreement_timer_callback();
 void brake_implausible_timer_callback();
 void APPSs_invalid_timer_callback();
-void refresh_throttle_brake();
-void tick_CAN();
 void print_fsm();
 void print_all();
 void tick_timers();
