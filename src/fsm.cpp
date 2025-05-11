@@ -65,7 +65,7 @@ void fsm_init() {
   initialize_dash_switches();
 }
 
-// TODO: make this a vector of function ptrs
+// TODO: make this a data structure of function ptrs
 void update() {
   process_state();
   change_state();
@@ -86,7 +86,7 @@ void update() {
   Fan_Duty_Cycle = lookup.calculate_fan_duty_cycle(Before_Motor_Temperature);
 
   lookup.updateCANLUTs();
-  lookup.update_temp_limiting_status_CAN();
+  lookup.update_status_CAN();
 
   drive_bus.Tick();
 }

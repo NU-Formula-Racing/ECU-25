@@ -60,12 +60,15 @@ std::pair<float, float> Lookup::get_torque_mods(int16_t real_throttle, int16_t t
   if (throttle_diff > 0 && !brake_pressed) {
     accel_mod = lookup(throttle_diff, AccelThrottle2Modifier_LUT);
     regen_mod = 0.0f;
+    can_data.torque_status = Lookup::TorqueStatusType::kAccel;
   } else if (throttle_diff < 0 && !brake_pressed) {
     accel_mod = 0.0f;
     regen_mod = lookup(-throttle_diff, RegenThrottle2Modifier_LUT);
+    can_data.torque_status = Lookup::TorqueStatusType::kRegen;
   } else {
     accel_mod = 0.0f;
     regen_mod = 0.0f;
+    can_data.torque_status = Lookup::TorqueStatusType::kZero;
   }
 
   return std::make_pair(accel_mod, regen_mod);
@@ -87,16 +90,18 @@ float Lookup::calculate_temp_mod(int16_t igbt_temp, int16_t batt_temp, int16_t m
 
   for (int i = 0; i < temp_mods.size(); i++) {
     Lookup::TempLimitingType temp_limiting_status = is_temp_limiting(temp_mods.at(i));
-    temp_limiting_statuses.at(i) = temp_limiting_status;
+    can_data.temp_limiting_statuses.at(i) = temp_limiting_status;
   }
 
   return igbt_mod * batt_mod * motor_temp_mod;
 }
 
-void Lookup::update_temp_limiting_status_CAN() {
-  IGBT_Temp_Limiting = static_cast<bool>(temp_limiting_statuses.at(0));
-  Battery_Temp_Limiting = static_cast<bool>(temp_limiting_statuses.at(1));
-  Motor_Temp_Limiting = static_cast<bool>(temp_limiting_statuses.at(2));
+void Lookup::update_status_CAN() {
+  Torque_Status = static_cast<uint8_t>(can_data.torque_status);
+
+  IGBT_Temp_Limiting = static_cast<bool>(can_data.temp_limiting_statuses.at(0));
+  Battery_Temp_Limiting = static_cast<bool>(can_data.temp_limiting_statuses.at(1));
+  Motor_Temp_Limiting = static_cast<bool>(can_data.temp_limiting_statuses.at(2));
 }
 
 std::pair<int32_t, int32_t> Lookup::calculate_torque_reqs(float temp_mod,

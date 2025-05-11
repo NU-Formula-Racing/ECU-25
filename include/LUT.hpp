@@ -20,7 +20,7 @@ class Lookup {
 
   void updateCANLUTs();
 
-  void update_temp_limiting_status_CAN();
+  void update_status_CAN();
 
   float lookup(int16_t key, const std::map<int16_t, float>& lut);
 
@@ -50,23 +50,33 @@ class Lookup {
   LUTCan lut_can{can_interface, timers};
 
   enum class TempLimitingType { kNotLimiting = 0, kLimiting = 1 };
+  enum class TorqueStatusType { kZero = 0, kAccel = 1, kRegen = 2 };
 
-  std::vector<TempLimitingType> temp_limiting_statuses{TempLimitingType::kNotLimiting,
-                                                       TempLimitingType::kNotLimiting,
-                                                       TempLimitingType::kNotLimiting};
+  struct CANData {
+    TorqueStatusType torque_status;
+    std::vector<TempLimitingType> temp_limiting_statuses;
+  };
+
+  CANData can_data{
+      .torque_status{TorqueStatusType::kZero},
+      .temp_limiting_statuses{TempLimitingType::kNotLimiting, TempLimitingType::kNotLimiting,
+                              TempLimitingType::kNotLimiting}};
 
   Lookup::TempLimitingType is_temp_limiting(float temp_mod);
 
-    CANSignal<bool, 0, 1, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+  CANSignal<bool, 0, 1, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
       IGBT_Temp_Limiting{};
   CANSignal<bool, 1, 1, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
       Battery_Temp_Limiting{};
   CANSignal<bool, 2, 1, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
       Motor_Temp_Limiting{};
-
   CANTXMessage<3> ECU_Temp_Limiting_Status{
       can_interface,      0x20B, 1, 100, timers, IGBT_Temp_Limiting, Battery_Temp_Limiting,
       Motor_Temp_Limiting};
+
+  CANSignal<uint8_t, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
+      Torque_Status{};
+  CANTXMessage<1> ECU_Torque_Status{can_interface, 0x20C, 1, 100, timers, Torque_Status};
 
   /* Power limit modifier LUTs */
   // IGBT temp : Power limit modifier
