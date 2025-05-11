@@ -195,6 +195,7 @@ void change_state() {
           External_Kill_Fault == BMSFault::kExtFault) {
         Serial.println("transition from N->OFF");
         tsactive_switch = TSActive::Inactive;
+        BMS_Command = BMSCommand::Shutdown;
         Drive_State = State::OFF;
       }
       break;
@@ -219,9 +220,7 @@ void process_state() {
   throttle_brake.update_sensor_values();
   switch (Drive_State) {
     case State::OFF:
-      if (tsactive_switch == TSActive::Active) {  // consider adding another state here for when
-                                                  // TSactive switch is flipped, we can only get to
-                                                  // this state on the rising edge of TS switch
+      if (tsactive_switch == TSActive::Active) {
         BMS_Command = BMSCommand::PrechargeAndCloseContactors;
       } else {
         BMS_Command = BMSCommand::Shutdown;
