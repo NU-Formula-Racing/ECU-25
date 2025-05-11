@@ -71,12 +71,32 @@ std::pair<float, float> Lookup::get_torque_mods(int16_t real_throttle, int16_t t
   return std::make_pair(accel_mod, regen_mod);
 }
 
+Lookup::TempLimitingType Lookup::is_temp_limiting(float temp_mod) {
+  if (temp_mod < 1.0f) {
+    return Lookup::TempLimitingType::kLimiting;
+  } else {
+    return Lookup::TempLimitingType::kNotLimiting;
+  }
+}
+
 float Lookup::calculate_temp_mod(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp) {
   float igbt_mod = lookup(igbt_temp, IGBTTemp2Modifier_LUT);
   float batt_mod = lookup(batt_temp, BatteryTemp2Modifier_LUT);
   float motor_temp_mod = lookup(motor_temp, MotorTemp2Modifier_LUT);
+  std::vector<float> temp_mods{igbt_mod, batt_mod, motor_temp_mod};
+
+  for (int i = 0; i < temp_mods.size(); i++) {
+    Lookup::TempLimitingType temp_limiting_status = is_temp_limiting(temp_mods.at(i));
+    temp_limiting_statuses.at(i) = temp_limiting_status;
+  }
 
   return igbt_mod * batt_mod * motor_temp_mod;
+}
+
+void Lookup::update_temp_limiting_status_CAN() {
+  IGBT_Temp_Limiting = static_cast<bool>(temp_limiting_statuses.at(0));
+  Battery_Temp_Limiting = static_cast<bool>(temp_limiting_statuses.at(1));
+  Motor_Temp_Limiting = static_cast<bool>(temp_limiting_statuses.at(2));
 }
 
 std::pair<int32_t, int32_t> Lookup::calculate_torque_reqs(float temp_mod,
@@ -101,11 +121,6 @@ uint8_t Lookup::calculate_pump_duty_cycle(int16_t motor_temp, int16_t igbt_temp,
   float dc_float = std::max(std::max(motor_dc, igbt_dc), batt_dc);
 
   return scale(dc_float, static_cast<uint8_t>(PWMLimit::kPumpMax));
-  // take max of all three, have 2 sets of LUTs: 1 from 0
-  // to "panic temp", 1 from "panic temp" to max
-  // should be continuous between the modes
-  // PDM just needs a msg with 2 signals: pump duty cycle and fan duty cycle, both scaled from 0-255
-  // uint8_t
 }
 
 uint8_t Lookup::calculate_fan_duty_cycle(float coolant_temp) {

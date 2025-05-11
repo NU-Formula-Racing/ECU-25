@@ -50,22 +50,7 @@ void fsm_init() {
   // register BMS msg
   drive_bus.RegisterRXMessage(BMS_Status);
 
-  // add change_state and process_state to timer group -- called every 10 ms
-  timers.AddTimer(10, change_state);
-  timers.AddTimer(10, process_state);
-
-  // send and recieve inverter CAN messages
-  timers.AddTimer(10, update_inverter);
-
-  // refresh throttle/brake values and check for implausibilities
-  timers.AddTimer(10, refresh_throttle_brake);
-
-  timers.AddTimer(100, active_aero_wrapper);
-
-  timers.AddTimer(100, update_lut_can);
-
-  // 10 ms timer for CAN messages
-  timers.AddTimer(10, tick_CAN);
+  timers.AddTimer(10, update);
 
   // timer for print debugging msgs
   timers.AddTimer(1000, print_fsm);
@@ -80,22 +65,30 @@ void fsm_init() {
   initialize_dash_switches();
 }
 
-//// wrappers for send/read CAN functions: timers don't like if your callbacks are direct class
-/// member functions
-// send inverter wrapper
-void update_inverter() {
+// TODO: make this a vector of function ptrs
+void update() {
+  process_state();
+  change_state();
+
   inverter.read_inverter_CAN();
   inverter.send_inverter_CAN();
-}
 
-// wrapper for CAN msgs sent/read every 10ms: inverter, fsm
-void tick_CAN() { drive_bus.Tick(); }
-
-// read from ADCs, update internal throttle/brake values, and perform internal implausibility checks
-void refresh_throttle_brake() {
   throttle_brake.update_sensor_values();
   throttle_brake.check_for_implausibilities();
   throttle_brake.update_throttle_brake_CAN_signals();
+
+  active_aero.update_active_aero(inverter.get_set_current(),
+                                 static_cast<float>(Lookup::TorqueReqLimit::kAccelMax),
+                                 throttle_brake.is_brake_pressed());
+
+  Pump_Duty_Cycle = lookup.calculate_pump_duty_cycle(inverter.get_motor_temp(),
+                                                     inverter.get_IGBT_temp(), Battery_Temperature);
+  Fan_Duty_Cycle = lookup.calculate_fan_duty_cycle(Before_Motor_Temperature);
+
+  lookup.updateCANLUTs();
+  lookup.update_temp_limiting_status_CAN();
+
+  drive_bus.Tick();
 }
 
 // wrapper for APPSs disagreement timer function
@@ -111,20 +104,6 @@ void brake_implausible_timer_callback() {
 // wrapper for APPSs invalid timer function
 void APPSs_invalid_timer_callback() {
   throttle_brake.set_APPSs_invalid_implausibility_present_to_true();
-}
-
-// active aero wrapper
-void active_aero_wrapper() {
-  active_aero.update_active_aero(inverter.get_set_current(),
-                                 static_cast<float>(Lookup::TorqueReqLimit::kAccelMax),
-                                 throttle_brake.is_brake_pressed());
-}
-
-void update_lut_can() {
-  Pump_Duty_Cycle = lookup.calculate_pump_duty_cycle(inverter.get_motor_temp(),
-                                                     inverter.get_IGBT_temp(), Battery_Temperature);
-  Fan_Duty_Cycle = lookup.calculate_fan_duty_cycle(Before_Motor_Temperature);
-  lookup.updateCANLUTs();
 }
 
 // call this function when the ready to drive switch is flipped
