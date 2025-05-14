@@ -34,8 +34,8 @@ class Inverter {
   const uint16_t torque_limit = 32767;
   const uint16_t kTransmissionIDSetCurrent = 0x200;           // CAN msg address, get this from DBC
   const uint16_t kTransmissionIDSetCurrentBrake = 0x201;      // CAN msg address, get this from DBC
-  const uint16_t kTransmissionIDInverterMotorStatus = 0x280;  // CAN msg address, get this from DBC
-  const uint16_t kTransmissionIDInverterTempStatus = 0x281;   // CAN msg address, get this from DBC
+  const uint16_t kTransmissionIDInverterMotorStatus = 0x281;  // CAN msg address, get this from DBC
+  const uint16_t kTransmissionIDInverterTempStatus = 0x282;   // CAN msg address, get this from DBC
 
   // CAN signals & msgs
   // tx: Set_Current, Set_Current_Brake
@@ -52,10 +52,12 @@ class Inverter {
   CANSignal<int16_t, 0, 16, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), true> RPM{};
   CANRXMessage<1> Inverter_Motor_Status{can_interface, kTransmissionIDInverterMotorStatus,
                                         RPM /*, Motor_Current, DC_Voltage, DC_Current*/};
-  CANSignal<int16_t, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), true>
-      IGBT_Temp{};
-  CANSignal<int16_t, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), true>
-      Motor_Temp{};
+  //   CANSignal<int16_t, 0, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), true>
+  //       IGBT_Temp{};
+  //   CANSignal<int16_t, 16, 16, CANTemplateConvertFloat(0.1), CANTemplateConvertFloat(0), true>
+  //       Motor_Temp{};
+  MakeSignedCANSignal(int16_t, 0, 16, 0.1, 0.0) IGBT_Temp {};
+  MakeSignedCANSignal(int16_t, 16, 16, 0.1, 0.0) Motor_Temp {};
   CANRXMessage<2> Inverter_Temp_Status{can_interface, kTransmissionIDInverterTempStatus, IGBT_Temp,
                                        Motor_Temp};
 };

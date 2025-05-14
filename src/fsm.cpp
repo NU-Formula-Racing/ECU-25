@@ -275,7 +275,7 @@ void print_fsm() {
   // Serial.print(static_cast<int>(ready_to_drive_switch));
   // Serial.print(" Thrtl: ");
   // Serial.print(throttle_brake.get_throttle() / 4);
-  throttle_brake.print_throttle_info();
+  // throttle_brake.print_throttle_info();
   inverter.print_inverter_info();
   // Serial.print(" test tsactive: ");
   // Serial.print(test_ts_active_switch_interrupt);
