@@ -322,16 +322,16 @@ void ThrottleBrake::update_throttle_brake_CAN_signals() {
 }
 
 void ThrottleBrake::print_throttle_info() {
-  Serial.print(" imp_present: ");
-  Serial.print(ThrottleBrake::is_implausibility_present());
-  Serial.print(" APPS_valid_imp: ");
-  Serial.print(ThrottleBrake::APPSs_invalid_implausibility_present);
-  Serial.print(" APPS_dis_imp: ");
-  Serial.print(ThrottleBrake::APPSs_disagreement_implausibility_present);
-  Serial.print(" Brake_imp: ");
-  Serial.print(ThrottleBrake::brake_shorted_or_opened_implausibility_present);
-  Serial.print(" BPPC_imp: ");
-  Serial.print(ThrottleBrake::BPPC_implausibility_present);
+  // Serial.print(" imp_present: ");
+  // Serial.print(ThrottleBrake::is_implausibility_present());
+  // Serial.print(" APPS_valid_imp: ");
+  // Serial.print(ThrottleBrake::APPSs_invalid_implausibility_present);
+  // Serial.print(" APPS_dis_imp: ");
+  // Serial.print(ThrottleBrake::APPSs_disagreement_implausibility_present);
+  // Serial.print(" Brake_imp: ");
+  // Serial.print(ThrottleBrake::brake_shorted_or_opened_implausibility_present);
+  // Serial.print(" BPPC_imp: ");
+  // Serial.print(ThrottleBrake::BPPC_implausibility_present);
   // Serial.print(" APPS1_ADC: ");
   // Serial.print(ThrottleBrake::APPS1_adc);
   // Serial.print(" APPS2_ADC: ");
@@ -340,21 +340,21 @@ void ThrottleBrake::print_throttle_info() {
   // // Serial.print(ThrottleBrake::front_brake_adc);
   // Serial.print(" APPS_validity: ");
   // Serial.print(ThrottleBrake::check_APPSs_validity());
-  Serial.print(" APPS1 ADC: ");
-  Serial.print(ThrottleBrake::APPS1_adc);
-  Serial.print(" APPS2 ADC: ");
-  Serial.print(ThrottleBrake::APPS2_adc);
+  // Serial.print(" APPS1 ADC: ");
+  // Serial.print(ThrottleBrake::APPS1_adc);
+  // Serial.print(" APPS2 ADC: ");
+  // Serial.print(ThrottleBrake::APPS2_adc);
 
-  Serial.print(" APPS1: ");
-  Serial.print(ThrottleBrake::APPS1_throttle_scaled);
-  Serial.print(" APPS2: ");
-  Serial.print(ThrottleBrake::APPS2_throttle_scaled);
-  Serial.print(" Front Brake: ");
-  Serial.print(ThrottleBrake::front_brake_adc);
-//   Serial.print(" APPS1 Voltage: ");
-//   Serial.print((ThrottleBrake::APPS1_adc * 5.0) / 2047.0);
-//   Serial.print(" APPS2 Voltage: ");
-//   Serial.print((ThrottleBrake::APPS2_adc * 5.0) / 2047.0);
+  // Serial.print(" APPS1: ");
+  // Serial.print(ThrottleBrake::APPS1_throttle_scaled);
+  // Serial.print(" APPS2: ");
+  // Serial.print(ThrottleBrake::APPS2_throttle_scaled);
+  // Serial.print(" Front Brake: ");
+  // Serial.print(ThrottleBrake::front_brake_adc);
+  //   Serial.print(" APPS1 Voltage: ");
+  //   Serial.print((ThrottleBrake::APPS1_adc * 5.0) / 2047.0);
+  //   Serial.print(" APPS2 Voltage: ");
+  //   Serial.print((ThrottleBrake::APPS2_adc * 5.0) / 2047.0);
   // Serial.print(" APPS1: ");
   // Serial.print(ThrottleBrake::APPS1_throttle);
   // Serial.print(" APPS2: ");

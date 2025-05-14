@@ -80,4 +80,10 @@ void Inverter::print_inverter_info() {
   Serial.print(Inverter::requested_torque_throttle);
   Serial.print(" Set_Cur_Br: ");
   Serial.print(Inverter::requested_torque_brake);
+  Serial.print(" RPM: ");
+  Serial.print(Inverter::motor_rpm);
+  Serial.print(" IGBT_temp: ");
+  Serial.print(Inverter::IGBT_temp);
+  Serial.print(" Motor_temp: ");
+  Serial.print(Inverter::motor_temp);
 }

@@ -53,7 +53,7 @@ void fsm_init() {
   timers.AddTimer(10, update);
 
   // timer for print debugging msgs
-  timers.AddTimer(1000, print_fsm);
+  // timers.AddTimer(1000, print_fsm);
 
   // initialize state variables
   tsactive_switch = TSActive::Inactive;
@@ -87,7 +87,6 @@ void update() {
 
   lookup.updateCANLUTs();
   lookup.update_status_CAN();
-
   drive_bus.Tick();
 }
 
@@ -265,8 +264,11 @@ void print_fsm() {
   // Serial.print(static_cast<int>(ready_to_drive_switch));
   // Serial.print(" Thrtl: ");
   // Serial.print(throttle_brake.get_throttle() / 4);
-  throttle_brake.print_throttle_info();
+  // throttle_brake.print_throttle_info();
   inverter.print_inverter_info();
+  Serial.print(" temp mod: ");
+  Serial.print(lookup.calculate_temp_mod(inverter.get_IGBT_temp(), Battery_Temperature,
+                                         inverter.get_motor_temp()));
   // Serial.print(" test tsactive: ");
   // Serial.print(test_ts_active_switch_interrupt);
   // Serial.print(" test ready to drive: ");

@@ -43,27 +43,49 @@ IntT Lookup::scale(float value, IntT max) {
 
 int16_t Lookup::get_throttle_difference(int16_t real_throttle, int16_t throttle_max,
                                         int16_t motor_rpm) {
-  float throttle_calc_float = lookup(motor_rpm, RPM2Throttle_LUT);
-  int16_t throttle_calc = scale(throttle_calc_float, static_cast<int16_t>(throttle_max));
+  int16_t throttle_index = 0;
 
-  return real_throttle - throttle_calc;
+  float throttle_calc_float = lookup(motor_rpm, RPM2Throttle_LUT);
+  Serial.print("throttle_calc_float: ");
+  Serial.print(throttle_calc_float);
+  int16_t throttle_calc = scale(throttle_calc_float, throttle_max);
+  Serial.print(" dot: ");
+  Serial.print(throttle_calc);
+
+  int32_t throttle_diff = (real_throttle - throttle_calc) * throttle_max;
+  Serial.print(" throttle_diff: ");
+  Serial.println(throttle_diff);
+
+  if (throttle_calc > 0) {
+    if (throttle_diff > 0) {  // accel
+      throttle_index = throttle_diff / (throttle_max - throttle_calc);
+    } else if (throttle_diff < 0) {
+      throttle_index = throttle_diff / throttle_calc;
+    } else {
+      throttle_index = 0;
+    }
+  } else {
+    throttle_index = real_throttle;
+  }
+
+  return static_cast<int16_t>(throttle_index);
 }
 
 // <accel_mod, regen_mod>
 std::pair<float, float> Lookup::get_torque_mods(int16_t real_throttle, int16_t throttle_max,
                                                 int16_t motor_rpm, bool brake_pressed) {
-  int16_t throttle_diff = get_throttle_difference(real_throttle, throttle_max, motor_rpm);
+  int16_t throttle_index = get_throttle_difference(real_throttle, throttle_max, motor_rpm);
 
   float accel_mod = 0.0f;
   float regen_mod = 0.0f;
 
-  if (throttle_diff > 0 && !brake_pressed) {
-    accel_mod = lookup(throttle_diff, AccelThrottle2Modifier_LUT);
+  if (throttle_index > 0 && !brake_pressed) {
+    accel_mod = lookup(throttle_index, AccelThrottle2Modifier_LUT);
     regen_mod = 0.0f;
     can_data.torque_status = Lookup::TorqueStatusType::kAccel;
-  } else if (throttle_diff < 0 && !brake_pressed) {
+  } else if (throttle_index < 0 && !brake_pressed) {
     accel_mod = 0.0f;
-    regen_mod = lookup(-throttle_diff, RegenThrottle2Modifier_LUT);
+    regen_mod = lookup(-throttle_index, RegenThrottle2Modifier_LUT);
     can_data.torque_status = Lookup::TorqueStatusType::kRegen;
   } else {
     accel_mod = 0.0f;
