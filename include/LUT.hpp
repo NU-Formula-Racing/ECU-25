@@ -27,7 +27,7 @@ class Lookup {
   template <typename IntT>
   IntT scale(float value, IntT max);
 
-  int16_t get_throttle_difference(int16_t real_throttle, int16_t throttle_max, int16_t motor_rpm);
+  int16_t get_throttle_index(int16_t real_throttle, int16_t throttle_max, int16_t motor_rpm);
 
   // returns <accel_mod, regen_mod>
   std::pair<float, float> get_torque_mods(int16_t real_throttle, int16_t throttle_max,

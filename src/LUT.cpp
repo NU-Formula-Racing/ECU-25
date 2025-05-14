@@ -41,26 +41,19 @@ IntT Lookup::scale(float value, IntT max) {
   return static_cast<IntT>(roundf(value * static_cast<float>(max)));
 }
 
-int16_t Lookup::get_throttle_difference(int16_t real_throttle, int16_t throttle_max,
-                                        int16_t motor_rpm) {
+int16_t Lookup::get_throttle_index(int16_t real_throttle, int16_t throttle_max, int16_t motor_rpm) {
   int16_t throttle_index = 0;
 
-  float throttle_calc_float = lookup(motor_rpm, RPM2Throttle_LUT);
-  Serial.print("throttle_calc_float: ");
-  Serial.print(throttle_calc_float);
-  int16_t throttle_calc = scale(throttle_calc_float, throttle_max);
-  Serial.print(" dot: ");
-  Serial.print(throttle_calc);
+  float zero_dot_float = lookup(motor_rpm, RPM2Throttle_LUT);
+  int16_t zero_dot = scale(zero_dot_float, throttle_max);
 
-  int32_t throttle_diff = (real_throttle - throttle_calc) * throttle_max;
-  Serial.print(" throttle_diff: ");
-  Serial.println(throttle_diff);
+  int32_t throttle_diff = (real_throttle - zero_dot) * throttle_max;
 
-  if (throttle_calc > 0) {
+  if (zero_dot > 0) {
     if (throttle_diff > 0) {  // accel
-      throttle_index = throttle_diff / (throttle_max - throttle_calc);
-    } else if (throttle_diff < 0) {
-      throttle_index = throttle_diff / throttle_calc;
+      throttle_index = throttle_diff / (throttle_max - zero_dot);
+    } else if (throttle_diff < 0) {  // regen
+      throttle_index = throttle_diff / zero_dot;
     } else {
       throttle_index = 0;
     }
@@ -74,7 +67,7 @@ int16_t Lookup::get_throttle_difference(int16_t real_throttle, int16_t throttle_
 // <accel_mod, regen_mod>
 std::pair<float, float> Lookup::get_torque_mods(int16_t real_throttle, int16_t throttle_max,
                                                 int16_t motor_rpm, bool brake_pressed) {
-  int16_t throttle_index = get_throttle_difference(real_throttle, throttle_max, motor_rpm);
+  int16_t throttle_index = get_throttle_index(real_throttle, throttle_max, motor_rpm);
 
   float accel_mod = 0.0f;
   float regen_mod = 0.0f;

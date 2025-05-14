@@ -53,7 +53,7 @@ void fsm_init() {
   timers.AddTimer(10, update);
 
   // timer for print debugging msgs
-  // timers.AddTimer(1000, print_fsm);
+  timers.AddTimer(1000, print_fsm);
 
   // initialize state variables
   tsactive_switch = TSActive::Inactive;
@@ -221,6 +221,7 @@ void process_state() {
         std::pair<float, float> torque_mods = lookup.get_torque_mods(
             throttle_brake.get_throttle(), static_cast<int16_t>(Bounds::SENSOR_SCALED_MAX),
             inverter.get_motor_rpm(), throttle_brake.is_brake_pressed());
+
         float temp_mod = lookup.calculate_temp_mod(inverter.get_IGBT_temp(), Battery_Temperature,
                                                    inverter.get_motor_temp());
 
