@@ -85,7 +85,7 @@ void update() {
                                                      inverter.get_IGBT_temp(), Battery_Temperature);
   Fan_Duty_Cycle = lookup.calculate_fan_duty_cycle(Before_Motor_Temperature);
 
-  lookup.updateCANLUTs();
+  // lookup.updateCANLUTs();
   lookup.update_status_CAN();
   drive_bus.Tick();
 }
