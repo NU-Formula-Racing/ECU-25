@@ -245,8 +245,6 @@ void print_fsm() {
       Serial.print("DRIVE");
       break;
   }
-  // Serial.print("Drive State: ");
-  // Serial.println(static_cast<State>(Drive_State)); // cant print CAN signals ...
   // Serial.print("Ready to Drive: ");
   // Serial.println(static_cast<int>(ready_to_drive));
   // Serial.print("TS Active: ");
@@ -255,21 +253,19 @@ void print_fsm() {
   // Serial.println(static_cast<int>(BMS_State));
   // Serial.print("BMS Command: ");
   // Serial.println(static_cast<int>(BMS_Command));
-  // Serial.print(" TS active switch: ");
-  // Serial.print(static_cast<int>(tsactive_switch));
-  // Serial.print(" brake_pressed: ");
-  // Serial.print(throttle_brake.is_brake_pressed());
-  // Serial.print(" Ready to Drive: ");
-  // Serial.print(static_cast<int>(ready_to_drive));
-  // Serial.print(" Ready to Drive Switch: ");
-  // Serial.print(static_cast<int>(ready_to_drive_switch));
-  // Serial.print(" Thrtl: ");
-  // Serial.print(throttle_brake.get_throttle() / 4);
-  // throttle_brake.print_throttle_info();
+  Serial.print(" TS active switch: ");
+  Serial.print(static_cast<int>(tsactive_switch));
+  Serial.print(" brake_pressed: ");
+  Serial.print(throttle_brake.is_brake_pressed());
+  Serial.print(" Ready to Drive: ");
+  Serial.print(static_cast<int>(ready_to_drive));
+  Serial.print(" Ready to Drive Switch: ");
+  Serial.print(static_cast<int>(ready_to_drive_switch));
+  throttle_brake.print_throttle_info();
   inverter.print_inverter_info();
-  Serial.print(" temp mod: ");
-  Serial.print(lookup.calculate_temp_mod(inverter.get_IGBT_temp(), Battery_Temperature,
-                                         inverter.get_motor_temp()));
+  // Serial.print(" temp mod: ");
+  // Serial.print(lookup.calculate_temp_mod(inverter.get_IGBT_temp(), Battery_Temperature,
+  //                                        inverter.get_motor_temp()));
   // Serial.print(" test tsactive: ");
   // Serial.print(test_ts_active_switch_interrupt);
   // Serial.print(" test ready to drive: ");
