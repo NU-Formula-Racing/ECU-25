@@ -17,9 +17,9 @@ enum class ActiveAeroEnabled {
   kDisabled = 1,
 };
 
-enum class ActiveAeroPosition {  // update these with servo positions once we know them
-  kClosed = 1000,
-  kOpen = 2000,
+enum class ActiveAeroPosition {
+  kClosed = 1950,
+  kOpen = 1400,
 };
 
 class ActiveAero {
