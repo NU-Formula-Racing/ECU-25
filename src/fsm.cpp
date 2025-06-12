@@ -65,7 +65,6 @@ void fsm_init() {
   initialize_dash_switches();
 }
 
-// TODO: make this a data structure of function ptrs
 void update() {
   process_state();
   change_state();
@@ -129,13 +128,15 @@ void ready_to_drive_callback() {
 // call this function when the tsactive switch is flipped
 // currently, the switch is active low
 void tsactive_callback() {
-  if (digitalRead((uint8_t)Pins::TS_ACTIVE_PIN) == LOW) {
+  if (digitalRead((uint8_t)Pins::TS_ACTIVE_PIN) == LOW &&
+      External_Kill_Fault == BMSFault::kNoExtFault) {
     test_ts_active_switch_interrupt = 0;
     tsactive_switch = TSActive::Active;
     BMS_Command = BMSCommand::PrechargeAndCloseContactors;
   } else {
     test_ts_active_switch_interrupt = 1;
     tsactive_switch = TSActive::Inactive;
+    BMS_Command = BMSCommand::Shutdown;
   }
 }
 
@@ -187,6 +188,7 @@ void change_state() {
           External_Kill_Fault == BMSFault::kExtFault) {
         Serial.println("transition from DRIVE->OFF");
         tsactive_switch = TSActive::Inactive;
+        BMS_Command = BMSCommand::Shutdown;
         Drive_State = State::OFF;
       }
       break;
