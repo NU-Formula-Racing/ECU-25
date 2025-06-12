@@ -13,12 +13,13 @@ class Inverter {
   void initialize();
   void read_inverter_CAN();
   void send_inverter_CAN();
-  void request_torque(int32_t torque_mA);
+  void request_torque(std::pair<int32_t, int32_t> torque_reqs);
   void print_inverter_info();
 
   int32_t get_motor_rpm() const;
   int16_t get_IGBT_temp() const;
   int16_t get_motor_temp() const;
+  int32_t get_set_current() const;
 
  private:
   ICAN& can_interface;
@@ -31,14 +32,11 @@ class Inverter {
   int32_t requested_torque_throttle;
   int32_t requested_torque_brake;
 
-  const uint16_t torque_limit = 32767;
   const uint16_t kTransmissionIDSetCurrent = 0x200;           // CAN msg address, get this from DBC
   const uint16_t kTransmissionIDSetCurrentBrake = 0x201;      // CAN msg address, get this from DBC
   const uint16_t kTransmissionIDInverterMotorStatus = 0x281;  // CAN msg address, get this from DBC
   const uint16_t kTransmissionIDInverterTempStatus = 0x282;   // CAN msg address, get this from DBC
 
-  // CAN signals & msgs
-  // tx: Set_Current, Set_Current_Brake
   CANSignal<int32_t, 0, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), true>
       Set_Current{};
   CANTXMessage<1> ECU_Set_Current{can_interface, kTransmissionIDSetCurrent, 4, 10, timers,

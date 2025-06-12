@@ -39,6 +39,12 @@ int16_t Inverter::get_IGBT_temp() const { return Inverter::IGBT_temp; }
 int16_t Inverter::get_motor_temp() const { return Inverter::motor_temp; }
 
 /**
+ * @brief Get set current
+ *
+ * @return int32_t
+ */
+int32_t Inverter::get_set_current() const { return Inverter::requested_torque_throttle; }
+/**
  * @brief Read CAN messages from Inverter and set class variables accordingly
  *
  * @return void
@@ -61,17 +67,12 @@ void Inverter::send_inverter_CAN() {
 
 /**
  * @brief Request torque from Inverter
- * @param torque_mA -- torque in milliAmps
+ * @param torque_reqs -- <accel, regen> torque in milliAmps
  * @return void
  */
-void Inverter::request_torque(int32_t torque_mA) {
-  // if (throttle_brake.is_brake_pressed()) {
-  //   Inverter::requested_torque_throttle = 0;
-  //   Inverter::requested_torque_brake = torque_mA;
-  // } else {
-  Inverter::requested_torque_throttle = torque_mA;
-  Inverter::requested_torque_brake = 0;
-  // }
+void Inverter::request_torque(std::pair<int32_t, int32_t> torque_reqs) {
+  Inverter::requested_torque_throttle = torque_reqs.first;
+  Inverter::requested_torque_brake = torque_reqs.second;
 }
 
 void Inverter::print_inverter_info() {
@@ -79,10 +80,11 @@ void Inverter::print_inverter_info() {
   Serial.print(Inverter::requested_torque_throttle);
   Serial.print(" Set_Cur_Br: ");
   Serial.print(Inverter::requested_torque_brake);
-  Serial.print(" igbt temp: ");
-  Serial.print(Inverter::IGBT_temp);
-  Serial.print(" motor temp: ");
-  Serial.print(Inverter::motor_temp);
-  Serial.print(" motor rpm: ");
-  Serial.print(Inverter::motor_rpm);
+
+  // Serial.print(" RPM: ");
+  // Serial.print(Inverter::motor_rpm);
+  // Serial.print(" IGBT_temp: ");
+  // Serial.print(Inverter::IGBT_temp);
+  // Serial.print(" Motor_temp: ");
+  // Serial.print(Inverter::motor_temp);
 }

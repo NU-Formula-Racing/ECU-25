@@ -1,58 +1,20 @@
-#include <cmath>
-// #include <iostream>
-#include <map>
-
 #include "LUT.hpp"
 
-namespace LUT {
-// IGBT temp : Power limit modifier
-const std::map<int16_t, float> IGBTTemp2Modifier_LUT{
-    {0, 1.0},    {10, 1.0},   {20, 1.0},   {30, 1.0}, {40, 1.0},  {50, 1.0},
-    {60, 1.0},   {70, 1.0},   {80, 1.0},   {90, 1.0}, {100, 1.0}, {110, 0.9},
-    {120, 0.75}, {130, 0.25}, {140, 0.05}, {150, 0.0}};
+#include <cmath>
+#include <map>
 
-// Battery temp : Power limit modifier
-const std::map<int16_t, float> BatteryTemp2Modifier_LUT{
-    {0, 1.0},  {5, 1.0},  {10, 1.0}, {15, 1.0},  {20, 1.0},  {25, 1.0}, {30, 1.0},
-    {35, 1.0}, {40, 1.0}, {45, 1.0}, {50, 0.75}, {55, 0.25}, {60, 0.0},
-};
+void Lookup::updateCANLUTs() {
+  RXLUT rxLUT = lut_can.processCAN();
+  if (rxLUT.fileStatus == FileStatus::FILE_PRESENT_AND_VALID) {
+    AccelThrottle2Modifier_LUT = rxLUT.lut;
+    lut_can.setLUTIDResponse(rxLUT.LUTId);
+  } else {
+    lut_can.setLUTIDResponse(0);
+    AccelThrottle2Modifier_LUT = DefaultAccelThrottle2Modifier_LUT;
+  }
+}
 
-// Motor temp : Power limit modifier
-const std::map<int16_t, float> MotorTemp2Modifier_LUT{
-    {0, 1.0},  {10, 1.0},  {20, 1.0},  {30, 1.0},  {40, 1.0},   {50, 1.0}, {60, 1.0},
-    {70, 1.0}, {80, 0.95}, {90, 0.75}, {100, 0.2}, {110, 0.05}, {120, 0.0}};
-
-// Throttle value : Scaled power limit modifier (235 * power limit modifier)
-const std::map<int16_t, float> Throttle2Modifier_LUT{
-    {0, 0.0},     {102, 0.03},  {205, 0.09},  {307, 0.16},  {409, 0.23},  {512, 0.3},
-    {614, 0.37},  {716, 0.44},  {819, 0.51},  {921, 0.58},  {1024, 0.65}, {1126, 0.72},
-    {1228, 0.78}, {1331, 0.83}, {1433, 0.88}, {1535, 0.92}, {1638, 0.95}, {1740, 0.97},
-    {1842, 0.98}, {1945, 0.99}, {2047, 1.0}};
-
-// Brake pressure : Power limit modifier
-// const std::map<int16_t, float> BrakePressure2Modifier_LUT{};
-
-// Motor temp : Pump duty cycle
-const std::map<int16_t, float> MotorTemp2PumpDutyCycle_LUT{
-    {0, 0.0},  {10, 0.0},  {20, 0.0}, {30, 0.0},  {40, 0.1},  {50, 0.25}, {60, 0.5},
-    {70, 0.8}, {80, 0.95}, {90, 1.0}, {100, 1.0}, {110, 1.0}, {120, 1.0}};
-
-// IGBT Temp : Pump duty cycle
-const std::map<int16_t, float> IGBTTemp2PumpDutyCycle_LUT{
-    {0, 0.0},   {10, 0.0}, {20, 0.0},  {30, 0.0},  {40, 0.0},  {50, 0.1},  {60, 0.3},  {70, 0.55},
-    {80, 0.75}, {90, 0.9}, {100, 1.0}, {110, 1.0}, {120, 1.0}, {130, 1.0}, {140, 1.0}, {150, 1.0}};
-
-// Battery Temp : Pump duty cycle
-const std::map<int16_t, float> BatteryTemp2PumpDutyCycle_LUT{
-    {0, 0.0},  {5, 0.0},  {10, 0.0}, {15, 0.0}, {20, 0.0}, {25, 0.0}, {30, 0.0},
-    {35, 0.1}, {40, 0.4}, {45, 0.7}, {50, 0.9}, {55, 1.0}, {60, 1.0}};
-
-// Coolant Temp : Fan duty cycle
-const std::map<int16_t, float> CoolantTemp2FanDutyCycle_LUT{
-    {0, 0.0},  {5, 0.0},  {10, 0.0}, {15, 0.0},  {20, 0.0}, {25, 0.05}, {30, 0.15},
-    {35, 0.4}, {40, 0.7}, {45, 0.9}, {50, 0.97}, {55, 1.0}, {60, 1.0}};
-
-float lookup(int16_t key, const std::map<int16_t, float>& lut) {
+float Lookup::lookup(int16_t key, const std::map<int16_t, float>& lut) {
   auto it = lut.lower_bound(key);
   // if key is smaller than the smallest key, return the first value
   if (it == lut.begin()) {
@@ -74,47 +36,117 @@ float lookup(int16_t key, const std::map<int16_t, float>& lut) {
                              static_cast<float>(upper->first - lower->first);
 }
 
-int32_t scale_torque(float torque, int32_t torque_max) {
-  return static_cast<int32_t>(roundf(torque * static_cast<float>(torque_max)));
+template <typename IntT>
+IntT Lookup::scale(float value, IntT max) {
+  return static_cast<IntT>(roundf(value * static_cast<float>(max)));
 }
 
-int32_t calculate_accel_torque(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp,
-                               int16_t throttle, LUTChoice choice) {
-  if (choice == LUTChoice::kLinear) {
-    float throttle_float = static_cast<float>(throttle) / 2047.0f;  // scale throttle to 0-1
-    return scale_torque(throttle_float, static_cast<int32_t>(LUT::TorqueReqLimit::kAccelMax));
-  } else {  // (choice == LUTChoice::kBenji)
-    float igbt_mod = lookup(igbt_temp, IGBTTemp2Modifier_LUT);
-    float batt_mod = lookup(batt_temp, BatteryTemp2Modifier_LUT);
-    float motor_temp_mod = lookup(motor_temp, MotorTemp2Modifier_LUT);
-    float throttle_mod = lookup(throttle, Throttle2Modifier_LUT);
+int16_t Lookup::get_throttle_index(int16_t real_throttle, int16_t throttle_max, int16_t motor_rpm) {
+  int16_t throttle_index = 0;
 
-    float mod_product = igbt_mod * batt_mod * motor_temp_mod * throttle_mod;
+  float zero_dot_float = lookup(motor_rpm, RPM2Throttle_LUT);
+  int16_t zero_dot = scale(zero_dot_float, throttle_max);
 
-    return LUT::scale_torque(mod_product, static_cast<int32_t>(LUT::TorqueReqLimit::kAccelMax));
+  int32_t throttle_diff = (real_throttle - zero_dot) * throttle_max;
+
+  if (zero_dot > 0) {
+    if (throttle_diff > 0) {  // accel
+      throttle_index = throttle_diff / (throttle_max - zero_dot);
+    } else if (throttle_diff < 0) {  // regen
+      throttle_index = throttle_diff / zero_dot;
+    } else {
+      throttle_index = 0;
+    }
+  } else {
+    throttle_index = real_throttle;
+  }
+
+  return static_cast<int16_t>(throttle_index);
+}
+
+// <accel_mod, regen_mod>
+std::pair<float, float> Lookup::get_torque_mods(int16_t real_throttle, int16_t throttle_max,
+                                                int16_t motor_rpm, bool brake_pressed) {
+  int16_t throttle_index = get_throttle_index(real_throttle, throttle_max, motor_rpm);
+
+  float accel_mod = 0.0f;
+  float regen_mod = 0.0f;
+
+  if (throttle_index > 0 && !brake_pressed) {
+    accel_mod = lookup(throttle_index, AccelThrottle2Modifier_LUT);
+    regen_mod = 0.0f;
+    can_data.torque_status = Lookup::TorqueStatusType::kAccel;
+  } else if (throttle_index < 0 && !brake_pressed) {
+    accel_mod = 0.0f;
+    regen_mod = lookup(-throttle_index, RegenThrottle2Modifier_LUT);
+    can_data.torque_status = Lookup::TorqueStatusType::kRegen;
+  } else {
+    accel_mod = 0.0f;
+    regen_mod = 0.0f;
+    can_data.torque_status = Lookup::TorqueStatusType::kZero;
+  }
+
+  return std::make_pair(accel_mod, regen_mod);
+}
+
+Lookup::TempLimitingType Lookup::is_temp_limiting(float temp_mod) {
+  if (temp_mod < 1.0f) {
+    return Lookup::TempLimitingType::kLimiting;
+  } else {
+    return Lookup::TempLimitingType::kNotLimiting;
   }
 }
 
-// int16_t get_brake_modifier(int16_t brake_pressure) {
-// float brake_mod = lookup(brake_pressure, BrakePressure2Modifier_LUT);
-//   return 0; // return scaled(brake_mod, 0, kCurrentLUTScaledMax);
+float Lookup::calculate_temp_mod(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp) {
+  float igbt_mod = lookup(igbt_temp, IGBTTemp2Modifier_LUT);
+  float batt_mod = lookup(batt_temp, BatteryTemp2Modifier_LUT);
+  float motor_temp_mod = lookup(motor_temp, MotorTemp2Modifier_LUT);
+  std::vector<float> temp_mods{igbt_mod, batt_mod, motor_temp_mod};
 
-float get_pump_duty_cycle(int16_t motor_temp, int16_t igbt_temp, int16_t batt_temp) {
+  for (int i = 0; i < temp_mods.size(); i++) {
+    Lookup::TempLimitingType temp_limiting_status = is_temp_limiting(temp_mods.at(i));
+    can_data.temp_limiting_statuses.at(i) = temp_limiting_status;
+  }
+
+  return igbt_mod * batt_mod * motor_temp_mod;
+}
+
+void Lookup::update_status_CAN() {
+  Torque_Status = static_cast<uint8_t>(can_data.torque_status);
+
+  IGBT_Temp_Limiting = static_cast<bool>(can_data.temp_limiting_statuses.at(0));
+  Battery_Temp_Limiting = static_cast<bool>(can_data.temp_limiting_statuses.at(1));
+  Motor_Temp_Limiting = static_cast<bool>(can_data.temp_limiting_statuses.at(2));
+}
+
+std::pair<int32_t, int32_t> Lookup::calculate_torque_reqs(float temp_mod,
+                                                          std::pair<float, float> torque_mods) {
+  float accel_mod_product = temp_mod * torque_mods.first;
+  float regen_mod_product = temp_mod * torque_mods.second;
+
+  int32_t accel_torque =
+      scale(accel_mod_product, static_cast<int32_t>(Lookup::TorqueReqLimit::kAccelMax));
+  int32_t regen_torque =
+      scale(regen_mod_product, static_cast<int32_t>(Lookup::TorqueReqLimit::kRegenMax));
+
+  return std::make_pair(accel_torque, regen_torque);
+}
+
+uint8_t Lookup::calculate_pump_duty_cycle(int16_t motor_temp, int16_t igbt_temp,
+                                          int16_t batt_temp) {
   float motor_dc = lookup(motor_temp, MotorTemp2PumpDutyCycle_LUT);
   float igbt_dc = lookup(igbt_temp, IGBTTemp2PumpDutyCycle_LUT);
   float batt_dc = lookup(batt_temp, BatteryTemp2PumpDutyCycle_LUT);
 
-  return motor_dc * igbt_dc * batt_dc;  // take max of all three, have 2 sets of LUTs: 1 from 0 to
-                                        // "panic temp", 1 from "panic temp" to max
-  // should be continuous between the modes
-  // PDM just needs a msg with 2 signals: pump duty cycle and fan duty cycle, both scaled from 0-255
-  // uint8_t
+  float dc_float = std::max(std::max(motor_dc, igbt_dc), batt_dc);
+
+  return scale(dc_float, static_cast<uint8_t>(PWMLimit::kPumpMax));
 }
 
-float get_fan_duty_cycle(int16_t coolant_temp) {
-  float coolant_dc =
-      lookup(coolant_temp, CoolantTemp2FanDutyCycle_LUT);  // also get a wheelspeed : fan duty cycle
-                                                           // LUT. faster wheelspeed = slower fan
-  return coolant_dc;
+uint8_t Lookup::calculate_fan_duty_cycle(float coolant_temp) {
+  int16_t coolant_temp_int = static_cast<int16_t>(roundf(coolant_temp));
+
+  float coolant_dc = lookup(coolant_temp_int, CoolantTemp2FanDutyCycle_LUT);
+
+  return scale(coolant_dc, static_cast<uint8_t>(PWMLimit::kFanMax));
 }
-}  // namespace LUT
