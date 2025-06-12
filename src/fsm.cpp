@@ -11,7 +11,7 @@
 #include "virtualTimer.h"
 
 volatile int test_ts_active_switch_interrupt = 1;       // 1 OFF, 0 N
-volatile int test_ready_to_drive_switch_interrupt = 1;  // 1 N, 0 D
+volatile int test_ready_to_drive_switch_interrupt = 1;  // 1 N, 0 D,
 
 // initialize state variables
 TSActive tsactive_switch;
@@ -53,6 +53,7 @@ void fsm_init() {
   timers.AddTimer(10, update);
 
   // timer for print debugging msgs
+
   timers.AddTimer(1000, print_fsm);
 
   // initialize state variables
@@ -266,11 +267,13 @@ void print_fsm() {
   // Serial.print(" Thrtl: ");
   // Serial.print(throttle_brake.get_throttle() / 4);
   // throttle_brake.print_throttle_info();
+  
   // inverter.print_inverter_info();
   Serial.print(" test tsactive: ");
   Serial.print(test_ts_active_switch_interrupt);
   Serial.print(" test ready to drive: ");
   Serial.print(test_ready_to_drive_switch_interrupt);
+
   // inverter.print_inverter_info();
 
   // Serial.print("BMS msg: ");
