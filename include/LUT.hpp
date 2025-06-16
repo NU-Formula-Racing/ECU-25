@@ -35,8 +35,10 @@ class Lookup {
 
   float calculate_temp_mod(int16_t igbt_temp, int16_t batt_temp, int16_t motor_temp);
 
+  int32_t get_regen_max(int16_t motor_rpm);
+
   // returns <accel_torque, regen_torque>
-  std::pair<int32_t, int32_t> calculate_torque_reqs(float temp_mod,
+  std::pair<int32_t, int32_t> calculate_torque_reqs(int16_t motor_rpm, float temp_mod,
                                                     std::pair<float, float> torque_mods);
 
   uint8_t calculate_pump_duty_cycle(int16_t motor_temp, int16_t igbt_temp, int16_t batt_temp);
@@ -55,12 +57,14 @@ class Lookup {
   struct CANData {
     TorqueStatusType torque_status;
     std::vector<TempLimitingType> temp_limiting_statuses;
+    int32_t regen_max_value;
   };
 
   CANData can_data{
       .torque_status = TorqueStatusType::kZero,
       .temp_limiting_statuses = {TempLimitingType::kNotLimiting, TempLimitingType::kNotLimiting,
-                                 TempLimitingType::kNotLimiting}};
+                                 TempLimitingType::kNotLimiting},
+      .regen_max_value = 0};
 
   Lookup::TempLimitingType is_temp_limiting(float temp_mod);
 
@@ -76,7 +80,10 @@ class Lookup {
 
   CANSignal<uint8_t, 0, 8, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), false>
       Torque_Status{};
-  CANTXMessage<1> ECU_Torque_Status{can_interface, 0x20C, 1, 100, timers, Torque_Status};
+  CANSignal<int32_t, 1, 32, CANTemplateConvertFloat(1), CANTemplateConvertFloat(0), true>
+      Regen_Max_Value{};
+  CANTXMessage<2> ECU_Torque_Status{can_interface, 0x20C,          1, 100, timers,
+                                    Torque_Status, Regen_Max_Value};
 
   /* Power limit modifier LUTs */
   // IGBT temp : Power limit modifier
@@ -98,9 +105,9 @@ class Lookup {
 
   // Motor RPM : throttle %
   const std::map<int16_t, float> RPM2Throttle_LUT{
-      {0, 0.0},      {200, 0.0},    {400, 0.07},   {600, 0.12},  {800, 0.16},
-      {1000, 0.19},  {1200, 0.21},  {1400, 0.22},  {1600, 0.23}, {1800, 0.235},
-      {2000, 0.239}, {2200, 0.244}, {2400, 0.247}, {2600, 0.25}, {10000, 0.25}};
+      {0, 0.0},     {200, 0.0},   {400, 0.07},  {600, 0.12},  {800, 0.16},
+      {1000, 0.19}, {1200, 0.21}, {1400, 0.23}, {1600, 0.24}, {1800, 0.24},
+      {2000, 0.24}, {2200, 0.24}, {2400, 0.24}, {2600, 0.24}, {10000, 0.25}};
 
   // Throttle value : power limit modifier (Accel)
   const std::map<int16_t, float> DefaultAccelThrottle2Modifier_LUT{
@@ -117,6 +124,11 @@ class Lookup {
       {614, 0.07},  {716, 0.11},  {819, 0.17},  {921, 0.24},  {1024, 0.32}, {1126, 0.43},
       {1228, 0.54}, {1331, 0.65}, {1433, 0.77}, {1535, 0.85}, {1638, 0.91}, {1740, 0.95},
       {1842, 0.97}, {1945, 0.99}, {2047, 1.0}};
+
+  const std::map<int16_t, float> MotorRPM2RegenMax_LUT{
+      {0, 0.0},     {200, 0.0},   {400, 0.03},  {600, 0.18}, {800, 0.55},
+      {1000, 0.74}, {1200, 0.87}, {1400, 0.95}, {1600, 1.0}, {1800, 1.0},
+      {2000, 1.0},  {2200, 1.0},  {2400, 1.0},  {2600, 1.0}, {10000, 1.0}};
 
   // Motor temp : Pump duty cycle
   const std::map<int16_t, float> MotorTemp2PumpDutyCycle_LUT{

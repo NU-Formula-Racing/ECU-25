@@ -322,20 +322,20 @@ void ThrottleBrake::update_throttle_brake_CAN_signals() {
 }
 
 void ThrottleBrake::print_throttle_info() {
-  Serial.print(" imp_present: ");
-  Serial.print(ThrottleBrake::is_implausibility_present());
-  Serial.print(" APPS_valid_imp: ");
-  Serial.print(ThrottleBrake::APPSs_invalid_implausibility_present);
-  Serial.print(" APPS_dis_imp: ");
-  Serial.print(ThrottleBrake::APPSs_disagreement_implausibility_present);
-  Serial.print(" Brake_imp: ");
-  Serial.print(ThrottleBrake::brake_shorted_or_opened_implausibility_present);
-  Serial.print(" BPPC_imp: ");
-  Serial.print(ThrottleBrake::BPPC_implausibility_present);
-  // Serial.print(" APPS1_ADC: ");
-  // Serial.print(ThrottleBrake::APPS1_adc);
-  // Serial.print(" APPS2_ADC: ");
-  // Serial.print(ThrottleBrake::APPS2_adc);
+  // Serial.print(" imp_present: ");
+  // Serial.print(ThrottleBrake::is_implausibility_present());
+  // Serial.print(" APPS_valid_imp: ");
+  // Serial.print(ThrottleBrake::APPSs_invalid_implausibility_present);
+  // Serial.print(" APPS_dis_imp: ");
+  // Serial.print(ThrottleBrake::APPSs_disagreement_implausibility_present);
+  // Serial.print(" Brake_imp: ");
+  // Serial.print(ThrottleBrake::brake_shorted_or_opened_implausibility_present);
+  // Serial.print(" BPPC_imp: ");
+  // Serial.print(ThrottleBrake::BPPC_implausibility_present);
+  Serial.print(" APPS1_ADC: ");
+  Serial.print(ThrottleBrake::APPS1_adc);
+  Serial.print(" APPS2_ADC: ");
+  Serial.print(ThrottleBrake::APPS2_adc);
   // // Serial.print(" Front_Bk_ADC: ");
   // // Serial.print(ThrottleBrake::front_brake_adc);
   // Serial.print(" APPS_validity: ");

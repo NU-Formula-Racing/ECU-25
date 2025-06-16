@@ -117,17 +117,25 @@ void Lookup::update_status_CAN() {
   IGBT_Temp_Limiting = static_cast<bool>(can_data.temp_limiting_statuses.at(0));
   Battery_Temp_Limiting = static_cast<bool>(can_data.temp_limiting_statuses.at(1));
   Motor_Temp_Limiting = static_cast<bool>(can_data.temp_limiting_statuses.at(2));
+
+  Regen_Max_Value = can_data.regen_max_value;
 }
 
-std::pair<int32_t, int32_t> Lookup::calculate_torque_reqs(float temp_mod,
+int32_t Lookup::get_regen_max(int16_t motor_rpm) {
+  float regen_max_float = lookup(motor_rpm, MotorRPM2RegenMax_LUT);
+  return scale(regen_max_float, static_cast<int32_t>(Lookup::TorqueReqLimit::kRegenMax));
+}
+
+std::pair<int32_t, int32_t> Lookup::calculate_torque_reqs(int16_t motor_rpm, float temp_mod,
                                                           std::pair<float, float> torque_mods) {
   float accel_mod_product = temp_mod * torque_mods.first;
   float regen_mod_product = temp_mod * torque_mods.second;
 
   int32_t accel_torque =
       scale(accel_mod_product, static_cast<int32_t>(Lookup::TorqueReqLimit::kAccelMax));
-  int32_t regen_torque =
-      scale(regen_mod_product, static_cast<int32_t>(Lookup::TorqueReqLimit::kRegenMax));
+
+  int32_t regen_max = get_regen_max(motor_rpm);
+  int32_t regen_torque = scale(regen_mod_product, regen_max);
 
   return std::make_pair(accel_torque, regen_torque);
 }
