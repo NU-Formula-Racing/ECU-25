@@ -7,12 +7,12 @@
 // change specific bounds after testing with sensors in pedalbox:
 enum class Bounds {
 
-  APPS1_ADC_MIN = 160,
-  APPS1_ADC_MAX = 855,
+  APPS1_ADC_MIN = 180,
+  APPS1_ADC_MAX = 835,
   APPS1_ADC_SPAN = APPS1_ADC_MAX - APPS1_ADC_MIN,
 
-  APPS2_ADC_MIN = 1245,
-  APPS2_ADC_MAX = 1953,
+  APPS2_ADC_MIN = 1265,
+  APPS2_ADC_MAX = 1927,
 
   APPS2_ADC_SPAN = APPS2_ADC_MAX - APPS2_ADC_MIN,
 
