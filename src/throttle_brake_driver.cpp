@@ -152,10 +152,12 @@ int16_t ThrottleBrake::get_front_brake() const { return ThrottleBrake::front_bra
  * @return bool
  */
 bool ThrottleBrake::is_implausibility_present() const {
-  return ThrottleBrake::APPSs_disagreement_implausibility_present ||
-         ThrottleBrake::brake_shorted_or_opened_implausibility_present ||
-         ThrottleBrake::BPPC_implausibility_present ||
-         ThrottleBrake::APPSs_invalid_implausibility_present;
+  // return ThrottleBrake::APPSs_disagreement_implausibility_present ||
+  //        ThrottleBrake::brake_shorted_or_opened_implausibility_present ||
+  //        ThrottleBrake::BPPC_implausibility_present ||
+  //        ThrottleBrake::APPSs_invalid_implausibility_present;
+  return ThrottleBrake::BPPC_implausibility_present ||
+         ThrottleBrake::brake_shorted_or_opened_implausibility_present;
 }
 
 void ThrottleBrake::set_is_APPSs_disagreement_implausibility_present_to_true() {
