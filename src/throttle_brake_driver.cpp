@@ -347,10 +347,10 @@ void ThrottleBrake::print_throttle_info() {
   // Serial.print(" APPS2 ADC: ");
   // Serial.print(ThrottleBrake::APPS2_adc);
 
-  // Serial.print(" APPS1: ");
-  // Serial.print(ThrottleBrake::APPS1_throttle_scaled);
-  // Serial.print(" APPS2: ");
-  // Serial.print(ThrottleBrake::APPS2_throttle_scaled);
+  Serial.print(" APPS1: ");
+  Serial.print(ThrottleBrake::APPS1_throttle_scaled);
+  Serial.print(" APPS2: ");
+  Serial.print(ThrottleBrake::APPS2_throttle_scaled);
   // Serial.print(" Front Brake: ");
   // Serial.print(ThrottleBrake::front_brake_adc);
   //   Serial.print(" APPS1 Voltage: ");
